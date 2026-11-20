@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1020 637" role="img" aria-labelledby="title desc">
+  <title id="title">Bag 47. Three graph reads from the driver run.</title>
+  <desc id="desc">The first DAG joins loading and signing at departure. The fault invalidates the load and blocks the release. Revision two preserves the signature assignment and adds a repair before a new load.</desc>
+  <style>text{font-family:system-ui,sans-serif;fill:#f1eee4}.id,.tick,.legend{font-family:ui-monospace,monospace}.headline{font-size:18px;font-weight:650}.tick{fill:#efd199;font-size:14px}.label{font-size:15px;font-weight:600}.id{font-size:12px;fill:#d6dfd8}.legend{font-size:12px;fill:#bdcec9}path{fill:none;stroke-width:2.1}</style>
+  <rect width="1020" height="637" rx="16" fill="#0c1c26" />
+  <defs>
+    <marker id="normal" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="4" markerHeight="4" orient="auto">
+      <polygon points="0,0 8,4 0,8" fill="#8fa8ae" />
+    </marker>
+    <marker id="done" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="4" markerHeight="4" orient="auto">
+      <polygon points="0,0 8,4 0,8" fill="#8bcaa6" />
+    </marker>
+    <marker id="stale" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="4" markerHeight="4" orient="auto">
+      <polygon points="0,0 8,4 0,8" fill="#f49b88" />
+    </marker>
+    <marker id="added" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="4" markerHeight="4" orient="auto">
+      <polygon points="0,0 8,4 0,8" fill="#edc177" />
+    </marker>
+  </defs>
+  <text x="26" y="39" class="tick">T 03  /  R1</text>
+  <text x="165" y="40" class="headline">Two ready branches. Departure waits for both.</text>
+  <path d="M188 82 H217" stroke="#8fa8ae" marker-end="url(#normal)" />
+  <path d="M585 82 H614" stroke="#8fa8ae" marker-end="url(#normal)" />
+  <path d="M783 82 H813" stroke="#8fa8ae" marker-end="url(#normal)" />
+  <path d="M502 161 V182 H899 V107" stroke="#8fa8ae" marker-end="url(#normal)" />
+  <path d="M386 82 H416" stroke="#8fa8ae" marker-end="url(#normal)" />
+  <rect x="22" y="60" width="166" height="44" rx="7" fill="#1c2f39" stroke="#8fa8ae" stroke-width="1.6" stroke-dasharray="none" />
+  <text x="33" y="80" class="label">Collect bag</text>
+  <text x="33" y="97" class="id">Wick · 1/collect</text>
+  <rect x="419" y="60" width="166" height="44" rx="7" fill="#1c2f39" stroke="#8fa8ae" stroke-width="1.6" stroke-dasharray="none" />
+  <text x="430" y="80" class="label">Cross hatch</text>
+  <text x="430" y="97" class="id">Skim · 1/cross</text>
+  <rect x="816" y="60" width="166" height="44" rx="7" fill="#1c2f39" stroke="#8fa8ae" stroke-width="1.6" stroke-dasharray="none" />
+  <text x="827" y="80" class="label">Release train</text>
+  <text x="827" y="97" class="id">Signal box · 1/depart</text>
+  <rect x="617" y="60" width="166" height="44" rx="7" fill="#1c2f39" stroke="#8fa8ae" stroke-width="1.6" stroke-dasharray="none" />
+  <text x="628" y="80" class="label">Load coach</text>
+  <text x="628" y="97" class="id">Jack · 1/load</text>
+  <rect x="419" y="117" width="166" height="44" rx="7" fill="#1c2f39" stroke="#8fa8ae" stroke-width="1.6" stroke-dasharray="none" />
+  <text x="430" y="137" class="label">Sign waybill</text>
+  <text x="430" y="154" class="id">Jack · 1/manifest</text>
+  <rect x="220" y="60" width="166" height="44" rx="7" fill="#1c2f39" stroke="#8fa8ae" stroke-width="1.6" stroke-dasharray="none" />
+  <text x="231" y="80" class="label">Load courier</text>
+  <text x="231" y="97" class="id">Wick · 1/stage</text>
+  <line x1="22" x2="998" y1="207" y2="207" stroke="#34505a" />
+  <text x="26" y="237" class="tick">T 26  /  R1</text>
+  <text x="165" y="238" class="headline">The collar slips. Follow the two affected action IDs.</text>
+  <path d="M188 280 H217" stroke="#8bcaa6" marker-end="url(#done)" />
+  <path d="M585 280 H614" stroke="#8bcaa6" marker-end="url(#done)" />
+  <path d="M783 280 H813" stroke="#f49b88" marker-end="url(#stale)" />
+  <path d="M502 359 V380 H899 V305" stroke="#8fa8ae" marker-end="url(#normal)" />
+  <path d="M386 280 H416" stroke="#8bcaa6" marker-end="url(#done)" />
+  <path d="M700 315 V305" stroke="#f49b88" marker-end="url(#stale)" />
+  <rect x="617" y="315" width="166" height="44" rx="7" fill="#462e2c" stroke="#f49b88" stroke-width="1.6" stroke-dasharray="4 2" />
+  <text x="628" y="335" class="label">Fork carriage</text>
+  <text x="628" y="352" class="id">online → offline</text>
+  <rect x="22" y="258" width="166" height="44" rx="7" fill="#203c34" stroke="#8bcaa6" stroke-width="1.6" stroke-dasharray="none" />
+  <text x="33" y="278" class="label">✓ Collect bag</text>
+  <text x="33" y="295" class="id">Wick · 1/collect</text>
+  <rect x="419" y="258" width="166" height="44" rx="7" fill="#203c34" stroke="#8bcaa6" stroke-width="1.6" stroke-dasharray="none" />
+  <text x="430" y="278" class="label">✓ Cross hatch</text>
+  <text x="430" y="295" class="id">Skim · 1/cross</text>
+  <rect x="816" y="258" width="166" height="44" rx="7" fill="#462e2c" stroke="#f49b88" stroke-width="1.6" stroke-dasharray="4 2" />
+  <text x="827" y="278" class="label">× Release train</text>
+  <text x="827" y="295" class="id">Signal box · 1/depart</text>
+  <rect x="617" y="258" width="166" height="44" rx="7" fill="#462e2c" stroke="#f49b88" stroke-width="1.6" stroke-dasharray="4 2" />
+  <text x="628" y="278" class="label">× Load coach</text>
+  <text x="628" y="295" class="id">Jack · 1/load</text>
+  <rect x="419" y="315" width="166" height="44" rx="7" fill="#1c2f39" stroke="#8fa8ae" stroke-width="1.6" stroke-dasharray="none" />
+  <text x="430" y="335" class="label">Sign waybill</text>
+  <text x="430" y="352" class="id">Jack · 1/manifest</text>
+  <rect x="220" y="258" width="166" height="44" rx="7" fill="#203c34" stroke="#8bcaa6" stroke-width="1.6" stroke-dasharray="none" />
+  <text x="231" y="278" class="label">✓ Load courier</text>
+  <text x="231" y="295" class="id">Wick · 1/stage</text>
+  <line x1="22" x2="998" y1="405" y2="405" stroke="#34505a" />
+  <text x="26" y="435" class="tick">T 29  /  R2</text>
+  <text x="165" y="436" class="headline">Four action IDs survive. The repair supplies the new load.</text>
+  <path d="M188 478 H217" stroke="#8bcaa6" marker-end="url(#done)" />
+  <path d="M585 478 H614" stroke="#8bcaa6" marker-end="url(#done)" />
+  <path d="M502 557 V578 H899 V503" stroke="#edc177" marker-end="url(#added)" />
+  <path d="M386 478 H416" stroke="#8bcaa6" marker-end="url(#done)" />
+  <path d="M783 478 H813" stroke="#edc177" marker-end="url(#added)" />
+  <path d="M700 513 V503" stroke="#edc177" marker-end="url(#added)" />
+  <rect x="22" y="456" width="166" height="44" rx="7" fill="#203c34" stroke="#8bcaa6" stroke-width="1.6" stroke-dasharray="none" />
+  <text x="33" y="476" class="label">✓ Collect bag</text>
+  <text x="33" y="493" class="id">Wick · 1/collect</text>
+  <rect x="419" y="456" width="166" height="44" rx="7" fill="#203c34" stroke="#8bcaa6" stroke-width="1.6" stroke-dasharray="none" />
+  <text x="430" y="476" class="label">✓ Cross hatch</text>
+  <text x="430" y="493" class="id">Skim · 1/cross</text>
+  <rect x="419" y="513" width="166" height="44" rx="7" fill="#1c2f39" stroke="#8fa8ae" stroke-width="1.6" stroke-dasharray="none" />
+  <text x="430" y="533" class="label">Sign waybill</text>
+  <text x="430" y="550" class="id">Jack · 1/manifest</text>
+  <rect x="220" y="456" width="166" height="44" rx="7" fill="#203c34" stroke="#8bcaa6" stroke-width="1.6" stroke-dasharray="none" />
+  <text x="231" y="476" class="label">✓ Load courier</text>
+  <text x="231" y="493" class="id">Wick · 1/stage</text>
+  <rect x="816" y="456" width="166" height="44" rx="7" fill="#3a3728" stroke="#edc177" stroke-width="1.6" stroke-dasharray="none" />
+  <text x="827" y="476" class="label">+ Release train</text>
+  <text x="827" y="493" class="id">Signal box · 2/depart</text>
+  <rect x="617" y="456" width="166" height="44" rx="7" fill="#3a3728" stroke="#edc177" stroke-width="1.6" stroke-dasharray="none" />
+  <text x="628" y="476" class="label">+ Load coach</text>
+  <text x="628" y="493" class="id">Jack · 2/load</text>
+  <rect x="617" y="513" width="166" height="44" rx="7" fill="#3a3728" stroke="#edc177" stroke-width="1.6" stroke-dasharray="none" />
+  <text x="628" y="533" class="label">+ Reseat collar</text>
+  <text x="628" y="550" class="id">Patch · 2/repair</text>
+  <text x="26" y="623" class="legend">Arrows point from a prerequisite to the action it enables.   ✓ complete     × stale     + new in revision 2</text>
+</svg>

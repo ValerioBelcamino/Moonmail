@@ -1,0 +1,127 @@
+WEBVTT
+
+00:00.190 --> 00:02.680
+Four robots share one delivery.
+
+00:03.180 --> 00:08.350
+The mailbag must travel from the shelf, through
+the hatch, and onto the train.
+
+00:08.970 --> 00:10.130
+There’s a second job.
+
+00:10.350 --> 00:11.670
+Sign the delivery slip.
+
+00:12.300 --> 00:14.450
+Which robot can do each job?
+
+00:15.330 --> 00:18.930
+The orchestrator reads the depot’s knowledge
+graph in Relate.
+
+00:19.680 --> 00:22.860
+Meet Jack, the forklift, and Patch, the
+mechanic.
+
+00:23.490 --> 00:25.490
+Jack’s chassis supports lifting.
+
+00:25.890 --> 00:29.010
+With a working fork carriage mounted, he can
+lift the tray.
+
+00:29.810 --> 00:32.640
+To sign the delivery slip, a robot scans it.
+
+00:33.140 --> 00:35.340
+Jack and Patch both have that skill.
+
+00:35.930 --> 00:37.720
+Only Jack can lift the tray.
+
+00:38.180 --> 00:41.200
+For the signature, the model can choose either
+robot.
+
+00:41.660 --> 00:42.820
+It proposes a plan.
+
+00:43.220 --> 00:46.220
+The validator checks who can do each job,
+
+00:46.280 --> 00:47.930
+and what has to happen first.
+
+00:48.410 --> 00:50.420
+The approved plan goes into Relate.
+
+00:52.070 --> 00:53.600
+Watch the mailbag change hands.
+
+00:54.350 --> 00:56.200
+The executor updates the graph.
+
+00:56.610 --> 00:58.690
+That link now points to the courier.
+
+01:01.830 --> 01:03.800
+Then Jack’s fork carriage slips.
+
+01:04.380 --> 01:06.100
+The executor marks it offline.
+
+01:06.810 --> 01:08.360
+Loading needs those forks,
+
+01:08.730 --> 01:10.820
+and departure depends on loading.
+
+01:11.370 --> 01:12.730
+Signing can still go ahead.
+
+01:15.050 --> 01:16.940
+The orchestrator reads the changed graph.
+
+01:17.630 --> 01:20.050
+Patch has a driver that fits the broken collar.
+
+01:20.570 --> 01:22.890
+The model adds a repair before loading
+
+01:23.180 --> 01:24.260
+and keeps the signature.
+
+01:25.910 --> 01:27.550
+Jack signs with his scanner.
+
+01:29.980 --> 01:31.340
+Patch tightens the collar.
+
+01:34.270 --> 01:35.720
+Once the graph records the repair,
+
+01:35.950 --> 01:37.150
+Jack can load the bag.
+
+01:39.530 --> 01:40.450
+Both jobs are done.
+
+01:40.940 --> 01:41.860
+The train can leave.
+
+01:43.410 --> 01:46.290
+Now let’s follow the train into a bigger depot.
+
+01:46.710 --> 01:48.750
+Three deliveries, nine robots.
+
+01:49.320 --> 01:51.540
+The orchestrator runs the same graph query.
+
+01:52.170 --> 01:53.790
+The model proposes the plan.
+
+01:54.210 --> 01:57.780
+Relate shows which robot
+can do each job, and when.

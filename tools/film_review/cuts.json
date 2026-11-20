@@ -1,0 +1,109 @@
+{
+  "fps": 60,
+  "opening": {
+    "frames": 2580,
+    "captions": [
+      [0.19, 2.68, "Four robots share one delivery."],
+      [3.18, 8.35, "The mailbag must travel from the shelf, through the hatch, and onto the train."],
+      [8.97, 10.13, "There’s a second job."],
+      [10.35, 11.67, "Sign the delivery slip."],
+      [12.3, 14.45, "Which robot can do each job?"],
+      [15.33, 18.93, "The orchestrator reads the depot’s knowledge graph in Relate."],
+      [19.68, 22.86, "Meet Jack, the forklift, and Patch, the mechanic."],
+      [23.49, 25.49, "Jack’s chassis supports lifting."],
+      [25.89, 29.01, "With a working fork carriage mounted, he can lift the tray."],
+      [29.81, 32.64, "To sign the delivery slip, a robot scans it."],
+      [33.14, 35.34, "Jack and Patch both have that skill."],
+      [35.93, 37.72, "Only Jack can lift the tray."],
+      [38.18, 41.2, "For the signature, the model can choose either robot."],
+      [41.66, 42.82, "It proposes a plan."]
+    ]
+  },
+  "dispatch": {
+    "frames": 3588,
+    "captions": [
+      [0.22, 3.22, "The validator checks who can do each job,"],
+      [3.28, 4.93, "and what has to happen first."],
+      [5.41, 7.42, "The approved plan goes into Relate."],
+      [9.07, 10.6, "Watch the mailbag change hands."],
+      [11.35, 13.2, "The executor updates the graph."],
+      [13.61, 15.69, "That link now points to the courier."],
+      [18.83, 20.8, "Then Jack’s fork carriage slips."],
+      [21.38, 23.1, "The executor marks it offline."],
+      [23.81, 25.36, "Loading needs those forks,"],
+      [25.73, 27.82, "and departure depends on loading."],
+      [28.37, 29.73, "Signing can still go ahead."],
+      [32.05, 33.94, "The orchestrator reads the changed graph."],
+      [34.63, 37.05, "Patch has a driver that fits the broken collar."],
+      [37.57, 39.89, "The model adds a repair before loading"],
+      [40.18, 41.26, "and keeps the signature."],
+      [42.91, 44.55, "Jack signs with his scanner."],
+      [46.98, 48.34, "Patch tightens the collar."],
+      [51.27, 52.72, "Once the graph records the repair,"],
+      [52.95, 54.15, "Jack can load the bag."],
+      [56.53, 57.45, "Both jobs are done."],
+      [57.94, 58.86, "The train can leave."]
+    ],
+    "clock": [
+      [0, 2],
+      [1.3, 2],
+      [5.35, 3],
+      [6.3, 4],
+      [9.0, 10],
+      [11.15, 18],
+      [12.64, 22],
+      [15.0, 23.6],
+      [17.35, 25],
+      [19.55, 25.6],
+      [20.27, 26],
+      [21.08, 26.9],
+      [30.3, 26.9],
+      [32.05, 27],
+      [37.4, 28],
+      [39.05, 29],
+      [41.0, 30],
+      [42.15, 31],
+      [44.18, 34],
+      [45.05, 35],
+      [46.95, 39],
+      [47.85, 40],
+      [49.85, 41.85],
+      [51.6, 43],
+      [52.35, 44],
+      [53.8, 47],
+      [54.85, 49],
+      [56.04, 54],
+      [56.54, 55],
+      [57.13, 58],
+      [57.81, 60],
+      [59.8, 60.9]
+    ]
+  },
+  "travel": {
+    "frames": 936,
+    "captions": [
+      [0.61, 3.49, "Now let’s follow the train into a bigger depot."],
+      [3.91, 5.95, "Three deliveries, nine robots."],
+      [6.52, 8.74, "The orchestrator runs the same graph query."],
+      [9.37, 10.99, "The model proposes the plan."],
+      [11.41, 14.98, "Relate shows which robot\ncan do each job, and when."]
+    ]
+  },
+  "master": {
+    "outro_frames": 60,
+    "chapters": [
+      [0, "The delivery"],
+      [14.8, "Reading the depot graph"],
+      [19.5, "Two robots, one shared skill"],
+      [35.6, "Required and optional assignments"],
+      [43, "Validating the plan"],
+      [50.0, "The courier takes custody"],
+      [63.27, "The fork carriage slips"],
+      [75.05, "Revising the plan"],
+      [85.5, "Signing and repairing"],
+      [95.35, "Loading the train"],
+      [102.8, "The same method with nine robots"],
+      [118.4, "Moonmail · Built with Relate"]
+    ]
+  }
+}

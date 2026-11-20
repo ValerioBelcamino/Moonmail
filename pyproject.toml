@@ -1,0 +1,18 @@
+[project]
+name = "moonmail"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "relate-db==1.0.2",
+    "fastapi>=0.116,<1",
+    "uvicorn>=0.35,<1",
+    "pydantic>=2.11,<3",
+    "python-dotenv>=1,<2",
+    "z3-solver>=4.13,<5",
+]
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "httpx>=0.28,<1"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="Moonmail">
+  <title>Moonmail · Which robot can do each job?</title>
+  <style>
+    :root {
+      --ink: #10282b; --night: #10252a; --ivory: #fff3d8; --paper: #f7f1e2;
+      --jade: #a1e0ca; --pine: #196651; --gold: #edbe72; --rule: #ccd0bf;
+      --serif: Georgia, "Liberation Serif", serif;
+      --sans: "Segoe UI", "Liberation Sans", Arial, sans-serif;
+      --mono: "Liberation Mono", Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #071619; color: var(--ink); font-family: var(--sans); }
+    .slide { width: 1280px; height: 720px; position: relative; overflow: hidden; background: var(--paper); padding: 56px 70px; }
+    .dark { background: var(--night); color: var(--ivory); }
+    h1, h2, h3, p, figure, ol, ul { margin: 0; }
+    h1, h2, h3 { font: normal 58px/1.03 var(--serif); letter-spacing: -.025em; }
+    h3 { font-size: 35px; }
+    p, li { font-size: 24px; line-height: 1.36; }
+    .eyebrow { color: var(--pine); font: 700 17px/1.3 var(--sans); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 20px; }
+    .dark .eyebrow { color: var(--jade); }
+    .footnote { font-size: 19px; line-height: 1.4; }
+    .brand { display: inline-flex; align-items: center; gap: 13px; color: var(--ivory); font: 39px var(--serif); letter-spacing: -.025em; }
+    .envelope { width: 33px; height: 24px; border: 2px solid var(--gold); border-radius: 3px; position: relative; overflow: hidden; }
+    .envelope::before, .envelope::after { content: ""; width: 22px; height: 2px; background: var(--gold); position: absolute; top: 5px; }
+    .envelope::before { transform: rotate(35deg); left: -3px; } .envelope::after { transform: rotate(-35deg); right: -3px; }
+    .cover { padding: 67px 70px; display: grid; grid-template-columns: 630px 1fr; }
+    .cover .photo { position: absolute; right: 0; top: 0; height: 100%; width: 511px; object-fit: cover; object-position: center; }
+    .cover .copy { z-index: 1; }
+    .cover h1 { margin: 65px 0 24px; font-size: 84px; }
+    .cover .intro { max-width: 570px; color: #e3eee5; font-size: 29px; }
+    .cover .credit { position: absolute; bottom: 59px; left: 70px; color: var(--jade); font-size: 21px; }
+    .cycle .lead { max-width: 980px; margin-top: 22px; }
+    .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; padding: 0; list-style: none; margin-top: 43px; }
+    .flow li { border-top: 3px solid var(--pine); padding-top: 18px; position: relative; }
+    .flow li:not(:last-child)::after { content: "→"; color: var(--pine); font: 27px var(--sans); position: absolute; right: 1px; top: 19px; }
+    .flow h3 { font-size: 34px; margin: 0 0 13px; } .flow p { font-size: 21px; padding-right: 7px; }
+    .return { position: absolute; bottom: 62px; left: 70px; right: 70px; border-left: 4px solid var(--pine); background: #e2e9dc; padding: 17px 22px; font-size: 23px; }
+    .bodies .columns, .fault .columns { display: grid; gap: 45px; margin-top: 31px; align-items: center; }
+    .bodies .columns { grid-template-columns: 487px 1fr; }
+    .robot-crop, .fault-crop { position: relative; height: 372px; width: 100%; overflow: hidden; border-radius: 4px; background: #173335; }
+    .robot-crop img { position: absolute; width: 218%; max-width: none; left: -1%; top: -103px; }
+    figcaption { font-size: 17px; margin-top: 10px; line-height: 1.35; }
+    .rows { display: grid; gap: 24px; } .rows section { padding-left: 19px; border-left: 3px solid var(--pine); }
+    .rows h3 { margin-bottom: 7px; } .rows p { font-size: 23px; }
+    .fault .columns { grid-template-columns: 540px 1fr; }
+    .fault-crop { height: 392px; } .fault-crop img { position: absolute; width: 216%; max-width: none; top: -113px; left: -.5%; }
+    .fault figcaption { color: #c6d9d6; }
+    .ledger { list-style: none; padding: 0; } .ledger li { display: grid; grid-template-columns: 91px 1fr; gap: 12px; padding: 20px 0; border-top: 1px solid #3c5557; font-size: 22px; }
+    .ledger strong { color: var(--gold); font: 700 20px var(--sans); padding-top: 4px; }
+    .comparison .lead { margin-top: 17px; font-size: 24px; }
+    .compare { margin-top: 36px; display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+    .compare article { background: #e5ebde; border-top: 4px solid var(--pine); padding: 24px 27px; }
+    .compare article:last-child { background: #efe5d2; border-color: #9a713c; }
+    .compare h3 { margin-bottom: 15px; } .compare p { font-size: 23px; margin: 0 0 14px; }
+    .compare p:last-child { margin-bottom: 0; }
+    .comparison .footnote { position: absolute; bottom: 54px; left: 70px; right: 70px; padding-top: 17px; border-top: 1px solid var(--rule); }
+    .fleet { padding: 42px 55px; } .fleet .eyebrow { margin-bottom: 13px; } .fleet h2 { font-size: 51px; }
+    .fleet-layout { display: grid; grid-template-columns: 806px 1fr; gap: 35px; align-items: center; margin-top: 30px; }
+    .fleet-layout figure img { display: block; width: 100%; border-radius: 4px; }
+    .fleet-layout figcaption { font-size: 17px; color: #bed3cf; }
+    .counts { display: grid; gap: 20px; } .counts section { padding-top: 14px; border-top: 1px solid #456163; }
+    .counts h3 { color: var(--gold); font-size: 35px; margin-bottom: 6px; } .counts p { font-size: 21px; }
+    .last h2 { font-size: 70px; max-width: 900px; margin: 22px 0 27px; }
+    .last .takeaway { max-width: 1000px; font-size: 27px; }
+    .launch { margin-top: 35px; display: grid; grid-template-columns: 1fr 1fr; gap: 42px; border-top: 2px solid var(--pine); padding-top: 22px; }
+    .launch h3 { font-size: 30px; margin-bottom: 12px; } .launch p { font-size: 21px; }
+    code { font: .91em var(--mono); } .command { font: 22px/1.5 var(--mono); background: #e1e9dc; padding: 8px 14px; display: inline-block; }
+    nav { position: fixed; bottom: 8px; right: 12px; display: flex; gap: 5px; z-index: 2; }
+    nav button { color: #eff3ea; background: #112a2de8; border: 1px solid #668180; border-radius: 4px; padding: 5px 10px; cursor: pointer; font: 16px var(--sans); }
+    @media screen {
+      html.enhanced body { display: grid; place-items: center; min-height: 100dvh; overflow: hidden; }
+      .enhanced main { width: 1280px; height: 720px; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(var(--fit,1)); }
+      .enhanced .slide { display: none; } .enhanced .slide.current { display: block; }
+    }
+    @page { size: 1280px 720px; margin: 0; }
+    @media print {
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body, main { display: block; width: 1280px; height: auto; background: var(--paper); }
+      nav { display: none; } .slide { break-after: page; page-break-after: always; }
+      .slide:last-child { break-after: auto; page-break-after: auto; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <section class="slide cover dark" aria-label="Moonmail">
+    <img class="photo" src="depot.webp" alt="A four-robot postal depot, with its shelf, hatch and waiting train">
+    <div class="copy">
+      <div class="brand"><span class="envelope" aria-hidden="true"></span>Moonmail</div>
+      <h1>Which robot can<br>do each job?</h1>
+      <p class="intro">Four robots share one delivery. They must get a mailbag aboard the right coach and sign its slip before the train can leave.</p>
+      <p class="credit">Built with Relate · Neo4j Hackathon 2026</p>
+    </div>
+  </section>
+
+  <section class="slide cycle" aria-label="How the system works">
+    <p class="eyebrow">The dispatch cycle</p>
+    <h2>From a graph read to a robot action</h2>
+    <p class="lead">One embedded Relate file holds the goal, robot bodies and tools, current parcel custody, and each accepted version of the plan.</p>
+    <ol class="flow">
+      <li><h3>Read</h3><p>The orchestrator queries Relate for the goal, current facts, eligible robots and any work that can continue.</p></li>
+      <li><h3>Propose</h3><p>The language model returns actions, possible actors and the predecessors each action needs.</p></li>
+      <li><h3>Validate</h3><p>The validator checks skills, assignments and causal support with Z3. It admits a revision or returns a reason to retry.</p></li>
+      <li><h3>Execute</h3><p>The executor queries ready work, checks its preconditions, and writes custody, status and observations back to Relate.</p></li>
+    </ol>
+    <p class="return">A failed precondition triggers another graph read. The model sees which actions the fault reached and which actions still hold.</p>
+  </section>
+
+  <section class="slide bodies" aria-label="Embodiment and eligibility">
+    <p class="eyebrow">Before planning</p>
+    <h2>Only Jack can lift. Either robot can sign.</h2>
+    <div class="columns">
+      <figure><div class="robot-crop"><img src="embodiment-frame.webp" alt="Jack, the forklift, beside Patch, the mechanic, in the recorded station"></div><figcaption>Jack and Patch at the start of the one-order run.</figcaption></figure>
+      <div class="rows">
+        <section><h3>Loading the coach</h3><p>Jack’s chassis supports lifting. His mounted fork carriage supplies that skill. Both must match, and the carriage must work when the lift begins.</p></section>
+        <section><h3>Signing the slip</h3><p>The desk accepts a scan. Both chassis support scanning, so the model has a choice. In this recording it assigns Jack.</p></section>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide fault dark" aria-label="The fault and the revised plan">
+    <p class="eyebrow">During execution</p>
+    <h2>One slipped collar affects two jobs</h2>
+    <div class="columns">
+      <figure><div class="fault-crop"><img src="fork-fault.webp" alt="Jack tips as smoke rises from his slipped fork collar"></div><figcaption>The executor records the observation while Skim holds Bag 47.</figcaption></figure>
+      <ol class="ledger">
+        <li><strong>Tick 26</strong><span>The carriage goes offline. A graph traversal finds the load it invalidates and the departure that depends on that load.</span></li>
+        <li><strong>Tick 29</strong><span>The new revision adds Patch’s repair and reuses Jack’s signature action. He can still scan with a broken carriage.</span></li>
+        <li><strong>Tick 60</strong><span>Patch has fixed the collar, Jack has signed and the bag is aboard Coach B. Both departure conditions hold.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="slide comparison" aria-label="A controlled comparison">
+    <p class="eyebrow">An experiment in the interactive demo</p>
+    <h2>Change just the mechanic’s tool</h2>
+    <p class="lead">Same depot, seed, order and slipped collar. Only Patch’s mounted tool changes.</p>
+    <div class="compare">
+      <article><h3>Hex driver</h3><p>The tool fits the carriage collar. The validator can bind the repair to Patch.</p><p>Patch repairs the carriage, then Jack loads the coach.</p></article>
+      <article><h3>Inspection probe</h3><p>The probe fits a test socket. The validator rejects the model’s attempted collar repair.</p><p>After reading the feedback, the model sends Skim to the station lift. The bag reaches the same coach.</p></article>
+    </div>
+    <p class="footnote"><b>Check the evidence.</b> Open the inspection-probe recording and select the rejected proposal. Its Relate store contains both the failed draft and the accepted retry.</p>
+  </section>
+
+  <section class="slide fleet dark" aria-label="Three orders and a shared departure">
+    <p class="eyebrow">A larger depot</p>
+    <h2>Three orders share one train</h2>
+    <div class="fleet-layout">
+      <figure><img src="fleet-action-graph.webp" alt="The three bag branches in the final action graph converge on one release. Five robots light up on the depot floor."><figcaption>The final 17-action graph beside the first dispatch wave, as shown in the film.</figcaption></figure>
+      <div class="counts">
+        <section><h3>Nine robots</h3><p>At tick 4, three pickups and two signatures start together.</p></section>
+        <section><h3>Fourteen actions kept</h3><p>The revised plan reuses their original graph nodes after one carriage fails.</p></section>
+        <section><h3>Six prerequisites</h3><p>Each of three bags needs a load and a signature. Every branch must finish before the train leaves.</p></section>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide last" aria-label="Run and inspect Moonmail">
+    <p class="eyebrow">Try Moonmail</p>
+    <h2>Follow a decision all the way back to the graph.</h2>
+    <p class="takeaway">The model proposes how to reach the goal. Relate gives the orchestrator the evidence to assign the work, see what broke and preserve what still works.</p>
+    <div class="launch">
+      <section><h3>Run the station</h3><p><code class="command">uv run --locked -m moonmail</code></p><p style="margin-top:12px">Open <code>http://127.0.0.1:8041/</code> and choose <b>Next event</b> to walk through the first delivery.</p></section>
+      <section><h3>Inspect the decision</h3><p>At the collar slip, choose <b>Inspect graph data</b> and <b>Actions affected by a fault</b>. The two returned rows come from the same <code>post.rl</code> database that drives the tour.</p></section>
+    </div>
+  </section>
+</main>
+<nav aria-label="Presentation navigation" hidden><button type="button" aria-label="Previous slide">←</button><button type="button" aria-label="Next slide">→</button></nav>
+<script>
+  const root = document.documentElement;
+  const slides = Array.from(document.querySelectorAll('main > section'));
+  const controls = document.querySelector('nav');
+  const buttons = controls.querySelectorAll('button');
+  function show(index) {
+    const selected = Math.max(0, Math.min(slides.length - 1, index));
+    slides.forEach((slide, i) => slide.classList.toggle('current', i === selected));
+    buttons[0].disabled = selected === 0;
+    buttons[1].disabled = selected === slides.length - 1;
+    return selected;
+  }
+  function fromHash() {
+    const n = Number(location.hash.slice(1));
+    return show(Number.isInteger(n) && n > 0 ? n - 1 : 0);
+  }
+  let position = fromHash();
+  function go(index) { position = show(index); location.hash = String(position + 1); }
+  function fit() { root.style.setProperty('--fit', Math.min(innerWidth / 1280, innerHeight / 720)); }
+  root.classList.add('enhanced'); controls.hidden = false; fit();
+  addEventListener('resize', fit);
+  addEventListener('hashchange', () => { position = fromHash(); });
+  buttons[0].onclick = () => go(position - 1);
+  buttons[1].onclick = () => go(position + 1);
+  addEventListener('keydown', (event) => {
+    if (['ArrowRight','PageDown',' '].includes(event.key)) { event.preventDefault(); go(position + 1); }
+    if (['ArrowLeft','PageUp'].includes(event.key)) { event.preventDefault(); go(position - 1); }
+    if (event.key === 'Home') go(0);
+    if (event.key === 'End') go(slides.length - 1);
+  });
+</script>
+</body>
+</html>

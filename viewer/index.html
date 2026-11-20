@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#08151e" />
+    <title>Moonmail · How a robot fleet shares a plan</title>
+  </head>
+  <body>
+    <main id="film" class="review opening">
+      <header>
+        <div class="wordmark"><b aria-hidden="true">☾</b> Moonmail</div>
+        <nav class="station-nav" aria-label="Choose the size of the fleet">
+          <button data-station="post" aria-pressed="true">One order</button>
+          <button data-station="yard" aria-pressed="false">Three orders</button>
+        </nav>
+        <div class="top-tools">
+          <span id="source">Opening graph…</span>
+          <a id="narrated" href="/review/film.html">Watch film</a>
+          <button id="options" aria-label="Open playback and run options">
+            Run options
+          </button>
+        </div>
+      </header>
+      <div id="spread">
+        <section id="stage" aria-label="Station map and narration">
+          <div class="sky" aria-hidden="true"></div>
+          <div id="world" aria-label="Animated postal railway"></div>
+          <div class="shade" aria-hidden="true"></div>
+          <div id="map-label">Four robots · one order</div>
+          <article id="narrative">
+            <div id="chapter">The order</div>
+            <h1 id="line">Which robot can do each job?</h1>
+            <p id="narration">
+              Bag 47 must reach its addressed coach. The train also needs a
+              signed waybill.
+            </p>
+          </article>
+        </section>
+        <section id="book" aria-label="Synchronized dispatch graph">
+          <div class="book-head">
+            <h2>Relate knowledge graph</h2>
+            <button id="proof">Inspect graph data ↗</button>
+          </div>
+          <div id="goal">
+            <span class="small-title">Train can leave when</span>
+            <div id="goals"></div>
+          </div>
+          <div id="pipeline" aria-label="Dispatch stage">
+            <span
+              data-role="state"
+              title="Stores the goal, robot capabilities, action plan and current state."
+              ><i aria-hidden="true">⌘</i> Relate</span
+            ><em aria-hidden="true">→</em>
+            <span
+              data-role="model"
+              title="Reads the graph and proposes actions and their dependencies."
+              ><i aria-hidden="true">✧</i> <b id="author">Orchestrator</b></span
+            ><em aria-hidden="true">→</em>
+            <span
+              data-role="verify"
+              title="Checks robot abilities, custody and action order with Z3."
+              ><i aria-hidden="true">✓</i> Validator</span
+            ><em aria-hidden="true">→</em
+            ><span
+              data-role="execute"
+              title="Runs ready actions and records their effects in Relate."
+              ><i aria-hidden="true">▷</i> Executor</span
+            >
+          </div>
+          <figure id="graph">
+            <figcaption>
+              <span id="graph-title">Initial state</span
+              ><span id="revision"></span>
+            </figcaption>
+            <div id="drawing"></div>
+          </figure>
+          <div id="evidence">
+            <span class="small-title" id="evidence-label">World state</span>
+            <p id="witness"></p>
+          </div>
+        </section>
+      </div>
+      <footer>
+        <div class="rail">
+          <button id="play">▶ Play tour</button>
+          <div class="timeline">
+            <div id="pins"></div>
+            <input
+              id="time"
+              type="range"
+              min="0"
+              max="1"
+              value="0"
+              step=".01"
+              aria-label="Simulation step"
+            />
+          </div>
+          <span id="tick">Step 0</span><button id="next">Next event ›</button>
+        </div>
+        <div class="footerline">
+          <span id="mode"></span><span id="status" role="status"></span>
+        </div>
+      </footer>
+    </main>
+    <dialog id="projector">
+      <div class="dialog-head">
+        <h2>Playback and runs</h2>
+        <button class="close">Close ×</button>
+      </div>
+      <section>
+        <h3>Choose a recorded run</h3>
+        <div class="buttons">
+          <button data-reel="post">One order · hex driver</button
+          ><button data-reel="post-probe">One order · inspection probe</button
+          ><button data-reel="yard">Three orders</button>
+        </div>
+      </section>
+      <section>
+        <h3>Run the dispatch live</h3>
+        <form id="launch">
+          <label
+            >Setup<select id="station">
+              <option value="mail">One order</option>
+              <option value="yard">Three orders</option>
+            </select></label
+          >
+          <label
+            >Planner<select id="controller">
+              <option value="deterministic">Local planner</option>
+            </select></label
+          ><label
+            >Mechanic’s tool<select id="kit">
+              <option value="driver">Hex driver</option>
+              <option value="probe">Inspection probe</option>
+            </select></label
+          ><label
+            >Fault<select id="fault">
+              <option value="forks">Lift collar slips</option>
+              <option value="hatch">Hatch closes</option>
+              <option value="address">Coach route withdrawn</option>
+              <option value="none">Clear run</option>
+            </select></label
+          ><label
+            >Map seed<input
+              id="seed"
+              type="number"
+              min="0"
+              max="9999"
+              value="7"
+              required /></label
+          ><button id="run">Start live run</button
+          ><button id="stop" type="button" hidden>Stop live run</button>
+        </form>
+      </section>
+      <section class="buttons">
+        <button id="map">Overhead camera</button
+        ><a href="/presentation.pdf">Presentation (PDF) ↗</a>
+      </section>
+    </dialog>
+    <dialog id="sources">
+      <div class="dialog-head">
+        <h2>Graph evidence</h2>
+        <button class="close">Close ×</button>
+      </div>
+      <section id="store-inspector">
+        <h3>Query the saved graph</h3>
+        <label for="store-question">Show</label>
+        <select id="store-question">
+          <option value="tools">Tools mounted on each robot</option>
+          <option value="fault">Actions affected by a fault</option>
+          <option value="departure">What the final departure needs</option>
+        </select>
+        <p id="store-status" role="status"></p>
+        <div class="store-table"><table id="store-rows"></table></div>
+        <details><summary>Cypher query</summary><pre id="store-query"></pre></details>
+      </section>
+      <section>
+        <h3 id="source-title"></h3>
+        <p id="proof-note"></p>
+        <code id="relation"></code>
+        <h4>Database query for this event</h4>
+        <pre id="query"></pre>
+        <details open>
+          <summary>Returned rows</summary>
+          <pre id="rows"></pre>
+        </details>
+        <details>
+          <summary>Orchestrator input, proposal and feedback</summary>
+          <pre id="raw"></pre>
+        </details>
+        <a id="database" download="moonmail.rl"
+          >Download the embedded graph ↓</a
+        >
+      </section>
+    </dialog>
+    <script type="module" src="/src/story.ts"></script>
+  </body>
+</html>
