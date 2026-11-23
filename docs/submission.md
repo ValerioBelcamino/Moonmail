@@ -14,7 +14,7 @@ In the film, the fault blocks loading and delays departure. Jack’s signature s
 
 ## Try it
 
-From the downloaded project, `uv run --locked -m moonmail` starts the station. Use **Play tour** for the worked example or **Inspect graph data** to run a query against the included store. Three persistent `.rl` databases ship in `viewer/public/episodes`. New local runs create their own files.
+From the downloaded project, `uv run --locked -m moonmail` starts the browser station at `http://127.0.0.1:8041/`. **Play tour** replays actual LLM decisions. **Run options** lets judges change the depot, tool, fault and seed, then watch a fresh simulation beside its action graph. The local planner needs no key. Judges can also connect their own Azure OpenAI deployment for fresh LLM proposals. **Inspect graph data** exposes the evidence for each decision. The three bundled runs and each new experiment have their own persistent Relate file.
 
 ## What we built with
 

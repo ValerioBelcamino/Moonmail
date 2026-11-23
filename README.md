@@ -14,7 +14,13 @@ Download and extract the repository or clone it. In the project directory, run t
 uv run --locked -m moonmail
 ```
 
-Open **[the station](http://127.0.0.1:8041/)**. It starts paused with Bag 47 on the shelf. The map is on the left and the order’s relationships are on the right. The local server has already opened `post.rl` and read the recorded events from Relate.
+Open **[the station](http://127.0.0.1:8041/)**. It starts paused with Bag 47 on the shelf. The animated depot sits beside the graph. The first tour replays a real LLM run from `post.rl`. The same browser screen also runs fresh experiments.
+
+| What you want to see | What to select | Who proposes the actions? |
+| --- | --- | --- |
+| The LLM decisions behind the demo | **Play tour**, or **Run options → Choose a recorded run** | The original LLM. Three saved runs include its actual proposals and the validator’s responses. Playback needs no key. |
+| A fresh experiment with your settings | **Run options → Local planner → Start live run** | A deterministic planner computes a plan from the new graph. Relate, the validator, the robots and any recovery all run locally without a key. |
+| Fresh LLM decisions for your settings | **Run options → LLM orchestrator → Start live run** | Your Azure OpenAI deployment reads the graph and proposes actions for this run. [Connect your own LLM](#connect-your-own-llm) |
 
 - **Play tour** follows the delivery. **Next event** steps through the graph read, the model’s proposed action graph and the validator’s decision. At the fault, loading loses its prerequisite. Jack can still sign while Patch repairs the carriage. [Jump to the fault](http://127.0.0.1:8041/?reel=post&at=fault)
 - **Inspect graph data** runs Cypher against the saved database. Choose **Actions affected by a fault** to see the load and departure action IDs. Below the query results, the inspector also shows the evidence recorded at the selected step. [Open the repair decision](http://127.0.0.1:8041/?reel=post&at=replan)
@@ -30,9 +36,13 @@ Moonmail embeds **one persistent Relate database per run**. That file preserves 
 
 ## Try a different decision
 
-Open **Run options**. Choose one or three orders, a map seed, the mechanic’s tool and an observation. Press **Start live run** to execute against a new Relate file. The two layouts have fixed topology. The seed varies shelf positions and, in the smaller depot, the courier’s start. The default local planner uses the same graph, validator and executor as the language-model planner.
+Open **Run options** and choose a fleet preset (**one order / four robots** or **three orders / nine robots**), Patch’s tool (**hex driver** or **inspection probe**) and one condition (**clear run**, **lift collar slips**, **hatch closes** or **coach route withdrawn**). These give 16 combinations for each map seed. Seeds from 0 to 9999 vary shelf positions and, in the smaller depot, the courier’s start within the selected layout.
 
-One comparison isolates the graph’s contribution. Keep seed 7 and the slipped collar, then swap the hex driver for the inspection probe. The driver fits the collar. The probe fits a test socket, so Skim takes the station lift. In the bundled model run, the validator rejects an attempted repair and the model submits this alternate plan. [Inspect the rejected proposal](http://127.0.0.1:8041/?reel=post-probe&at=rejected)
+Press **Start live run**. The robots move in the browser as the graph shows the planner’s input, proposed actions and dependencies, validated assignments, and any changes after a fault. Pause or use **Next event** to follow individual decisions. **Inspect graph data** shows the selected event’s query, returned rows, proposal and available validation feedback. When the run finishes, you can also query or download its saved Relate database.
+
+Try **one order**, **seed 7** and **lift collar slips** twice with the local planner. With the **hex driver**, Patch repairs the collar and Jack loads the bag. With the **inspection probe**, the repair has no eligible robot and Skim uses the station lift. To see how the LLM handled the same problem, open the recorded probe run. It first proposed the unsupported repair, received the validator’s explanation, then submitted the station lift plan. [Open the recorded rejection](http://127.0.0.1:8041/?reel=post-probe&at=rejected)
+
+For a terminal-only experiment, the optional `run` subcommand prints the outcome and the path to the new database.
 
 ```bash
 uv run --locked -m moonmail run --mission mail --seed 7 --service-kit driver --fault forks
@@ -50,9 +60,20 @@ uv run --locked -m moonmail run --mission yard --seed 11 --service-kit probe --f
 
 The JSON beside each bundled store supplies the layout, run metadata and motion frames. The `.rl` supplies the timeline, node identities, assignments and dependencies. To print the recorded model decisions and departure prerequisites directly from the three stores, run `uv run --locked python tools/inspect_dispatch.py`.
 
-## Optional model and development setup
+## Connect your own LLM
 
-To make new language-model proposals, configure an Azure Responses deployment with tool calling. Put `MOONMAIL_AZURE_ENDPOINT`, `MOONMAIL_AZURE_API_KEY` and `MOONMAIL_AZURE_MODEL` in a private dotenv file. Add `--controller azure --env-file /path/to/private.env` to a `run` command. For the browser, set `MOONMAIL_LIVE_AZURE_ENV_FILE` before launching, then choose **LLM orchestrator** in **Run options**. A fresh model run can produce different drafts and retries.
+1. Use an Azure OpenAI deployment that supports the Responses API, function calling and low reasoning effort. In the project folder, copy [.env.example](.env.example) to `.env.local`. Fill in `MOONMAIL_AZURE_ENDPOINT` with the resource endpoint, `MOONMAIL_AZURE_API_KEY` with its key, and `MOONMAIL_AZURE_MODEL` with your **deployment name**. The local server reads these values. Git ignores `.env.local`. [Microsoft’s endpoint and deployment guide](https://learn.microsoft.com/en-us/azure/ai-studio/ai-services/concepts/endpoints)
+2. If the station is running, stop it with Ctrl+C. Start it from the project folder with the command below. It works in a shell or PowerShell. [How uv loads an environment file](https://docs.astral.sh/uv/concepts/configuration-files/#environment-variable-files)
+
+   ```bash
+   uv run --locked --env-file .env.local -m moonmail
+   ```
+
+3. Open the station, then **Run options → Planner → LLM orchestrator**. Choose the setup and press **Start live run**. The requests use your deployment. While watching a proposal or rejection, open **Inspect graph data → Orchestrator input, proposal and feedback** to see what the model received and submitted. Fresh drafts and retries can vary.
+
+For a terminal-only LLM run, use `uv run --locked --env-file .env.local -m moonmail run --controller azure --service-kit probe --fault forks`. A server that already sets `MOONMAIL_LIVE_AZURE_ENV_FILE` can continue to point it at a private configuration file.
+
+## Frontend development
 
 The frontend source is in `viewer/src`. To rebuild it, use Node 22.12+ or Node 24 and run `npm --prefix viewer ci` followed by `npm --prefix viewer run build`. The built bundle in `viewer/dist` serves immediately on a fresh checkout. Run `uv run --locked pytest -q` for the Python suite.
 
