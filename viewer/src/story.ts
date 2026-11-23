@@ -45,6 +45,7 @@ const dwell = (e: DepotEvent) => {
         proposal: 1.2,
         decision: 1.1,
         "fork fault": 1.6,
+        violation: 2.4,
         hold: 2,
         delivered: 1,
       }[e.kind] ?? 0
@@ -111,6 +112,27 @@ function bookmark() {
     pin.append(p);
   }
 }
+function deliveryObstacle(data: Episode, event: DepotEvent, frame: Frame) {
+  const facts = event.proof?.state;
+  if (!facts) return;
+  for (const row of data.events[0]?.proof?.rows ?? []) {
+    const prefix = row.order === undefined ? "" : row.order + "/";
+    const holder = frame.cargoByBag?.[String(row.order)]?.holder ?? frame.holder;
+    if (facts[prefix + "address"] === "unresolved") {
+      return {
+        title: `${row.coach} loses its route.`,
+        reason: `${holder} holds ${row.bag} for ${row.route}. No coach on this train serves that route, so the train must stay.`,
+      };
+    }
+    if (facts[prefix + "hatch"] === "closed" && facts[prefix + "cargo"] === "staged") {
+      return {
+        title: `${row.bag}’s hatch closes.`,
+        reason: `${holder} holds ${row.bag} on the sorting side. The hatch is closed, so the bag cannot reach the train.`,
+      };
+    }
+  }
+}
+
 function explain(e: DepotEvent, event: DepotEvent) {
   const data = ep!,
     yard = data.layout.yard,
@@ -132,6 +154,7 @@ function explain(e: DepotEvent, event: DepotEvent) {
   const ctx = input?.modelInput,
     count = event.planGraph?.nodes.length ?? 0,
     frame = data.frames[Math.floor(t)];
+  const obstacle = deliveryObstacle(data, event, frame);
   const previousFault = history.filter((x) => x.issues?.length).at(-1);
   const holdings = frame.cargoByBag;
   const total = yard?.orders.length ?? 1;
@@ -165,7 +188,7 @@ function explain(e: DepotEvent, event: DepotEvent) {
   const role =
     reading || plan
       ? "model"
-      : accepted || rejected
+      : accepted || rejected || kind === "hold"
         ? "verify"
         : kind === "order" || fault
           ? "state"
@@ -221,7 +244,7 @@ function explain(e: DepotEvent, event: DepotEvent) {
     const opts = ctx?.operators ?? {},
       key = yard ? "47/repair" : "repair";
     if (pendingRevision > 1) {
-      reason =
+      reason = obstacle?.reason ??
         "The orchestrator reads the failed tool, the available equipment and the jobs that still have valid assignments.";
       const choices = Object.keys(opts[key]?.eligible_and_approach ?? {});
       const issue = previousFault?.issues?.[0];
@@ -272,6 +295,11 @@ function explain(e: DepotEvent, event: DepotEvent) {
       (automatic
         ? automatic + " assignments for the validator"
         : "Robots selected by the " + author);
+    if (!steps.length) {
+      title = "The planner requests a hold.";
+      reason = obstacle?.reason ?? "The planner found no plan that meets every departure condition.";
+      detail = "The validator checks whether any feasible route to departure remains.";
+    }
   } else if (accepted) {
     chapter = "Validation";
     title =
@@ -301,7 +329,7 @@ function explain(e: DepotEvent, event: DepotEvent) {
           " new actions · Revision " +
           rev;
   } else if (fault || rejected) {
-    chapter = rejected ? "Plan check" : "Equipment failure";
+    chapter = rejected ? "Plan check" : kind === "fork fault" ? "Equipment failure" : "Dispatch condition changed";
     title = rejected
       ? event.feedback?.counterexample.includes("repair")
         ? "This tool cannot repair the fork."
@@ -330,9 +358,15 @@ function explain(e: DepotEvent, event: DepotEvent) {
             ? "The forklift cannot load the coach. Departure needs that load. The same robot can still sign using its scanner."
             : (e.reason ?? "");
     } else detail = event.feedback?.counterexample ?? event.reason ?? detail;
+    if (kind === "violation" && obstacle) {
+      title = obstacle.title;
+      reason = obstacle.reason;
+    }
   } else if (kind === "hold") {
     chapter = "Departure held";
-    graphTitle = "Last stored revision";
+    title = "The train is held.";
+    reason = obstacle?.reason ?? reason;
+    graphTitle = "Departure blocked";
   } else if (frame.signal === "green") {
     chapter = "Order fulfilled";
     graphTitle = "Goal reached";
@@ -457,11 +491,13 @@ function explain(e: DepotEvent, event: DepotEvent) {
               ? rev > 1
                 ? "PlanRevision → REVISES → PlanRevision"
                 : "PlanRevision → INCLUDES → Action → ASSIGNED_TO → Robot"
-              : kind === "fork fault"
-                ? "Event → INVALIDATES → Action ← DEPENDS_ON ← Action"
-                : e.op === "stage" || kind === "transfer"
-                  ? "Parcel → HELD_BY → current holder"
-                  : "Action → DEPENDS_ON → finished prerequisite";
+              : kind === "hold"
+                ? "Release train → REQUIRES → current world facts"
+                : fault
+                  ? "Event → INVALIDATES → Action ← DEPENDS_ON ← Action"
+                  : e.op === "stage" || kind === "transfer"
+                    ? "Parcel → HELD_BY → current holder"
+                    : "Action → DEPENDS_ON → finished prerequisite";
   put("relation", pattern);
   el("drawing").replaceChildren(dispatchDrawing(data, event, frame));
   cueKey = "";
@@ -580,6 +616,7 @@ function install(data: Episode, file: string) {
     data.scenario.mail_fault ?? (data.scenario.fork_fault ? "forks" : "none");
   const yard = !!data.layout.yard;
   el<HTMLSelectElement>("station").value = yard ? "yard" : "mail";
+  updateRunHints();
   const fleet = Object.keys(data.layout.starts).length;
   put(
     "map-label",
@@ -880,11 +917,27 @@ el("store-question").onchange = () => void inspectStore();
 el("proof").onclick = () => {
   play(false);
   sources.showModal();
-  el<HTMLSelectElement>("store-question").value = cue?.kind === "delivered" ? "departure" : cue?.issues?.length || cue?.kind === "fork fault" ? "fault" : "tools";
+  const selected = cue;
+  const heldAfterFault = selected?.kind === "hold" &&
+    ep?.events.some(e => e.seq < selected.seq && e.issues?.length);
+  el<HTMLSelectElement>("store-question").value = selected?.kind === "delivered"
+    ? "departure"
+    : selected?.issues?.length || selected?.kind === "fork fault" || heldAfterFault
+      ? "fault"
+      : "tools";
   void inspectStore();
 };
+function updateRunHints() {
+  const station = el<HTMLSelectElement>("station").selectedOptions[0];
+  const fault = el<HTMLSelectElement>("fault").selectedOptions[0];
+  put("seed-hint", station?.dataset.seedHint ?? "");
+  put("fault-hint", fault?.dataset.hint ?? "");
+}
+el("station").onchange = updateRunHints;
+el("fault").onchange = updateRunHints;
 el("options").onclick = () => {
   play(false);
+  updateRunHints();
   project.showModal();
 };
 document

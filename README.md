@@ -36,7 +36,9 @@ Moonmail embeds **one persistent Relate database per run**. That file preserves 
 
 ## Try a different decision
 
-Open **Run options** and choose a fleet preset (**one order / four robots** or **three orders / nine robots**), Patch’s tool (**hex driver** or **inspection probe**) and one condition (**clear run**, **lift collar slips**, **hatch closes** or **coach route withdrawn**). These give 16 combinations for each map seed. Seeds from 0 to 9999 vary shelf positions and, in the smaller depot, the courier’s start within the selected layout.
+Open **Run options** and choose a fleet preset (**one order / four robots** or **three orders / nine robots**), Patch’s tool (**hex driver** or **inspection probe**) and one of four conditions. These give 16 combinations per seed. **Clear run** takes the deliveries through departure. **Lift collar slips** allows a repair or a station-lift transfer. **Hatch closes** and **Coach route withdrawn** show a deliberate hold. The hatch stays closed or the Northport coach service stays withdrawn for the rest of that run. [See the held three-order run](docs/route-withdrawn.webp)
+
+The **map seed** is a number from 0 to 9999 that reproduces a starting layout. In the three-order depot each pickup shelf has two possible positions, one tile apart. With seed **9** all three shelves are on the right of those two positions. Switch to **7** and only Bag 52’s shelf moves one tile left. In the one-order depot the seed picks the shelf position and Skim’s starting tile. Several numbers can produce the same layout. Keep the seed fixed when comparing tools or faults.
 
 Press **Start live run**. The robots move in the browser as the graph shows the planner’s input, proposed actions and dependencies, validated assignments, and any changes after a fault. Pause or use **Next event** to follow individual decisions. **Inspect graph data** shows the selected event’s query, returned rows, proposal and available validation feedback. When the run finishes, you can also query or download its saved Relate database.
 

@@ -99,8 +99,12 @@ function worldDrawing(e: DepotEvent, ep: Episode, f: Frame) {
         ctx.instrument_interfaces.find((v) => v.patient === "Jack") ??
         ctx.instrument_interfaces[0];
     const pending = Object.entries(ctx.retained);
-    const label =
-      fault?.fact === "forks" ? "Jack’s forks" : (fault?.fact ?? "Observation");
+    const factName = fault?.fact.split("/").at(-1);
+    const label = ({
+      forks: "Jack’s forks",
+      address: "Coach route",
+      hatch: "Service hatch",
+    } as Record<string, string>)[factName ?? ""] ?? fault?.fact ?? "Observation";
     line(g, "M153 53 H195 M333 53 H375 M84 73 V131 H99 M254 131 H294", "done");
     box(
       g,

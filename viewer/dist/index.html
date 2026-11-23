@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#08151e" />
     <title>Moonmail · How a robot fleet shares a plan</title>
-    <script type="module" crossorigin src="./assets/index-BPUTe30y.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CbUFfByr.css">
+    <script type="module" crossorigin src="./assets/index-ONciEcWq.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BWVY6qlh.css">
   </head>
   <body>
     <main id="film" class="review opening">
@@ -123,8 +123,8 @@
         <form id="launch">
           <label
             >Setup<select id="station">
-              <option value="mail">One order</option>
-              <option value="yard">Three orders</option>
+              <option value="mail" data-seed-hint="Sets the pickup shelf and Skim’s starting tile. Reuse the seed to repeat the layout.">One order</option>
+              <option value="yard" data-seed-hint="Picks one of two shelf positions in each bay. Reuse the seed to repeat the layout.">Three orders</option>
             </select></label
           >
           <label
@@ -136,22 +136,23 @@
               <option value="driver">Hex driver</option>
               <option value="probe">Inspection probe</option>
             </select></label
-          ><label
-            >Fault<select id="fault">
-              <option value="forks">Lift collar slips</option>
-              <option value="hatch">Hatch closes</option>
-              <option value="address">Coach route withdrawn</option>
-              <option value="none">Clear run</option>
-            </select></label
-          ><label
-            >Map seed<input
-              id="seed"
-              type="number"
-              min="0"
-              max="9999"
-              value="7"
-              required /></label
-          ><button id="run">Start live run</button
+          >
+          <div class="run-field">
+            <label for="fault">Fault</label>
+            <select id="fault" aria-describedby="fault-hint">
+              <option value="forks" data-hint="The train can leave after a collar repair or a transfer through the station lift.">Lift collar slips</option>
+              <option value="hatch" data-hint="The hatch stays closed. Bag 47 cannot cross, so the train is held.">Hatch closes</option>
+              <option value="address" data-hint="No coach will serve Northport. Bag 47 cannot be delivered, so the train is held.">Coach route withdrawn</option>
+              <option value="none" data-hint="The depot operates normally. The train leaves once every bag is aboard and every slip is signed.">Clear run</option>
+            </select>
+            <small id="fault-hint" aria-live="polite"></small>
+          </div>
+          <div class="run-field">
+            <label for="seed">Map seed</label>
+            <input id="seed" type="number" min="0" max="9999" value="7" required aria-describedby="seed-hint" />
+            <small id="seed-hint" aria-live="polite"></small>
+          </div>
+          <button id="run">Start live run</button
           ><button id="stop" type="button" hidden>Stop live run</button>
         </form>
       </section>

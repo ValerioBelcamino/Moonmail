@@ -287,13 +287,23 @@ form button,
 }
 form {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 form label {
   display: flex;
   flex-direction: column;
   gap: 3px;
+}
+.run-field {
+  display: grid;
+  align-content: start;
+  gap: 3px;
+}
+.run-field small {
+  margin-top: 2px;
+  color: #bfd0ce;
+  font: 12px/1.4 var(--sans);
 }
 form input,
 form select {
@@ -305,8 +315,17 @@ form select {
   border-radius: 4px;
 }
 form #run {
+  align-self: start;
+  margin-top: 22px;
   background: var(--copper);
   color: #172127;
+}
+@media (max-width: 450px) {
+  #launch { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
+}
+@media (max-width: 375px) {
+  #launch { grid-template-columns: minmax(0, 1fr); }
+  #launch #run { margin-top: 0; }
 }
 pre {
   margin: 6px 0;

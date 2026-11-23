@@ -45,6 +45,7 @@ export function eventLink(
           : link("Skim", "Skim · low courier", op("cross"));
     if (
       e.targetRevision === 2 &&
+      e.modelInput?.world.forks === "offline" &&
       e.modelInput?.operators[yard ? "47/repair" : "repair"] &&
       ep.layout.starts.Patch
     )
@@ -111,6 +112,8 @@ export function eventLink(
         op(current.op),
       );
   }
+  if (e.kind === "hold")
+    return link("Socket", "Train held", op("depart"), true);
   if (e.kind === "delivered")
     return link("Socket", "Train released", op("depart"));
 }
