@@ -109,7 +109,7 @@ The application finds grid paths and reserves bodies and cells for concurrent jo
 
 ## A decision you can reproduce
 
-In both one-order recordings, the orchestrator receives the same goal. The parcel’s delivery route is served by Coach B. Departure needs a signed waybill as well as delivery. Wick’s reach admits the pickup. Skim’s loaded deck fits the service hatch. For this order, the orchestrator nominates the robots. [Initial facts](http://127.0.0.1:8041/?reel=post) · [Model input](http://127.0.0.1:8041/?reel=post&at=read)
+**Change only the mechanic’s tool. Does the recovery change, and does independent work keep its assignment?** The two one-order recordings use the same four robots, layout seed, delivery goal and fork failure. In both, Bag 47 needs to reach Coach B and its waybill needs a signature. Wick can reach the shelf, Skim fits the hatch and the orchestrator nominates Jack to load and sign. [Initial facts](http://127.0.0.1:8041/?reel=post) · [Model input](http://127.0.0.1:8041/?reel=post&at=read)
 
 | Simulation tick | Graph or tool event |
 | --- | --- |
@@ -122,7 +122,16 @@ In both one-order recordings, the orchestrator receives the same goal. The parce
 
 ![Three stages of the driver run showing explicit action identities and the two affected nodes.](dispatch-trace.svg)
 
-The probe fits a test socket. The station lift accepts Skim’s tray and feeds Coach B. The graph therefore supplies a second feasible way to reach the goal. In the failed attempt, the interactive graph shows the submitted draft, highlights its unsupported repair and displays the returned feedback. **Query graph** exposes the tool context and submitted JSON. [Rejected draft](http://127.0.0.1:8041/?reel=post-probe&at=rejected) · [Corrected proposal](http://127.0.0.1:8041/?reel=post-probe&at=retry) · [Driver database](../viewer/public/episodes/post.rl) · [Probe database](../viewer/public/episodes/post-probe.rl)
+With the hex driver, the revised plan repairs the carriage and then loads Coach B. The probe fits a test socket, so the validator rejects the proposed repair and the LLM routes Skim’s tray through the station lift. Open **Query graph** on the rejected draft to see the tool context, the proposal and the failed check. [Rejected draft](http://127.0.0.1:8041/?reel=post-probe&at=rejected) · [Corrected proposal](http://127.0.0.1:8041/?reel=post-probe&at=retry)
+
+To check what survives, open either recording and select **Query graph → Write Cypher on the completed run**. The query returns four original actions and their assigned robots. The pickup, handoff and crossing were already complete when the fork failed. The row `1/manifest → Jack` identifies the signing action that was still pending. Both revisions in that file point to the same node. [Driver database](../viewer/public/episodes/post.rl) · [Probe database](../viewer/public/episodes/post-probe.rl)
+
+```cypher
+MATCH (:PlanRevision {rev:1})-[:INCLUDES]->(a:Action)<-[:INCLUDES]-(:PlanRevision {rev:2})
+MATCH (a)-[:ASSIGNED_TO]->(r:Robot)
+RETURN a.uid AS original_action, r.id AS assigned_to
+ORDER BY original_action
+```
 
 ## Read the evidence in Cypher
 

@@ -1,47 +1,88 @@
 # Moonmail
 
-**Moonmail is a proof of concept for assigning work to robots with different bodies and revising their plan when equipment fails.** In its simulated railway depot, pickers, couriers, forklifts and mechanics move on a grid and handle parcels through symbolic actions. If a forklift breaks, can it still sign for a delivery?
+**Moonmail is a multi-robot dispatch simulator built on Relate, Neo4j’s embedded graph database.** A single LLM turns a delivery goal into a plan for robots with different bodies and tools. It reads the graph to find eligible robots and proposes who does each job and what must finish first. The executor records progress alongside the accepted plan in that same graph, so the orchestrator can see which assignments still hold when conditions change.
 
-One embedded **Relate knowledge graph** holds the fleet’s capabilities, parcel custody, departure conditions and plan history. A single LLM orchestrator reads that state and proposes jobs, robots and dependencies. A validator checks the proposal with Z3. The executor queries ready jobs from Relate and writes back their effects. After a fault, the next graph read tells the orchestrator which assignments still hold.
+The setting is a railway mail depot. Each bag must reach the coach serving its destination, and its delivery slip must be signed before the train leaves. A picker can reach a high shelf, a low courier fits through the service hatch, and a forklift can lift the tray into the coach. A robot with a scanner can sign independently of loading. The 3D depot animates grid moves and symbolic handoffs beside the graph, so you can pause at a decision and inspect the facts behind it.
 
-## Find your way
+[Watch the film · 1 min 59 s](moonmail-demo.mp4) · [Run the station](#run-it) · [Architecture slides (PDF)](docs/presentation.pdf) · [Repository guide](#repository-guide)
 
-| To explore | Open |
-| --- | --- |
-| See the entry and watch a dispatch recover from a fault | [Film · 1 min 59 s](moonmail-demo.mp4) · [Captions](docs/moonmail.en.srt) · [Submission brief](docs/submission.md) |
-| Understand the architecture and trace a decision | [Architecture slides (PDF)](docs/presentation.pdf) · [Worked example, schema and Cypher](docs/architecture.md) |
-| Replay the three recorded LLM runs or try a different fleet | [Launch the station](#run-it) · [Experiments and LLM setup](docs/running.md) |
-| Inspect the implementation or the original evidence | [Python dispatcher](moonmail/) · [Browser viewer](viewer/src/) · [Recorded Relate files](viewer/public/episodes/) |
+## From a goal to an executable plan
 
-[![Five stages of a dispatch, from the first graph read through the fault and revised plan.](docs/station-tour.webp)](docs/presentation.pdf)
+The LLM proposes a directed acyclic graph (DAG) of actions and their prerequisites. It can nominate robots or leave assignments open. The validator checks eligibility with Z3 and verifies that each precondition holds now or follows from a declared predecessor. A rejected draft returns to the model with the failed check.
+
+```mermaid
+---
+config:
+  flowchart:
+    padding: 8
+    nodeSpacing: 32
+    rankSpacing: 32
+---
+flowchart TB
+    accTitle: The dispatch loop
+    accDescr: Relate supplies planning context to the LLM. The validator checks the proposed action graph and records the accepted revision. The executor reads ready actions and writes their effects back to Relate.
+    store[(Relate)] -->|Goal and candidates| model[LLM orchestrator]
+    model -->|Draft DAG| validator[Validator + Z3]
+    validator -.->|Failed check| model
+    validator -->|Accepted revision| store
+    store -->|Ready actions| executor[Executor]
+    executor -->|Updated facts| store
+    classDef memory fill:#21443e,stroke:#83b7a6,color:#f1f8f1
+    classDef component fill:#f1efe4,stroke:#829a93,color:#203739
+    class model,validator,executor component
+    class store memory
+```
+
+The executor queries the accepted revision for ready jobs and records their effects, such as a parcel changing hands. If a required fact changes, the dispatcher follows dependencies to the affected work. A revised plan can link to an existing action, preserving its assignment and status. [Compare two recoveries from the same fault](docs/architecture.md#a-decision-you-can-reproduce)
+
+<details>
+<summary>See one recorded dispatch move through the loop</summary>
+
+[![Animated walkthrough showing the graph read, model proposal, validation and revised dispatch.](docs/station-tour.webp)](docs/presentation.pdf)
+
+</details>
+
+## What makes a robot eligible?
+
+The fleet graph exists before the first plan. An **embodiment** records a robot body’s height, reach and supported skills. For a lift, the query matches the chassis and a mounted carriage to the same skill on the same robot. The accepted load action links to that robot and requires the carriage to be online when it runs. [Embodiment queries](docs/architecture.md#how-a-body-becomes-a-planning-choice)
+
+```mermaid
+---
+config:
+  flowchart:
+    padding: 8
+    nodeSpacing: 32
+    rankSpacing: 32
+---
+flowchart TB
+    accTitle: How an assigned action connects to the fleet and current state
+    accDescr: An action is assigned to a robot and requires world facts. The robot has a chassis and can mount a tool. For a tool-dependent skill, both paths reach the same skill.
+    action[Action] -->|ASSIGNED_TO| robot[Robot]
+    action -->|REQUIRES| fact[World fact]
+    robot -->|INSTANCE_OF| body[Embodiment]
+    robot -->|MOUNTS| tool[Tool]
+    body -->|HAS_SKILL| skill[Skill]
+    tool -->|PROVIDES| skill
+    classDef connected fill:#21443e,stroke:#83b7a6,color:#f1f8f1
+    classDef entity fill:#f1efe4,stroke:#829a93,color:#203739
+    class action,body,tool,fact entity
+    class robot,skill connected
+```
 
 ## Run it
 
-Clone the repository or extract the ZIP, then run either command from the project directory. [Download ZIP](https://github.com/ValerioBelcamino/Moonmail/archive/refs/heads/main.zip)
+From a clone or the extracted project ZIP, run either command. [Download ZIP](https://github.com/ValerioBelcamino/Moonmail/archive/refs/heads/main.zip)
 
 | Docker Compose | Python via uv |
 | --- | --- |
 | `docker compose up --build` | `uv run --locked -m moonmail` |
 
-**[Open the guided station](http://127.0.0.1:8041/?guide=1).** Click the highlighted controls to inspect robot abilities, pause on a decision and query the graph. Recorded LLM runs and fresh runs with the local planner work without credentials. For fresh LLM decisions, connect your own deployment. [Setup guide](docs/running.md#connect-your-own-llm)
+**[Open the guided station](http://127.0.0.1:8041/?guide=1).** Replay three recorded LLM dispatches or run a different fleet with the keyless local planner. For fresh LLM decisions, connect your own deployment. [Experiments and LLM setup](docs/running.md)
 
-## One fault in the graph
+## Repository guide
 
-At step 26 in the filmed run, Jack’s fork carriage slips. These are relationships you can query in the recorded file.
-
-```mermaid
-flowchart LR
-    accTitle: Which jobs does a fork failure affect?
-    accDescr: The slip invalidates loading and blocks departure. Departure also needs a signature, which is still assigned to Jack.
-    slip["Carriage slips"] -->|INVALIDATES| load["Load Bag 47"]
-    slip -->|BLOCKS| depart["Release train"]
-    depart -->|DEPENDS_ON| load
-    depart -->|DEPENDS_ON| sign["Sign waybill 47"]
-    sign -->|ASSIGNED_TO| jack["Jack"]
-    classDef affected fill:#483034,stroke:#eb9b86,color:#ffebe0
-    classDef valid fill:#24473e,stroke:#8dd7b7,color:#edf9ef
-    class depart,load affected
-    class sign valid
-```
-
-Jack’s scanner still works. The revised plan keeps the same signing action and adds a repair before loading. Change the mechanic’s hex driver to an inspection probe and the orchestrator sends the bag via the station lift instead. [Inspect the fault in the station](http://127.0.0.1:8041/?reel=post&at=fault) · [Inspect the probe run](http://127.0.0.1:8041/?reel=post-probe&at=rejected)
+| To explore | Open |
+| --- | --- |
+| Inspect a decision in the database | [Worked example and Cypher](docs/architecture.md) · [Three recorded Relate files](viewer/public/episodes/) |
+| Follow the implementation | [LLM tools](moonmail/mail_agent.py) · [Plan validation](moonmail/mail_planning.py) · [Relate queries](moonmail/mail_store.py) · [3D viewer](viewer/src/) |
+| Review the competition materials | [Submission brief](docs/submission.md) · [English captions](docs/moonmail.en.srt) · [How the film was made](tools/film_review/README.md) |
