@@ -1,0 +1,319 @@
+{
+  "goal": "Get Bag 52 aboard its addressed coach. Confirm delivery and leave the train at red. Other bags and signatures are outside this goal.",
+  "terminal": "confirm_delivery",
+  "world": {
+    "signal": "red",
+    "47/cargo": "shelf",
+    "47/manifest": "unsigned",
+    "forks": "online",
+    "47/hatch": "open",
+    "47/address": "matched",
+    "47/clearance": "fits",
+    "47/lift": "connected",
+    "52/cargo": "shelf",
+    "52/manifest": "unsigned",
+    "52/hatch": "open",
+    "52/address": "matched",
+    "52/clearance": "fits",
+    "52/lift": "disconnected",
+    "68/cargo": "shelf",
+    "68/manifest": "unsigned",
+    "68/hatch": "open",
+    "68/address": "matched",
+    "68/clearance": "fits",
+    "68/lift": "disconnected",
+    "interface": "unavailable"
+  },
+  "current_holder": "Shelf 47",
+  "destination": "Junction Mail",
+  "retained": {},
+  "instrument_interfaces": [
+    {
+      "robot": "Patch",
+      "instrument": "Hex driver",
+      "fits": "Hex collar",
+      "needs": "Hex collar",
+      "tool": "Jack forks",
+      "patient": "Jack"
+    }
+  ],
+  "operators": {
+    "47/collect": {
+      "requires": {
+        "47/cargo": "shelf"
+      },
+      "establishes": {
+        "47/cargo": "picked"
+      },
+      "effort": 2,
+      "eligible_and_approach": {
+        "Wick": 2
+      }
+    },
+    "47/stage": {
+      "requires": {
+        "47/cargo": "picked"
+      },
+      "establishes": {
+        "47/cargo": "staged"
+      },
+      "effort": 2,
+      "eligible_and_approach": {
+        "Wick": 7
+      }
+    },
+    "47/cross": {
+      "requires": {
+        "47/cargo": "staged",
+        "47/hatch": "open",
+        "47/clearance": "fits"
+      },
+      "establishes": {
+        "47/cargo": "platform"
+      },
+      "effort": 2,
+      "eligible_and_approach": {
+        "Skim": 3
+      }
+    },
+    "47/manifest": {
+      "requires": {
+        "47/manifest": "unsigned",
+        "47/address": "matched"
+      },
+      "establishes": {
+        "47/manifest": "signed"
+      },
+      "effort": 2,
+      "eligible_and_approach": {
+        "Patch": 2,
+        "Jack": 3
+      }
+    },
+    "47/repair": {
+      "requires": {
+        "forks": "offline",
+        "interface": "fits"
+      },
+      "establishes": {
+        "forks": "online"
+      },
+      "effort": 4,
+      "eligible_and_approach": {}
+    },
+    "47/load": {
+      "requires": {
+        "47/cargo": "platform",
+        "forks": "online",
+        "47/address": "matched"
+      },
+      "establishes": {
+        "47/cargo": "aboard"
+      },
+      "effort": 4,
+      "eligible_and_approach": {
+        "Jack": 1
+      }
+    },
+    "47/hoist": {
+      "requires": {
+        "47/cargo": "platform",
+        "47/lift": "connected",
+        "47/address": "matched"
+      },
+      "establishes": {
+        "47/cargo": "aboard"
+      },
+      "effort": 16,
+      "eligible_and_approach": {
+        "Skim": 15
+      }
+    },
+    "52/collect": {
+      "requires": {
+        "52/cargo": "shelf"
+      },
+      "establishes": {
+        "52/cargo": "picked"
+      },
+      "effort": 2,
+      "eligible_and_approach": {
+        "Pip": 1
+      }
+    },
+    "52/stage": {
+      "requires": {
+        "52/cargo": "picked"
+      },
+      "establishes": {
+        "52/cargo": "staged"
+      },
+      "effort": 2,
+      "eligible_and_approach": {
+        "Pip": 7
+      }
+    },
+    "52/cross": {
+      "requires": {
+        "52/cargo": "staged",
+        "52/hatch": "open",
+        "52/clearance": "fits"
+      },
+      "establishes": {
+        "52/cargo": "platform"
+      },
+      "effort": 2,
+      "eligible_and_approach": {
+        "Dash": 3
+      }
+    },
+    "52/manifest": {
+      "requires": {
+        "52/manifest": "unsigned",
+        "52/address": "matched"
+      },
+      "establishes": {
+        "52/manifest": "signed"
+      },
+      "effort": 2,
+      "eligible_and_approach": {
+        "Patch": 4,
+        "Jack": 7
+      }
+    },
+    "52/load": {
+      "requires": {
+        "52/cargo": "platform",
+        "forks": "online",
+        "52/address": "matched"
+      },
+      "establishes": {
+        "52/cargo": "aboard"
+      },
+      "effort": 4,
+      "eligible_and_approach": {
+        "Jack": 5
+      }
+    },
+    "52/hoist": {
+      "requires": {
+        "52/cargo": "platform",
+        "52/lift": "connected",
+        "52/address": "matched"
+      },
+      "establishes": {
+        "52/cargo": "aboard"
+      },
+      "effort": 16,
+      "eligible_and_approach": {}
+    },
+    "68/collect": {
+      "requires": {
+        "68/cargo": "shelf"
+      },
+      "establishes": {
+        "68/cargo": "picked"
+      },
+      "effort": 2,
+      "eligible_and_approach": {
+        "Rue": 2
+      }
+    },
+    "68/stage": {
+      "requires": {
+        "68/cargo": "picked"
+      },
+      "establishes": {
+        "68/cargo": "staged"
+      },
+      "effort": 2,
+      "eligible_and_approach": {
+        "Rue": 7
+      }
+    },
+    "68/cross": {
+      "requires": {
+        "68/cargo": "staged",
+        "68/hatch": "open",
+        "68/clearance": "fits"
+      },
+      "establishes": {
+        "68/cargo": "platform"
+      },
+      "effort": 2,
+      "eligible_and_approach": {
+        "Moss": 5
+      }
+    },
+    "68/manifest": {
+      "requires": {
+        "68/manifest": "unsigned",
+        "68/address": "matched"
+      },
+      "establishes": {
+        "68/manifest": "signed"
+      },
+      "effort": 2,
+      "eligible_and_approach": {
+        "Patch": 8,
+        "Jack": 11
+      }
+    },
+    "68/load": {
+      "requires": {
+        "68/cargo": "platform",
+        "forks": "online",
+        "68/address": "matched"
+      },
+      "establishes": {
+        "68/cargo": "aboard"
+      },
+      "effort": 4,
+      "eligible_and_approach": {
+        "Jack": 9
+      }
+    },
+    "68/hoist": {
+      "requires": {
+        "68/cargo": "platform",
+        "68/lift": "connected",
+        "68/address": "matched"
+      },
+      "establishes": {
+        "68/cargo": "aboard"
+      },
+      "effort": 16,
+      "eligible_and_approach": {}
+    },
+    "confirm_delivery": {
+      "requires": {
+        "52/cargo": "aboard"
+      },
+      "establishes": {},
+      "effort": 0,
+      "eligible_and_approach": {
+        "Signal box": 0
+      }
+    }
+  },
+  "orders": {
+    "47": {
+      "holder": "Shelf 47",
+      "coach": "Coach A",
+      "address": "Northport",
+      "waybill": "unsigned"
+    },
+    "52": {
+      "holder": "Shelf 52",
+      "coach": "Coach B",
+      "address": "Eastbank",
+      "waybill": "unsigned"
+    },
+    "68": {
+      "holder": "Shelf 68",
+      "coach": "Coach C",
+      "address": "Westmere",
+      "waybill": "unsigned"
+    }
+  }
+}

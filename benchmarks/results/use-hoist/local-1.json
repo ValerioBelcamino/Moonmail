@@ -1,0 +1,90 @@
+{
+  "case": "use-hoist",
+  "trial": 1,
+  "mode": "local",
+  "expected": "goal",
+  "options": {},
+  "history": [],
+  "schemas": {},
+  "requests": [],
+  "attempts": [
+    {
+      "arguments": "{\"steps\": [{\"op\": \"47/hoist\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"47/manifest\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"depart\", \"actor\": \"auto\", \"after\": [\"47/hoist\", \"47/manifest\"]}]}",
+      "proposal": {
+        "steps": [
+          {
+            "op": "47/hoist",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "47/manifest",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "depart",
+            "actor": "auto",
+            "after": [
+              "47/hoist",
+              "47/manifest"
+            ]
+          }
+        ]
+      },
+      "model": null,
+      "usage": {},
+      "verdict": "accepted",
+      "feedback": "",
+      "validation_ms": 4.05,
+      "bindings": {
+        "47/hoist": "Skim",
+        "47/manifest": "Patch",
+        "depart": "Signal box"
+      },
+      "effort": 29
+    }
+  ],
+  "execution": [
+    {
+      "op": "47/hoist",
+      "actor": "Skim",
+      "effects": {
+        "47/cargo": "aboard"
+      }
+    },
+    {
+      "op": "47/manifest",
+      "actor": "Patch",
+      "effects": {
+        "47/manifest": "signed"
+      }
+    },
+    {
+      "op": "depart",
+      "actor": "Signal box",
+      "effects": {
+        "signal": "green"
+      }
+    }
+  ],
+  "status": "executed",
+  "final": {
+    "signal": "green",
+    "bags": [
+      {
+        "bag": "47",
+        "stage": "aboard",
+        "holder": "Coach A",
+        "coach": "Coach A",
+        "waybill": "signed"
+      }
+    ]
+  },
+  "correct": true,
+  "first_correct": true,
+  "tokens": 0,
+  "model_ms": 0,
+  "validation_ms": 4.05,
+  "decision_sha256": "7e911ed8f14de599f455c2f32aed2f8523c26a457d87ece7e77011ae5ff8e1b7"
+}

@@ -1,0 +1,43 @@
+{
+  "case": "hold-collar",
+  "trial": 1,
+  "mode": "local",
+  "expected": "hold",
+  "options": {},
+  "history": [],
+  "schemas": {},
+  "requests": [],
+  "attempts": [
+    {
+      "arguments": "{\"steps\": []}",
+      "proposal": {
+        "steps": []
+      },
+      "model": null,
+      "usage": {},
+      "verdict": "hold",
+      "feedback": "",
+      "validation_ms": 0.01
+    }
+  ],
+  "execution": [],
+  "status": "hold",
+  "final": {
+    "signal": "red",
+    "bags": [
+      {
+        "bag": "47",
+        "stage": "platform",
+        "holder": "Skim",
+        "coach": "Coach A",
+        "waybill": "unsigned"
+      }
+    ]
+  },
+  "correct": true,
+  "first_correct": true,
+  "tokens": 0,
+  "model_ms": 0,
+  "validation_ms": 0.01,
+  "decision_sha256": "371e808caa0c6aea1f7e77e99fd7a7dbb7215478b3f3146c8084fe0ef92f8a9f"
+}

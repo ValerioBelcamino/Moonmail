@@ -25,6 +25,7 @@ from .mail_store import (
     invalidate,
     persist_plan,
     refresh,
+    retained_assignments,
     seed_mail,
     snapshot,
     violations,
@@ -142,19 +143,7 @@ class MailRun:
     def plan_steps(self):
         self.world = self.read_world()
         before = snapshot(self.db, self.rev)
-        retained = {
-            r["op"]: {"actor": r["actor"], "after": []}
-            for r in before["nodes"]
-            if r["state"] == "pending"
-        }
-        pending = {
-            r["uid"]: r["op"] for r in before["nodes"] if r["state"] == "pending"
-        }
-        for edge in before["edges"]:
-            if edge["source"] in pending and edge["target"] in pending:
-                retained[pending[edge["target"]]]["after"].append(
-                    pending[edge["source"]]
-                )
+        retained = retained_assignments(before)
         attempt = self.rev + 1
 
         def log(raw, outcome, error):

@@ -1,0 +1,78 @@
+{
+  "case": "midrun-6-shared-probe",
+  "trial": 1,
+  "mode": "local",
+  "expected": "hold",
+  "options": {},
+  "history": [],
+  "schemas": {},
+  "requests": [],
+  "attempts": [
+    {
+      "arguments": "{\"steps\": []}",
+      "proposal": {
+        "steps": []
+      },
+      "model": null,
+      "usage": {},
+      "verdict": "hold",
+      "feedback": "",
+      "validation_ms": 0.02
+    }
+  ],
+  "execution": [],
+  "status": "hold",
+  "final": {
+    "signal": "red",
+    "bags": [
+      {
+        "bag": "47",
+        "stage": "platform",
+        "holder": "Skim",
+        "coach": "Coach A",
+        "waybill": "unsigned"
+      },
+      {
+        "bag": "52",
+        "stage": "staged",
+        "holder": "Dash",
+        "coach": "Coach B",
+        "waybill": "signed"
+      },
+      {
+        "bag": "68",
+        "stage": "aboard",
+        "holder": "Coach C",
+        "coach": "Coach C",
+        "waybill": "unsigned"
+      },
+      {
+        "bag": "74",
+        "stage": "platform",
+        "holder": "Kite",
+        "coach": "Coach D",
+        "waybill": "unsigned"
+      },
+      {
+        "bag": "81",
+        "stage": "staged",
+        "holder": "Zip",
+        "coach": "Coach E",
+        "waybill": "signed"
+      },
+      {
+        "bag": "96",
+        "stage": "aboard",
+        "holder": "Coach F",
+        "coach": "Coach F",
+        "waybill": "unsigned"
+      }
+    ]
+  },
+  "correct": true,
+  "first_correct": true,
+  "tokens": 0,
+  "model_ms": 0,
+  "validation_ms": 0.02,
+  "decision_sha256": "8868b21a065419cf17874ecad8f31c7d1220e05813ecc6c2e0265e5dc351674e"
+}

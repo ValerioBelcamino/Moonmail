@@ -177,6 +177,8 @@ The orchestrator reads both orders and their eligible robots in one call. In a d
 
 To reproduce all three rows, use **Run options → New run → Custom fleet**. Select the **Local planner**, seed **7**, **Hex driver** and **Clear run**. Set orders, pickers and couriers to the number in the first column. Keep one forklift and one mechanic. All three configurations deliver. A repair introduces extra work, so these counts describe the initial direct-loading plans. [Experiment controls](running.md#run-a-different-fleet)
 
+The headless benchmark extends this pattern to six orders, fourteen robots and a 31-action plan. Judges can read three paired trials of the same model against the same six-bay graph, including each first draft and its validator feedback. [Six-order benchmark traces](../benchmarks/results/six-orders/README.md)
+
 Once the two-order run finishes, open **Query graph → Write Cypher on the completed run**. The four rows are `47/load`, `47/manifest`, `52/load` and `52/manifest`. Here `manifest` means signing that bag’s waybill.
 
 ```cypher

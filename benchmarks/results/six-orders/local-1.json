@@ -1,0 +1,535 @@
+{
+  "case": "six-orders",
+  "trial": 1,
+  "mode": "local",
+  "expected": "goal",
+  "options": {},
+  "history": [],
+  "schemas": {},
+  "requests": [],
+  "attempts": [
+    {
+      "arguments": "{\"steps\": [{\"op\": \"47/collect\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"47/stage\", \"actor\": \"auto\", \"after\": [\"47/collect\"]}, {\"op\": \"47/cross\", \"actor\": \"auto\", \"after\": [\"47/stage\"]}, {\"op\": \"47/load\", \"actor\": \"auto\", \"after\": [\"47/cross\"]}, {\"op\": \"47/manifest\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"52/collect\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"52/stage\", \"actor\": \"auto\", \"after\": [\"52/collect\"]}, {\"op\": \"52/cross\", \"actor\": \"auto\", \"after\": [\"52/stage\"]}, {\"op\": \"52/load\", \"actor\": \"auto\", \"after\": [\"52/cross\"]}, {\"op\": \"52/manifest\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"68/collect\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"68/stage\", \"actor\": \"auto\", \"after\": [\"68/collect\"]}, {\"op\": \"68/cross\", \"actor\": \"auto\", \"after\": [\"68/stage\"]}, {\"op\": \"68/load\", \"actor\": \"auto\", \"after\": [\"68/cross\"]}, {\"op\": \"68/manifest\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"74/collect\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"74/stage\", \"actor\": \"auto\", \"after\": [\"74/collect\"]}, {\"op\": \"74/cross\", \"actor\": \"auto\", \"after\": [\"74/stage\"]}, {\"op\": \"74/load\", \"actor\": \"auto\", \"after\": [\"74/cross\"]}, {\"op\": \"74/manifest\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"81/collect\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"81/stage\", \"actor\": \"auto\", \"after\": [\"81/collect\"]}, {\"op\": \"81/cross\", \"actor\": \"auto\", \"after\": [\"81/stage\"]}, {\"op\": \"81/load\", \"actor\": \"auto\", \"after\": [\"81/cross\"]}, {\"op\": \"81/manifest\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"96/collect\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"96/stage\", \"actor\": \"auto\", \"after\": [\"96/collect\"]}, {\"op\": \"96/cross\", \"actor\": \"auto\", \"after\": [\"96/stage\"]}, {\"op\": \"96/load\", \"actor\": \"auto\", \"after\": [\"96/cross\"]}, {\"op\": \"96/manifest\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"depart\", \"actor\": \"auto\", \"after\": [\"47/load\", \"47/manifest\", \"52/load\", \"52/manifest\", \"68/load\", \"68/manifest\", \"74/load\", \"74/manifest\", \"81/load\", \"81/manifest\", \"96/load\", \"96/manifest\"]}]}",
+      "proposal": {
+        "steps": [
+          {
+            "op": "47/collect",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "47/stage",
+            "actor": "auto",
+            "after": [
+              "47/collect"
+            ]
+          },
+          {
+            "op": "47/cross",
+            "actor": "auto",
+            "after": [
+              "47/stage"
+            ]
+          },
+          {
+            "op": "47/load",
+            "actor": "auto",
+            "after": [
+              "47/cross"
+            ]
+          },
+          {
+            "op": "47/manifest",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "52/collect",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "52/stage",
+            "actor": "auto",
+            "after": [
+              "52/collect"
+            ]
+          },
+          {
+            "op": "52/cross",
+            "actor": "auto",
+            "after": [
+              "52/stage"
+            ]
+          },
+          {
+            "op": "52/load",
+            "actor": "auto",
+            "after": [
+              "52/cross"
+            ]
+          },
+          {
+            "op": "52/manifest",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "68/collect",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "68/stage",
+            "actor": "auto",
+            "after": [
+              "68/collect"
+            ]
+          },
+          {
+            "op": "68/cross",
+            "actor": "auto",
+            "after": [
+              "68/stage"
+            ]
+          },
+          {
+            "op": "68/load",
+            "actor": "auto",
+            "after": [
+              "68/cross"
+            ]
+          },
+          {
+            "op": "68/manifest",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "74/collect",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "74/stage",
+            "actor": "auto",
+            "after": [
+              "74/collect"
+            ]
+          },
+          {
+            "op": "74/cross",
+            "actor": "auto",
+            "after": [
+              "74/stage"
+            ]
+          },
+          {
+            "op": "74/load",
+            "actor": "auto",
+            "after": [
+              "74/cross"
+            ]
+          },
+          {
+            "op": "74/manifest",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "81/collect",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "81/stage",
+            "actor": "auto",
+            "after": [
+              "81/collect"
+            ]
+          },
+          {
+            "op": "81/cross",
+            "actor": "auto",
+            "after": [
+              "81/stage"
+            ]
+          },
+          {
+            "op": "81/load",
+            "actor": "auto",
+            "after": [
+              "81/cross"
+            ]
+          },
+          {
+            "op": "81/manifest",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "96/collect",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "96/stage",
+            "actor": "auto",
+            "after": [
+              "96/collect"
+            ]
+          },
+          {
+            "op": "96/cross",
+            "actor": "auto",
+            "after": [
+              "96/stage"
+            ]
+          },
+          {
+            "op": "96/load",
+            "actor": "auto",
+            "after": [
+              "96/cross"
+            ]
+          },
+          {
+            "op": "96/manifest",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "depart",
+            "actor": "auto",
+            "after": [
+              "47/load",
+              "47/manifest",
+              "52/load",
+              "52/manifest",
+              "68/load",
+              "68/manifest",
+              "74/load",
+              "74/manifest",
+              "81/load",
+              "81/manifest",
+              "96/load",
+              "96/manifest"
+            ]
+          }
+        ]
+      },
+      "model": null,
+      "usage": {},
+      "verdict": "accepted",
+      "feedback": "",
+      "validation_ms": 29.42,
+      "bindings": {
+        "47/collect": "Wick",
+        "47/stage": "Wick",
+        "47/cross": "Skim",
+        "47/load": "Jack",
+        "47/manifest": "Patch",
+        "52/collect": "Pip",
+        "52/stage": "Pip",
+        "52/cross": "Dash",
+        "52/load": "Jack",
+        "52/manifest": "Patch",
+        "68/collect": "Rue",
+        "68/stage": "Rue",
+        "68/cross": "Moss",
+        "68/load": "Jack",
+        "68/manifest": "Patch",
+        "74/collect": "Pax",
+        "74/stage": "Pax",
+        "74/cross": "Kite",
+        "74/load": "Jack",
+        "74/manifest": "Patch",
+        "81/collect": "Lark",
+        "81/stage": "Lark",
+        "81/cross": "Zip",
+        "81/load": "Jack",
+        "81/manifest": "Patch",
+        "96/collect": "Elm",
+        "96/stage": "Elm",
+        "96/cross": "Puck",
+        "96/load": "Jack",
+        "96/manifest": "Patch",
+        "depart": "Signal box"
+      },
+      "effort": 271
+    }
+  ],
+  "execution": [
+    {
+      "op": "47/collect",
+      "actor": "Wick",
+      "effects": {
+        "47/cargo": "picked"
+      }
+    },
+    {
+      "op": "47/manifest",
+      "actor": "Patch",
+      "effects": {
+        "47/manifest": "signed"
+      }
+    },
+    {
+      "op": "52/collect",
+      "actor": "Pip",
+      "effects": {
+        "52/cargo": "picked"
+      }
+    },
+    {
+      "op": "52/manifest",
+      "actor": "Patch",
+      "effects": {
+        "52/manifest": "signed"
+      }
+    },
+    {
+      "op": "68/collect",
+      "actor": "Rue",
+      "effects": {
+        "68/cargo": "picked"
+      }
+    },
+    {
+      "op": "68/manifest",
+      "actor": "Patch",
+      "effects": {
+        "68/manifest": "signed"
+      }
+    },
+    {
+      "op": "74/collect",
+      "actor": "Pax",
+      "effects": {
+        "74/cargo": "picked"
+      }
+    },
+    {
+      "op": "74/manifest",
+      "actor": "Patch",
+      "effects": {
+        "74/manifest": "signed"
+      }
+    },
+    {
+      "op": "81/collect",
+      "actor": "Lark",
+      "effects": {
+        "81/cargo": "picked"
+      }
+    },
+    {
+      "op": "81/manifest",
+      "actor": "Patch",
+      "effects": {
+        "81/manifest": "signed"
+      }
+    },
+    {
+      "op": "96/collect",
+      "actor": "Elm",
+      "effects": {
+        "96/cargo": "picked"
+      }
+    },
+    {
+      "op": "96/manifest",
+      "actor": "Patch",
+      "effects": {
+        "96/manifest": "signed"
+      }
+    },
+    {
+      "op": "47/stage",
+      "actor": "Wick",
+      "effects": {
+        "47/cargo": "staged"
+      }
+    },
+    {
+      "op": "52/stage",
+      "actor": "Pip",
+      "effects": {
+        "52/cargo": "staged"
+      }
+    },
+    {
+      "op": "68/stage",
+      "actor": "Rue",
+      "effects": {
+        "68/cargo": "staged"
+      }
+    },
+    {
+      "op": "74/stage",
+      "actor": "Pax",
+      "effects": {
+        "74/cargo": "staged"
+      }
+    },
+    {
+      "op": "81/stage",
+      "actor": "Lark",
+      "effects": {
+        "81/cargo": "staged"
+      }
+    },
+    {
+      "op": "96/stage",
+      "actor": "Elm",
+      "effects": {
+        "96/cargo": "staged"
+      }
+    },
+    {
+      "op": "47/cross",
+      "actor": "Skim",
+      "effects": {
+        "47/cargo": "platform"
+      }
+    },
+    {
+      "op": "52/cross",
+      "actor": "Dash",
+      "effects": {
+        "52/cargo": "platform"
+      }
+    },
+    {
+      "op": "68/cross",
+      "actor": "Moss",
+      "effects": {
+        "68/cargo": "platform"
+      }
+    },
+    {
+      "op": "74/cross",
+      "actor": "Kite",
+      "effects": {
+        "74/cargo": "platform"
+      }
+    },
+    {
+      "op": "81/cross",
+      "actor": "Zip",
+      "effects": {
+        "81/cargo": "platform"
+      }
+    },
+    {
+      "op": "96/cross",
+      "actor": "Puck",
+      "effects": {
+        "96/cargo": "platform"
+      }
+    },
+    {
+      "op": "47/load",
+      "actor": "Jack",
+      "effects": {
+        "47/cargo": "aboard"
+      }
+    },
+    {
+      "op": "52/load",
+      "actor": "Jack",
+      "effects": {
+        "52/cargo": "aboard"
+      }
+    },
+    {
+      "op": "68/load",
+      "actor": "Jack",
+      "effects": {
+        "68/cargo": "aboard"
+      }
+    },
+    {
+      "op": "74/load",
+      "actor": "Jack",
+      "effects": {
+        "74/cargo": "aboard"
+      }
+    },
+    {
+      "op": "81/load",
+      "actor": "Jack",
+      "effects": {
+        "81/cargo": "aboard"
+      }
+    },
+    {
+      "op": "96/load",
+      "actor": "Jack",
+      "effects": {
+        "96/cargo": "aboard"
+      }
+    },
+    {
+      "op": "depart",
+      "actor": "Signal box",
+      "effects": {
+        "signal": "green"
+      }
+    }
+  ],
+  "status": "executed",
+  "final": {
+    "signal": "green",
+    "bags": [
+      {
+        "bag": "47",
+        "stage": "aboard",
+        "holder": "Coach A",
+        "coach": "Coach A",
+        "waybill": "signed"
+      },
+      {
+        "bag": "52",
+        "stage": "aboard",
+        "holder": "Coach B",
+        "coach": "Coach B",
+        "waybill": "signed"
+      },
+      {
+        "bag": "68",
+        "stage": "aboard",
+        "holder": "Coach C",
+        "coach": "Coach C",
+        "waybill": "signed"
+      },
+      {
+        "bag": "74",
+        "stage": "aboard",
+        "holder": "Coach D",
+        "coach": "Coach D",
+        "waybill": "signed"
+      },
+      {
+        "bag": "81",
+        "stage": "aboard",
+        "holder": "Coach E",
+        "coach": "Coach E",
+        "waybill": "signed"
+      },
+      {
+        "bag": "96",
+        "stage": "aboard",
+        "holder": "Coach F",
+        "coach": "Coach F",
+        "waybill": "signed"
+      }
+    ]
+  },
+  "correct": true,
+  "first_correct": true,
+  "tokens": 0,
+  "model_ms": 0,
+  "validation_ms": 29.42,
+  "decision_sha256": "a873dd847edc69036b450557af42265a74f4905ec16be252c7fc12055bb10adf"
+}

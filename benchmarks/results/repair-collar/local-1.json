@@ -1,0 +1,105 @@
+{
+  "case": "repair-collar",
+  "trial": 1,
+  "mode": "local",
+  "expected": "goal",
+  "options": {},
+  "history": [],
+  "schemas": {},
+  "requests": [],
+  "attempts": [
+    {
+      "arguments": "{\"steps\": [{\"op\": \"47/repair\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"47/load\", \"actor\": \"auto\", \"after\": [\"47/repair\"]}, {\"op\": \"47/manifest\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"depart\", \"actor\": \"auto\", \"after\": [\"47/load\", \"47/manifest\"]}]}",
+      "proposal": {
+        "steps": [
+          {
+            "op": "47/repair",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "47/load",
+            "actor": "auto",
+            "after": [
+              "47/repair"
+            ]
+          },
+          {
+            "op": "47/manifest",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "depart",
+            "actor": "auto",
+            "after": [
+              "47/load",
+              "47/manifest"
+            ]
+          }
+        ]
+      },
+      "model": null,
+      "usage": {},
+      "verdict": "accepted",
+      "feedback": "",
+      "validation_ms": 5.21,
+      "bindings": {
+        "47/repair": "Patch",
+        "47/load": "Jack",
+        "47/manifest": "Patch",
+        "depart": "Signal box"
+      },
+      "effort": 18
+    }
+  ],
+  "execution": [
+    {
+      "op": "47/repair",
+      "actor": "Patch",
+      "effects": {
+        "forks": "online"
+      }
+    },
+    {
+      "op": "47/manifest",
+      "actor": "Patch",
+      "effects": {
+        "47/manifest": "signed"
+      }
+    },
+    {
+      "op": "47/load",
+      "actor": "Jack",
+      "effects": {
+        "47/cargo": "aboard"
+      }
+    },
+    {
+      "op": "depart",
+      "actor": "Signal box",
+      "effects": {
+        "signal": "green"
+      }
+    }
+  ],
+  "status": "executed",
+  "final": {
+    "signal": "green",
+    "bags": [
+      {
+        "bag": "47",
+        "stage": "aboard",
+        "holder": "Coach A",
+        "coach": "Coach A",
+        "waybill": "signed"
+      }
+    ]
+  },
+  "correct": true,
+  "first_correct": true,
+  "tokens": 0,
+  "model_ms": 0,
+  "validation_ms": 5.21,
+  "decision_sha256": "e5ed4696c9668340e3b8890020d1a9e91f2306e6e2d03dedeafb92b970950d44"
+}

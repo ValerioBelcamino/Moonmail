@@ -1,5 +1,6 @@
 """Responses transport for the language-model orchestrator."""
 
+import hashlib
 import json
 import os
 from urllib.error import HTTPError, URLError
@@ -42,16 +43,20 @@ def azure_transport(env_file):
     if not base.endswith("/openai/v1"):
         base += "/openai/v1"
 
+    options = {
+        "tool_choice": "required",
+        "parallel_tool_calls": False,
+        "store": False,
+        "max_output_tokens": 4096,
+        "reasoning": {"effort": setting("REASONING_EFFORT") or "low"},
+    }
+
     def respond(messages, toolset):
         payload = {
             "model": model,
             "input": messages,
             "tools": toolset,
-            "tool_choice": "required",
-            "parallel_tool_calls": False,
-            "store": False,
-            "max_output_tokens": 4096,
-            "reasoning": {"effort": setting("REASONING_EFFORT") or "low"},
+            **options,
         }
         request = Request(
             base + "/responses",
@@ -73,4 +78,12 @@ def azure_transport(env_file):
             )
         return data
 
+    respond.options = options
+    # Match the deployment and request settings when resuming a paid experiment.
+    # The public suite stores only the digest, never a credential or endpoint.
+    respond.config_digest = hashlib.sha256(
+        json.dumps(
+            [base, model, setting("EXPECTED_RESPONSE_MODEL"), options], sort_keys=True
+        ).encode()
+    ).hexdigest()
     return respond

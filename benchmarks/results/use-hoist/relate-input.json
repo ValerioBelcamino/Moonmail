@@ -1,0 +1,150 @@
+{
+  "goal": "Deliver Bag 47 to the addressed coaches and sign every waybill before releasing one train.",
+  "terminal": "depart",
+  "world": {
+    "signal": "red",
+    "47/cargo": "platform",
+    "47/manifest": "unsigned",
+    "forks": "offline",
+    "47/hatch": "open",
+    "47/address": "matched",
+    "47/clearance": "fits",
+    "47/lift": "connected",
+    "interface": "unavailable"
+  },
+  "current_holder": "Skim",
+  "destination": "Junction Mail",
+  "retained": {
+    "47/manifest": {
+      "actor": "Patch",
+      "after": []
+    }
+  },
+  "instrument_interfaces": [
+    {
+      "robot": "Patch",
+      "instrument": "Inspection probe",
+      "fits": "Test socket",
+      "needs": "Hex collar",
+      "tool": "Jack forks",
+      "patient": "Jack"
+    }
+  ],
+  "operators": {
+    "47/collect": {
+      "requires": {
+        "47/cargo": "shelf"
+      },
+      "establishes": {
+        "47/cargo": "picked"
+      },
+      "effort": 2,
+      "eligible_and_approach": {
+        "Wick": 2
+      }
+    },
+    "47/stage": {
+      "requires": {
+        "47/cargo": "picked"
+      },
+      "establishes": {
+        "47/cargo": "staged"
+      },
+      "effort": 2,
+      "eligible_and_approach": {
+        "Wick": 7
+      }
+    },
+    "47/cross": {
+      "requires": {
+        "47/cargo": "staged",
+        "47/hatch": "open",
+        "47/clearance": "fits"
+      },
+      "establishes": {
+        "47/cargo": "platform"
+      },
+      "effort": 2,
+      "eligible_and_approach": {
+        "Skim": 6
+      }
+    },
+    "47/manifest": {
+      "requires": {
+        "47/manifest": "unsigned",
+        "47/address": "matched"
+      },
+      "establishes": {
+        "47/manifest": "signed"
+      },
+      "effort": 2,
+      "eligible_and_approach": {
+        "Patch": 2,
+        "Jack": 3,
+        "Skim": 5
+      }
+    },
+    "47/repair": {
+      "requires": {
+        "forks": "offline",
+        "interface": "fits"
+      },
+      "establishes": {
+        "forks": "online"
+      },
+      "effort": 4,
+      "eligible_and_approach": {}
+    },
+    "47/load": {
+      "requires": {
+        "47/cargo": "platform",
+        "forks": "online",
+        "47/address": "matched"
+      },
+      "establishes": {
+        "47/cargo": "aboard"
+      },
+      "effort": 4,
+      "eligible_and_approach": {
+        "Jack": 1
+      }
+    },
+    "47/hoist": {
+      "requires": {
+        "47/cargo": "platform",
+        "47/lift": "connected",
+        "47/address": "matched"
+      },
+      "establishes": {
+        "47/cargo": "aboard"
+      },
+      "effort": 16,
+      "eligible_and_approach": {
+        "Skim": 8
+      }
+    },
+    "depart": {
+      "requires": {
+        "signal": "red",
+        "47/cargo": "aboard",
+        "47/manifest": "signed",
+        "47/address": "matched"
+      },
+      "establishes": {
+        "signal": "green"
+      },
+      "effort": 1,
+      "eligible_and_approach": {
+        "Signal box": 0
+      }
+    }
+  },
+  "orders": {
+    "47": {
+      "holder": "Skim",
+      "coach": "Coach A",
+      "address": "Northport",
+      "waybill": "unsigned"
+    }
+  }
+}

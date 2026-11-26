@@ -1,0 +1,95 @@
+{
+  "format": 3,
+  "started_utc": "2026-11-26T15:11:51.854951+00:00",
+  "cases": [
+    "one-order",
+    "three-orders",
+    "six-orders",
+    "larger-fleet",
+    "scanner-chassis",
+    "missing-courier",
+    "bag-on-platform",
+    "waybill-signed",
+    "load-one-bag",
+    "repair-collar",
+    "hold-collar",
+    "use-hoist",
+    "midrun-3-single-driver",
+    "midrun-3-single-probe",
+    "midrun-3-shared-driver",
+    "midrun-3-shared-probe",
+    "midrun-6-single-driver",
+    "midrun-6-single-probe",
+    "midrun-6-shared-driver",
+    "midrun-6-shared-probe"
+  ],
+  "modes": [
+    "relate",
+    "flat"
+  ],
+  "repetitions_by_case": {
+    "one-order": 3,
+    "three-orders": 3,
+    "six-orders": 3,
+    "larger-fleet": 3,
+    "scanner-chassis": 3,
+    "missing-courier": 3,
+    "bag-on-platform": 3,
+    "waybill-signed": 3,
+    "load-one-bag": 3,
+    "repair-collar": 3,
+    "hold-collar": 3,
+    "use-hoist": 3,
+    "midrun-3-single-driver": 4,
+    "midrun-3-single-probe": 4,
+    "midrun-3-shared-driver": 4,
+    "midrun-3-shared-probe": 4,
+    "midrun-6-single-driver": 4,
+    "midrun-6-single-probe": 4,
+    "midrun-6-shared-driver": 4,
+    "midrun-6-shared-probe": 4
+  },
+  "planner": "moonmail.mail_agent.proposal_steps",
+  "max_proposals": 4,
+  "seed": 7,
+  "jobs": 3,
+  "model_config_sha256": "941942017fe630d81728aa4c8e95c32d48e1ada85741ca0a3e917c03f6a1e435",
+  "collections": [
+    {
+      "started_utc": "2026-11-26T15:11:51.854951+00:00",
+      "cases": [
+        "one-order",
+        "three-orders",
+        "six-orders",
+        "larger-fleet",
+        "scanner-chassis",
+        "missing-courier",
+        "bag-on-platform",
+        "waybill-signed",
+        "load-one-bag",
+        "repair-collar",
+        "hold-collar",
+        "use-hoist"
+      ],
+      "repetitions_per_input_per_case": 3
+    },
+    {
+      "started_utc": "2026-11-26T15:53:51.993202+00:00",
+      "cases": [
+        "midrun-3-single-driver",
+        "midrun-3-single-probe",
+        "midrun-3-shared-driver",
+        "midrun-3-shared-probe",
+        "midrun-6-single-driver",
+        "midrun-6-single-probe",
+        "midrun-6-shared-driver",
+        "midrun-6-shared-probe"
+      ],
+      "repetitions_per_input_per_case": 4,
+      "recovery_design_at_collection": {
+        "sha256": "b9d7d3640feadc787f66a263d206828f83fb85a87018b1ba615efe1d7abcefaa",
+        "text": "# Replanning across partially completed orders\n\nThe core benchmark’s three carriage failures all occur on a one-bag train. This follow-up asks whether the Relate read helps an orchestrator revise a plan when one broken tool affects several pending loads while other jobs keep their assignments.\n\n## Fixed experimental design\n\nThe matrix has eight cases. Run every combination of the following three factors, with four independent model trials per input mode and one local reference per case.\n\n| Factor | Values |\n| --- | --- |\n| Orders on one train | Three or six |\n| Loads using Jack’s carriage | Only Bag 47, or Bag 47 plus the orders staged on their couriers |\n| Mechanic’s instrument | Hex driver or inspection probe |\n\nEvery yard has two forklifts, a mechanic, one picker and one courier per order. Before the fault, execute the same pattern for each group of three orders. The first bag is across the hatch and unsigned. The second is staged on its courier and already signed. The third is aboard its coach and unsigned. Both forklifts start online. A station hoist serves Bag 47’s coach only.\n\nTake Jack’s carriage offline at this checkpoint. With a compatible driver, repair makes every order feasible. With a probe, the hoist can replace Jack for Bag 47. If a staged bag also needs Jack, its coach has no hoist and the correct outcome is a held train. Every feasible plan that reaches the goal and preserves surviving work counts, including alternative recoveries.\n\nThe primary measure is a correct final outcome within the station’s four proposals. Also report first-draft correctness, success after each allowed proposal, retries and tokens. Both input modes get the same LLM, station tools, operator contracts, validator and budget. Retain all eight cases and every trial. Report delivery and required holds separately so a model that guesses “hold” cannot look like a successful dispatcher.\n\nThe experiment follows the earlier comparison. It is a targeted test of multi-order recovery on one model, with the core results kept separately.\n\n## Reproduce\n\n```bash\nuv run --locked -m moonmail bench run --suite replanning --mode local\nuv run --locked -m moonmail bench run --suite replanning --mode paired --repeats 4 --jobs 3 --env-file .env.local\n```\n"
+      }
+    }
+  ]
+}

@@ -1,0 +1,269 @@
+{
+  "case": "repair-collar",
+  "trial": 3,
+  "mode": "flat",
+  "expected": "goal",
+  "options": {
+    "tool_choice": "required",
+    "parallel_tool_calls": false,
+    "store": false,
+    "max_output_tokens": 4096,
+    "reasoning": {
+      "effort": "low"
+    }
+  },
+  "history": [
+    {
+      "role": "developer",
+      "content": "Plan the registered-mail train departure. Read the graph. Author the remaining action DAG from its operator contracts. Use each needed operation once. To satisfy a false precondition, select an operation that establishes its exact value and name it in after. Independent branches stay independent. Include only direct causal links. Already true facts need no supplying step. Preserve pending retained nodes. Prefer low combined handling and travel effort; consider repair versus hoist. Delegate body binding using actor=auto. A rejected proposal gets a solver counterexample; use it to correct your plan. If there is no solution, submit an empty steps array."
+    },
+    {
+      "role": "user",
+      "content": "Deliver Bag 47 to the addressed coaches and sign every waybill before releasing one train."
+    },
+    {
+      "id": "fc_0c9d60b0fc082d97016b084cff2f40819682f11137d64cce1a",
+      "type": "function_call",
+      "status": "completed",
+      "arguments": "{}",
+      "call_id": "call_EP86LplBIhSrevLAdqL5IVqh",
+      "name": "read_dispatch_graph"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_EP86LplBIhSrevLAdqL5IVqh",
+      "output": "{\"goal\": \"Deliver Bag 47 to the addressed coaches and sign every waybill before releasing one train.\", \"terminal\": \"depart\", \"world\": {\"signal\": \"red\", \"47/cargo\": \"platform\", \"47/manifest\": \"unsigned\", \"forks\": \"offline\", \"47/hatch\": \"open\", \"47/address\": \"matched\", \"47/clearance\": \"fits\", \"47/lift\": \"disconnected\", \"interface\": \"fits\"}, \"operators\": {\"47/collect\": {\"requires\": {\"47/cargo\": \"shelf\"}, \"establishes\": {\"47/cargo\": \"picked\"}, \"effort\": 2}, \"47/stage\": {\"requires\": {\"47/cargo\": \"picked\"}, \"establishes\": {\"47/cargo\": \"staged\"}, \"effort\": 2}, \"47/cross\": {\"requires\": {\"47/cargo\": \"staged\", \"47/hatch\": \"open\", \"47/clearance\": \"fits\"}, \"establishes\": {\"47/cargo\": \"platform\"}, \"effort\": 2}, \"47/manifest\": {\"requires\": {\"47/manifest\": \"unsigned\", \"47/address\": \"matched\"}, \"establishes\": {\"47/manifest\": \"signed\"}, \"effort\": 2}, \"47/repair\": {\"requires\": {\"forks\": \"offline\", \"interface\": \"fits\"}, \"establishes\": {\"forks\": \"online\"}, \"effort\": 4}, \"47/load\": {\"requires\": {\"47/cargo\": \"platform\", \"forks\": \"online\", \"47/address\": \"matched\"}, \"establishes\": {\"47/cargo\": \"aboard\"}, \"effort\": 4}, \"47/hoist\": {\"requires\": {\"47/cargo\": \"platform\", \"47/lift\": \"connected\", \"47/address\": \"matched\"}, \"establishes\": {\"47/cargo\": \"aboard\"}, \"effort\": 16}, \"depart\": {\"requires\": {\"signal\": \"red\", \"47/cargo\": \"aboard\", \"47/manifest\": \"signed\", \"47/address\": \"matched\"}, \"establishes\": {\"signal\": \"green\"}, \"effort\": 1}}, \"nodes\": [{\"kind\": \"Embodiment\", \"attributes\": {\"cm\": 14, \"deck\": 12, \"id\": \"Courier\", \"reach\": 12}}, {\"kind\": \"Embodiment\", \"attributes\": {\"cm\": 64, \"deck\": 40, \"id\": \"Lift\", \"reach\": 85}}, {\"kind\": \"Embodiment\", \"attributes\": {\"cm\": 92, \"deck\": 60, \"id\": \"Picker\", \"reach\": 125}}, {\"kind\": \"Embodiment\", \"attributes\": {\"cm\": 59, \"deck\": 0, \"id\": \"Service crawler\", \"reach\": 82}}, {\"kind\": \"Instrument\", \"attributes\": {\"id\": \"Hex driver\"}}, {\"kind\": \"Interface\", \"attributes\": {\"id\": \"Hex collar\"}}, {\"kind\": \"Interlocking\", \"attributes\": {\"id\": \"Signal box\"}}, {\"kind\": \"LoadingLift\", \"attributes\": {\"id\": \"Mail lift\"}}, {\"kind\": \"Order\", \"attributes\": {\"id\": \"47\"}}, {\"kind\": \"Parcel\", \"attributes\": {\"cm\": 18, \"id\": \"Bag 47\", \"stage\": \"platform\"}}, {\"kind\": \"Passage\", \"attributes\": {\"cm\": 36, \"id\": \"Hatch 47\", \"open\": true}}, {\"kind\": \"Robot\", \"attributes\": {\"id\": \"Jack\", \"x\": 17, \"z\": 2}}, {\"kind\": \"Robot\", \"attributes\": {\"id\": \"Patch\", \"x\": 20, \"z\": 4}}, {\"kind\": \"Robot\", \"attributes\": {\"id\": \"Skim\", \"x\": 15, \"z\": 2}}, {\"kind\": \"Robot\", \"attributes\": {\"id\": \"Wick\", \"x\": 2, \"z\": 3}}, {\"kind\": \"Route\", \"attributes\": {\"id\": \"Northport\"}}, {\"kind\": \"Skill\", \"attributes\": {\"id\": \"Carry\"}}, {\"kind\": \"Skill\", \"attributes\": {\"id\": \"Fork\", \"label\": \"Lift a tray\", \"requires_tool\": true}}, {\"kind\": \"Skill\", \"attributes\": {\"id\": \"Grip\"}}, {\"kind\": \"Skill\", \"attributes\": {\"id\": \"Passive deck\"}}, {\"kind\": \"Skill\", \"attributes\": {\"id\": \"Scan\"}}, {\"kind\": \"Skill\", \"attributes\": {\"id\": \"Service wrist\"}}, {\"kind\": \"Station\", \"attributes\": {\"cm\": 75, \"id\": \"Coach A\"}}, {\"kind\": \"Station\", \"attributes\": {\"cm\": 110, \"id\": \"Shelf 47\"}}, {\"kind\": \"Tool\", \"attributes\": {\"id\": \"Jack forks\", \"online\": false}}, {\"kind\": \"Train\", \"attributes\": {\"id\": \"Junction Mail\", \"signal\": \"red\"}}, {\"kind\": \"Tray\", \"attributes\": {\"id\": \"Mail tray\"}}, {\"kind\": \"Waybill\", \"attributes\": {\"id\": \"Waybill 47\", \"status\": \"unsigned\"}}, {\"kind\": \"Zone\", \"attributes\": {\"id\": \"Platform\"}}, {\"kind\": \"Zone\", \"attributes\": {\"id\": \"Sorting\"}}], \"relationships\": [[\"47\", \"AT_SHELF\", \"Shelf 47\"], [\"47\", \"DELIVER_TO\", \"Coach A\"], [\"47\", \"LOADS_WITH\", \"Jack forks\"], [\"47\", \"ON_TRAIN\", \"Junction Mail\"], [\"47\", \"REQUESTS\", \"Bag 47\"], [\"47\", \"VIA\", \"Hatch 47\"], [\"Bag 47\", \"ADDRESSED_TO\", \"Northport\"], [\"Bag 47\", \"HELD_BY\", \"Skim\"], [\"Bag 47\", \"USES\", \"Mail tray\"], [\"Coach A\", \"SERVES\", \"Northport\"], [\"Courier\", \"HAS_SKILL\", \"Carry\"], [\"Courier\", \"HAS_SKILL\", \"Passive deck\"], [\"Courier\", \"HAS_SKILL\", \"Scan\"], [\"Hex driver\", \"FITS\", \"Hex collar\"], [\"Jack\", \"INSTANCE_OF\", \"Lift\"], [\"Jack\", \"IN_ZONE\", \"Platform\"], [\"Jack\", \"MOUNTS\", \"Jack forks\"], [\"Jack\", \"SERVICES\", \"47\"], [\"Jack forks\", \"PROVIDES\", \"Fork\"], [\"Jack forks\", \"USES_PORT\", \"Hex collar\"], [\"Junction Mail\", \"HAS_COACH\", \"Coach A\"], [\"Lift\", \"HAS_SKILL\", \"Carry\"], [\"Lift\", \"HAS_SKILL\", \"Fork\"], [\"Lift\", \"HAS_SKILL\", \"Scan\"], [\"Mail lift\", \"ACCEPTS\", \"Mail tray\"], [\"Mail lift\", \"DOCKS_WITH\", \"Passive deck\"], [\"Patch\", \"INSTANCE_OF\", \"Service crawler\"], [\"Patch\", \"IN_ZONE\", \"Platform\"], [\"Patch\", \"MOUNTS\", \"Hex driver\"], [\"Patch\", \"SERVICES\", \"47\"], [\"Picker\", \"HAS_SKILL\", \"Carry\"], [\"Picker\", \"HAS_SKILL\", \"Grip\"], [\"Service crawler\", \"HAS_SKILL\", \"Scan\"], [\"Service crawler\", \"HAS_SKILL\", \"Service wrist\"], [\"Skim\", \"INSTANCE_OF\", \"Courier\"], [\"Skim\", \"IN_ZONE\", \"Platform\"], [\"Skim\", \"SERVICES\", \"47\"], [\"Waybill 47\", \"COVERS\", \"Bag 47\"], [\"Wick\", \"INSTANCE_OF\", \"Picker\"], [\"Wick\", \"IN_ZONE\", \"Sorting\"], [\"Wick\", \"SERVICES\", \"47\"]], \"wall_x\": 12, \"job_locations\": [{\"id\": \"47\", \"route\": \"Northport\", \"coach\": \"Coach A\", \"row\": 2, \"shelf\": [3, 2], \"handoff\": [8, 2], \"deck\": [9, 2], \"hatch\": [12, 2], \"berth\": [15, 2], \"unload\": [16, 2], \"desk\": [19, 3], \"door\": [23, 2], \"lift\": [22, 3], \"picker\": \"Wick\", \"courier\": \"Skim\", \"loader\": \"Jack\"}], \"rules\": [\"Each order names its shelf, passage, addressed coach, tray and designated loading carriage. A matching route is served by that coach on the same train.\", \"Pick up and hand off require a robot serving the order with Grip and reach at least the shelf height. The same picker performs both.\", \"Crossing requires a serving robot with Passive deck. Both chassis height and deck height plus parcel height must fit the hatch.\", \"Signing requires Scan on a serving robot on the platform (x greater than the wall).\", \"Loading requires the serving robot to mount the order's carriage, both chassis and carriage to support Fork, and reach at least the coach sill. The carriage must be online at execution.\", \"Repair requires Service wrist and a mounted instrument whose FITS port equals the offline carriage's USES_PORT. The repair here applies to Jack's carriage.\", \"The station hoist must feed the order's coach, accept its tray, and dock with a skill of the serving courier holding that bag.\", \"Approach cost is the Manhattan distance to the job's tile. For repair it is distance to the patient minus one, floored at zero. The signal box performs terminal checks.\", \"Invalidate a pending job with an unsupported guard or ineligible assigned actor, then its dependents. Preserve other pending actors and dependencies between remaining pending jobs.\"], \"plan_before_observation\": {\"revision\": 1, \"nodes\": [{\"uid\": \"1/47/collect\", \"op\": \"47/collect\", \"label\": \"Collect bag\", \"state\": \"done\", \"actor\": \"Wick\"}, {\"uid\": \"1/47/cross\", \"op\": \"47/cross\", \"label\": \"Cross hatch\", \"state\": \"done\", \"actor\": \"Skim\"}, {\"uid\": \"1/47/load\", \"op\": \"47/load\", \"label\": \"Load coach\", \"state\": \"pending\", \"actor\": \"Jack\"}, {\"uid\": \"1/47/manifest\", \"op\": \"47/manifest\", \"label\": \"Sign waybill\", \"state\": \"pending\", \"actor\": \"Patch\"}, {\"uid\": \"1/47/stage\", \"op\": \"47/stage\", \"label\": \"Load courier\", \"state\": \"done\", \"actor\": \"Wick\"}, {\"uid\": \"1/depart\", \"op\": \"depart\", \"label\": \"Release train\", \"state\": \"pending\", \"actor\": \"Signal box\"}], \"edges\": [{\"source\": \"1/47/collect\", \"target\": \"1/47/stage\"}, {\"source\": \"1/47/cross\", \"target\": \"1/47/load\"}, {\"source\": \"1/47/load\", \"target\": \"1/depart\"}, {\"source\": \"1/47/manifest\", \"target\": \"1/depart\"}, {\"source\": \"1/47/stage\", \"target\": \"1/47/cross\"}]}, \"observation\": \"Jack's carriage went offline after the crossing.\"}"
+    }
+  ],
+  "schemas": {
+    "read_dispatch_graph": {
+      "type": "function",
+      "name": "read_dispatch_graph",
+      "description": "Read the dispatch state, operator contracts and fleet information for planning.",
+      "strict": true,
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    "propose_dag": {
+      "type": "function",
+      "name": "propose_dag",
+      "description": "Submit the remaining action DAG for solver validation. Empty steps requests a verified hold.",
+      "strict": true,
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "op": {
+                  "type": "string",
+                  "enum": [
+                    "47/collect",
+                    "47/stage",
+                    "47/cross",
+                    "47/manifest",
+                    "47/repair",
+                    "47/load",
+                    "47/hoist",
+                    "depart"
+                  ]
+                },
+                "after": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "47/collect",
+                      "47/stage",
+                      "47/cross",
+                      "47/manifest",
+                      "47/repair",
+                      "47/load",
+                      "47/hoist",
+                      "depart"
+                    ]
+                  }
+                },
+                "actor": {
+                  "type": "string",
+                  "enum": [
+                    "auto",
+                    "Jack",
+                    "Patch",
+                    "Signal box",
+                    "Skim",
+                    "Wick"
+                  ]
+                }
+              },
+              "required": [
+                "op",
+                "after",
+                "actor"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "steps"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "requests": [
+    {
+      "tool": "read_dispatch_graph",
+      "history_length": 2,
+      "ms": 1335,
+      "model": "gpt-6-luna",
+      "usage": {
+        "input_tokens": 266,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 15,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 281
+      },
+      "response_status": "completed",
+      "arguments": "{}"
+    },
+    {
+      "tool": "propose_dag",
+      "history_length": 4,
+      "ms": 3992,
+      "model": "gpt-6-luna",
+      "usage": {
+        "input_tokens": 2851,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 2725
+        },
+        "output_tokens": 211,
+        "output_tokens_details": {
+          "reasoning_tokens": 128
+        },
+        "total_tokens": 3062
+      },
+      "response_status": "completed",
+      "arguments": "{\"steps\":[{\"op\":\"47/repair\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"47/load\",\"after\":[\"47/repair\"],\"actor\":\"Jack\"},{\"op\":\"47/manifest\",\"after\":[],\"actor\":\"Patch\"},{\"op\":\"depart\",\"after\":[\"47/load\",\"47/manifest\"],\"actor\":\"Signal box\"}]}"
+    }
+  ],
+  "attempts": [
+    {
+      "arguments": "{\"steps\":[{\"op\":\"47/repair\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"47/load\",\"after\":[\"47/repair\"],\"actor\":\"Jack\"},{\"op\":\"47/manifest\",\"after\":[],\"actor\":\"Patch\"},{\"op\":\"depart\",\"after\":[\"47/load\",\"47/manifest\"],\"actor\":\"Signal box\"}]}",
+      "proposal": {
+        "steps": [
+          {
+            "op": "47/repair",
+            "after": [],
+            "actor": "auto"
+          },
+          {
+            "op": "47/load",
+            "after": [
+              "47/repair"
+            ],
+            "actor": "Jack"
+          },
+          {
+            "op": "47/manifest",
+            "after": [],
+            "actor": "Patch"
+          },
+          {
+            "op": "depart",
+            "after": [
+              "47/load",
+              "47/manifest"
+            ],
+            "actor": "Signal box"
+          }
+        ]
+      },
+      "model": "gpt-6-luna",
+      "usage": {
+        "input_tokens": 2851,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 2725
+        },
+        "output_tokens": 211,
+        "output_tokens_details": {
+          "reasoning_tokens": 128
+        },
+        "total_tokens": 3062
+      },
+      "verdict": "accepted",
+      "feedback": "",
+      "validation_ms": 6.53,
+      "bindings": {
+        "47/repair": "Patch",
+        "47/load": "Jack",
+        "47/manifest": "Patch",
+        "depart": "Signal box"
+      },
+      "effort": 18
+    }
+  ],
+  "execution": [
+    {
+      "op": "47/repair",
+      "actor": "Patch",
+      "effects": {
+        "forks": "online"
+      }
+    },
+    {
+      "op": "47/manifest",
+      "actor": "Patch",
+      "effects": {
+        "47/manifest": "signed"
+      }
+    },
+    {
+      "op": "47/load",
+      "actor": "Jack",
+      "effects": {
+        "47/cargo": "aboard"
+      }
+    },
+    {
+      "op": "depart",
+      "actor": "Signal box",
+      "effects": {
+        "signal": "green"
+      }
+    }
+  ],
+  "status": "executed",
+  "final": {
+    "signal": "green",
+    "bags": [
+      {
+        "bag": "47",
+        "stage": "aboard",
+        "holder": "Coach A",
+        "coach": "Coach A",
+        "waybill": "signed"
+      }
+    ]
+  },
+  "correct": true,
+  "first_correct": true,
+  "tokens": 3343,
+  "model_ms": 5327,
+  "validation_ms": 6.53,
+  "decision_sha256": "e5ed4696c9668340e3b8890020d1a9e91f2306e6e2d03dedeafb92b970950d44"
+}

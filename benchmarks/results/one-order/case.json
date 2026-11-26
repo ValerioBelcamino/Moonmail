@@ -1,0 +1,71 @@
+{
+  "fixture": {
+    "id": "one-order",
+    "title": "One bag for one train",
+    "orders": 1,
+    "forklifts": 1,
+    "mechanics": 1,
+    "scanner": false,
+    "missing_courier": false,
+    "platform": false,
+    "signed": false,
+    "load_only": false,
+    "fault": false,
+    "kit": "driver",
+    "lift": true,
+    "feasible": true
+  },
+  "goal": "Deliver Bag 47 to the addressed coaches and sign every waybill before releasing one train.",
+  "retained": {},
+  "revision": 1,
+  "robots": 4,
+  "chassis": 4,
+  "candidate_pairs": 8,
+  "initial": {
+    "signal": "red",
+    "bags": [
+      {
+        "bag": "47",
+        "stage": "shelf",
+        "holder": "Shelf 47",
+        "coach": "Coach A",
+        "waybill": "unsigned"
+      }
+    ]
+  },
+  "instructions": "Plan the registered-mail train departure. Read the graph. Author the remaining action DAG from its operator contracts. Use each needed operation once. To satisfy a false precondition, select an operation that establishes its exact value and name it in after. Independent branches stay independent. Include only direct causal links. Already true facts need no supplying step. Preserve pending retained nodes. Prefer low combined handling and travel effort; consider repair versus hoist. Delegate body binding using actor=auto. A rejected proposal gets a solver counterexample; use it to correct your plan. If there is no solution, submit an empty steps array.",
+  "preparation_ms": {
+    "shared_state": 9.76,
+    "relate_projection": 3.15,
+    "flat_projection": 1.18
+  },
+  "evidence": [
+    {
+      "question": "Delivery routes",
+      "cypher": "MATCH (o:Order)-[:REQUESTS]->(p:Parcel)-[:ADDRESSED_TO]->(route:Route)\n       <-[:SERVES]-(coach:Station)<-[:DELIVER_TO]-(o),(w:Waybill)-[:COVERS]->(p),\n       (o)-[:ON_TRAIN]->(t:Train)-[:HAS_COACH]->(coach)\n       RETURN o.id AS order,p.id AS bag,route.id AS route,coach.id AS coach,w.id AS bill ORDER BY bag",
+      "params": {},
+      "rows": [
+        {
+          "order": "47",
+          "bag": "Bag 47",
+          "route": "Northport",
+          "coach": "Coach A",
+          "bill": "Waybill 47"
+        }
+      ]
+    },
+    {
+      "question": "Couriers fitting each hatch",
+      "cypher": "MATCH (o:Order)-[:VIA]->(g:Passage),(o)-[:REQUESTS]->(p:Parcel)\nOPTIONAL MATCH (r:Robot)-[:SERVICES]->(o),(r)-[:INSTANCE_OF]->(b)-[:HAS_SKILL]->(:Skill {id:'Passive deck'})\nWHERE b.cm<=g.cm AND b.deck+p.cm<=g.cm\nRETURN o.id AS bag,g.id AS hatch,r.id AS courier ORDER BY bag,courier",
+      "params": {},
+      "rows": [
+        {
+          "bag": "47",
+          "hatch": "Hatch 47",
+          "courier": "Skim"
+        }
+      ]
+    }
+  ],
+  "sha256": "c5192a51dacbb89e33ccf69a92e936766b05d59b5159ecaa5fdd5a395612eca3"
+}

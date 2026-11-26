@@ -11,6 +11,7 @@ COPY viewer/dist ./viewer/dist
 COPY viewer/public ./viewer/public
 COPY docs/presentation.pdf ./docs/presentation.pdf
 COPY moonmail-demo.mp4 ./
+COPY --chown=10001:10001 benchmarks ./benchmarks
 RUN useradd --create-home --uid 10001 station && mkdir runs && chown station:station runs
 USER station
 EXPOSE 8041

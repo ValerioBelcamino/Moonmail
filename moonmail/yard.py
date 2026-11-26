@@ -35,27 +35,38 @@ LIFTS = """MATCH (l:LoadingLift)-[:FEEDS]->(c:Station)<-[:DELIVER_TO]-(o:Order),
        RETURN o.id AS bag,r.id AS actor,l.id AS lift"""
 
 
+YARD_BAYS = [
+    ("47", "Northport", "Wick", "Skim"),
+    ("52", "Eastbank", "Pip", "Dash"),
+    ("68", "Westmere", "Rue", "Moss"),
+]
+
+
 def yard_layout(scenario):
-    rng = random.Random(scenario.seed)
     fleet = scenario.fleet or YardFleet(mechanics=int(scenario.service_kit != "off"))
-    loaders = [("Jack", [17, 2]), ("Fern", [17, 7]), ("Ash", [17, 11])][
-        : fleet.forklifts
-    ]
-    mechanics = [("Patch", [20, 4]), ("Dot", [21, 9])][: fleet.mechanics]
+    return build_yard(
+        scenario.seed,
+        scenario.service_kit,
+        YARD_BAYS[: fleet.orders],
+        fleet.pickers,
+        fleet.couriers,
+        fleet.forklifts,
+        fleet.mechanics,
+    )
+
+
+def build_yard(seed, service_kit, bays, pickers, couriers, forklifts, mechanic_count):
+    rng = random.Random(seed)
+    loaders = [("Jack", [17, 2]), ("Fern", [17, 7]), ("Ash", [17, 11])][:forklifts]
+    mechanics = [("Patch", [20, 4]), ("Dot", [21, 9])][:mechanic_count]
     orders, starts, bodies = [], {}, {}
-    for i, (bag, route, picker, courier) in enumerate(
-        [
-            ("47", "Northport", "Wick", "Skim"),
-            ("52", "Eastbank", "Pip", "Dash"),
-            ("68", "Westmere", "Rue", "Moss"),
-        ][: fleet.orders]
-    ):
+    for i, (bag, route, picker, courier) in enumerate(bays):
         z = 2 + i * 4
         orders.append(
             {
                 "id": bag,
                 "route": route,
-                "coach": "Coach " + "ABC"[i],
+                "coach": "Coach " + (chr(65 + i) if i < 26 else str(i + 1)),
                 "row": z,
                 "shelf": [2 + rng.randrange(2), z],
                 "handoff": [8, z],
@@ -71,9 +82,9 @@ def yard_layout(scenario):
                 "loader": loaders[min(i, len(loaders) - 1)][0] if loaders else None,
             }
         )
-        if i < fleet.pickers:
+        if i < pickers:
             starts[picker], bodies[picker] = [2, z + 1], "Wick"
-        if i < fleet.couriers:
+        if i < couriers:
             starts[courier], bodies[courier] = [7, 13 if i == 2 else z + 1], "Skim"
     for name, cell in loaders:
         starts[name], bodies[name] = cell, "Jack"
@@ -81,17 +92,23 @@ def yard_layout(scenario):
         starts[name], bodies[name] = cell, "Patch"
     return {
         "width": 26,
-        "depth": 14,
+        "depth": max(14, len(bays) * 4 + 2),
         "wall": 12,
         "gates": {o["id"]: o["hatch"] for o in orders},
         "obstacles": [[5, o["row"] - 1] for o in orders] + [[20, 0], [20, 12]],
         "starts": starts,
-        "service_kit": scenario.service_kit,
+        "service_kit": service_kit,
         "yard": {"orders": orders, "bodies": bodies},
     }
 
 
 def seed_yard(db, scene, scenario):
+    return seed_yard_graph(
+        db, scene, scenario.service_kit, scenario.parcel_cm, bool(scenario.fleet)
+    )
+
+
+def seed_yard_graph(db, scene, service_kit, parcel_cm, shared_platform):
     fleet = {r[0]: r for r in BODIES}
     with transaction(db):
         db.execute("""CREATE (:Train {id:'Junction Mail',signal:'red'}),(:Interlocking {id:'Signal box'}),
@@ -129,8 +146,8 @@ def seed_yard(db, scene, scenario):
                        CREATE (r)-[:MOUNTS]->(t:Tool {id:$t,online:true})-[:PROVIDES]->(s),(t)-[:USES_PORT]->(i)""",
                 {"r": robot, "t": robot + " forks"},
             )
-        for robot in mechanics if scenario.service_kit != "off" else []:
-            driver = scenario.service_kit == "driver"
+        for robot in mechanics if service_kit != "off" else []:
+            driver = service_kit == "driver"
             db.execute(
                 """MATCH (r:Robot {id:$robot}) MERGE (p:Interface {id:$port})
                 CREATE (r)-[:MOUNTS]->(:Instrument {id:$tool})-[:FITS]->(p)""",
@@ -154,7 +171,7 @@ def seed_yard(db, scene, scenario):
                 {
                     "id": bag,
                     "bag": "Bag " + bag,
-                    "cm": scenario.parcel_cm,
+                    "cm": parcel_cm,
                     "shelf": "Shelf " + bag,
                     "hatch": "Hatch " + bag,
                     "coach": o["coach"],
@@ -168,7 +185,7 @@ def seed_yard(db, scene, scenario):
                     CREATE (o)-[:LOADS_WITH]->(f)""",
                     {"bag": bag, "tool": loader + " forks"},
                 )
-            platform = forklifts if scenario.fleet else [loader]
+            platform = forklifts if shared_platform else [loader]
             for actor in [o["picker"], o["courier"], *platform, *mechanics]:
                 db.execute(
                     "MATCH (r:Robot {id:$actor}),(o:Order {id:$bag}) CREATE (r)-[:SERVICES]->(o)",
@@ -221,6 +238,131 @@ def contracts_for(orders):
     return result
 
 
+def read_yard_world(db, scene, orders, positions, contracts):
+    data = {r["id"]: r for r in db.execute(CARGO).fetchall()}
+    custody = {k: r["holder"] for k, r in data.items()}
+    interfaces = db.execute(REPAIR).fetchall()
+    connected = {(r["bag"], r["actor"]) for r in db.execute(LIFTS).fetchall()}
+    matched = {r["order"]: r for r in db.execute(ADDRESSES).fetchall()}
+    loadable = {(r["bag"], r["actor"]) for r in db.execute(FORKS).fetchall()}
+    facts = {
+        "signal": db.execute("MATCH (t:Train) RETURN t.signal AS v").fetchall()[0]["v"]
+    }
+    options = {op: {} for op in contracts}
+    options["depart"] = {"Signal box": 0}
+    candidates = db.execute(CAPABILITIES).fetchall()
+    carrying = {
+        r["bag"]
+        for r in db.execute(
+            """MATCH (a:Action {status:'running'})-[:FOR_ORDER]->(o:Order)
+           RETURN o.id AS bag,a.op AS op"""
+        ).fetchall()
+        if r["op"].split("/")[-1] in {"collect", "stage", "cross", "load", "hoist"}
+    }
+
+    for bag, r in data.items():
+        o = orders[bag]
+        fit = any(
+            x["bag"] == bag
+            and x["skill"] == "Passive deck"
+            and max(x["height"], x["deck"] + r["cm"]) <= r["opening"]
+            for x in candidates
+        )
+        stage, owner = r["stage"], r["holder"]
+        owners = {
+            "shelf": "Shelf " + bag,
+            "picked": o["picker"],
+            "staged": o["courier"],
+            "platform": o["courier"],
+            "aboard": r["coach"],
+        }
+        on_platform = (
+            stage != "platform" or positions.get(owner, (-1, 0))[0] > scene["wall"]
+        )
+        consistent = owners.get(stage) == owner and on_platform
+        vals = {
+            "cargo": stage if bag in carrying or consistent else "custody mismatch",
+            "manifest": r["manifest"],
+            "forks": fork_state(r["tool"], r["online"]),
+            "hatch": "open" if r["open"] else "closed",
+            "address": "matched" if bag in matched else "unresolved",
+            "clearance": "fits" if fit else "too tall",
+            "lift": "connected"
+            if any(b == bag for b, _ in connected)
+            else "disconnected",
+        }
+        facts.update({fact_id(bag, k, o["loader"]): v for k, v in vals.items()})
+        for c in candidates:
+            if c["bag"] != bag:
+                continue
+            who = c["actor"]
+            skill = c["skill"]
+            pos = (c["x"], c["z"])
+
+            locations = {}
+
+            if skill == "Grip" and c["reach"] >= c["shelf"]:
+                locations["collect"] = o["shelf"]
+                locations["stage"] = o["handoff"]
+            if (
+                skill == "Passive deck"
+                and max(c["height"], c["deck"] + r["cm"]) <= r["opening"]
+            ):
+                locations["cross"] = o["deck"]
+            if skill == "Fork" and (bag, who) in loadable and c["reach"] >= c["sill"]:
+                locations["load"] = o["unload"]
+            if skill == "Scan" and pos[0] > scene["wall"]:
+                locations["manifest"] = o["desk"]
+            if (bag, who) in connected:
+                locations["hoist"] = o["lift"]
+            for op, cell in locations.items():
+                options[f"{bag}/{op}"][who] = distance(pos, cell)
+    compatible = [
+        r
+        for r in interfaces
+        if r["tool"] == data["47"]["tool"] and r["fits"] == r["needs"]
+    ]
+    facts["interface"] = (
+        "fits" if compatible and not data["47"]["online"] else "unavailable"
+    )
+    if facts["interface"] == "fits":
+        options["47/repair"] = {
+            r["robot"]: max(
+                0,
+                distance(positions[r["robot"]], positions[r["patient"]]) - 1,
+            )
+            for r in compatible
+        }
+    for block in db.execute(
+        "MATCH (b:AccessBlock {at:$at}) RETURN b.op AS op,b.actor AS actor",
+        {"at": access_signature(db, scene)},
+    ).fetchall():
+        options[block["op"]].pop(block["actor"], None)
+    world = World(
+        facts,
+        options,
+        custody["47"],
+        "Junction Mail",
+        [],
+        interfaces,
+        contracts,
+        dict(custody),
+        "Deliver "
+        + ", ".join("Bag " + b for b in data)
+        + " to the addressed coaches and sign every waybill before releasing one train.",
+        {
+            bag: {
+                "holder": row["holder"],
+                "coach": row["coach"],
+                "address": matched.get(bag, {}).get("route", "unresolved"),
+                "waybill": row["manifest"],
+            }
+            for bag, row in data.items()
+        },
+    )
+    return materialize(db, world)
+
+
 @dataclass
 class Journey:
     row: dict
@@ -241,137 +383,11 @@ class YardRun(MailRun):
         super().__init__(db, scene, controller, env_file)
 
     def read_world(self):
-        db = self.db
-        data = {r["id"]: r for r in db.execute(CARGO).fetchall()}
-        self.custody = {k: r["holder"] for k, r in data.items()}
-        interfaces = db.execute(REPAIR).fetchall()
-        connected = {(r["bag"], r["actor"]) for r in db.execute(LIFTS).fetchall()}
-        matched = {r["order"]: r for r in db.execute(ADDRESSES).fetchall()}
-        loadable = {(r["bag"], r["actor"]) for r in db.execute(FORKS).fetchall()}
-        facts = {
-            "signal": db.execute("MATCH (t:Train) RETURN t.signal AS v").fetchall()[0][
-                "v"
-            ]
-        }
-        options = {op: {} for op in self.contracts}
-        options["depart"] = {"Signal box": 0}
-        candidates = db.execute(CAPABILITIES).fetchall()
-        carrying = {
-            r["bag"]
-            for r in db.execute(
-                """MATCH (a:Action {status:'running'})-[:FOR_ORDER]->(o:Order)
-               RETURN o.id AS bag,a.op AS op"""
-            ).fetchall()
-            if r["op"].split("/")[-1] in {"collect", "stage", "cross", "load", "hoist"}
-        }
-
-        for bag, r in data.items():
-            o = self.orders[bag]
-            fit = any(
-                x["bag"] == bag
-                and x["skill"] == "Passive deck"
-                and max(x["height"], x["deck"] + r["cm"]) <= r["opening"]
-                for x in candidates
-            )
-            stage, owner = r["stage"], r["holder"]
-            owners = {
-                "shelf": "Shelf " + bag,
-                "picked": o["picker"],
-                "staged": o["courier"],
-                "platform": o["courier"],
-                "aboard": r["coach"],
-            }
-            on_platform = (
-                stage != "platform"
-                or self.positions.get(owner, (-1, 0))[0] > self.scene["wall"]
-            )
-            consistent = owners.get(stage) == owner and on_platform
-            vals = {
-                "cargo": stage if bag in carrying or consistent else "custody mismatch",
-                "manifest": r["manifest"],
-                "forks": fork_state(r["tool"], r["online"]),
-                "hatch": "open" if r["open"] else "closed",
-                "address": "matched" if bag in matched else "unresolved",
-                "clearance": "fits" if fit else "too tall",
-                "lift": "connected"
-                if any(b == bag for b, _ in connected)
-                else "disconnected",
-            }
-            facts.update({fact_id(bag, k, o["loader"]): v for k, v in vals.items()})
-            for c in candidates:
-                if c["bag"] != bag:
-                    continue
-                who = c["actor"]
-                skill = c["skill"]
-                pos = (c["x"], c["z"])
-
-                locations = {}
-
-                if skill == "Grip" and c["reach"] >= c["shelf"]:
-                    locations["collect"] = o["shelf"]
-                    locations["stage"] = o["handoff"]
-                if (
-                    skill == "Passive deck"
-                    and max(c["height"], c["deck"] + r["cm"]) <= r["opening"]
-                ):
-                    locations["cross"] = o["deck"]
-                if (
-                    skill == "Fork"
-                    and (bag, who) in loadable
-                    and c["reach"] >= c["sill"]
-                ):
-                    locations["load"] = o["unload"]
-                if skill == "Scan" and pos[0] > self.scene["wall"]:
-                    locations["manifest"] = o["desk"]
-                if (bag, who) in connected:
-                    locations["hoist"] = o["lift"]
-                for op, cell in locations.items():
-                    options[f"{bag}/{op}"][who] = distance(pos, cell)
-        compatible = [
-            r
-            for r in interfaces
-            if r["tool"] == data["47"]["tool"] and r["fits"] == r["needs"]
-        ]
-        facts["interface"] = (
-            "fits" if compatible and not data["47"]["online"] else "unavailable"
+        world = read_yard_world(
+            self.db, self.scene, self.orders, self.positions, self.contracts
         )
-        if facts["interface"] == "fits":
-            options["47/repair"] = {
-                r["robot"]: max(
-                    0,
-                    distance(self.positions[r["robot"]], self.positions[r["patient"]])
-                    - 1,
-                )
-                for r in compatible
-            }
-        for block in db.execute(
-            "MATCH (b:AccessBlock {at:$at}) RETURN b.op AS op,b.actor AS actor",
-            {"at": access_signature(db, self.scene)},
-        ).fetchall():
-            options[block["op"]].pop(block["actor"], None)
-        world = World(
-            facts,
-            options,
-            self.custody["47"],
-            "Junction Mail",
-            [],
-            interfaces,
-            self.contracts,
-            dict(self.custody),
-            "Deliver "
-            + ", ".join("Bag " + b for b in data)
-            + " to the addressed coaches and sign every waybill before releasing one train.",
-            {
-                bag: {
-                    "holder": row["holder"],
-                    "coach": row["coach"],
-                    "address": matched.get(bag, {}).get("route", "unresolved"),
-                    "waybill": row["manifest"],
-                }
-                for bag, row in data.items()
-            },
-        )
-        return materialize(db, world)
+        self.custody = world.bag_holders
+        return world
 
     def frame(self, motion=None):
         f = self.world.facts

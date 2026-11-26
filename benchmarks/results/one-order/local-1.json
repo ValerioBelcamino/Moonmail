@@ -1,0 +1,135 @@
+{
+  "case": "one-order",
+  "trial": 1,
+  "mode": "local",
+  "expected": "goal",
+  "options": {},
+  "history": [],
+  "schemas": {},
+  "requests": [],
+  "attempts": [
+    {
+      "arguments": "{\"steps\": [{\"op\": \"47/collect\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"47/stage\", \"actor\": \"auto\", \"after\": [\"47/collect\"]}, {\"op\": \"47/cross\", \"actor\": \"auto\", \"after\": [\"47/stage\"]}, {\"op\": \"47/load\", \"actor\": \"auto\", \"after\": [\"47/cross\"]}, {\"op\": \"47/manifest\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"depart\", \"actor\": \"auto\", \"after\": [\"47/load\", \"47/manifest\"]}]}",
+      "proposal": {
+        "steps": [
+          {
+            "op": "47/collect",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "47/stage",
+            "actor": "auto",
+            "after": [
+              "47/collect"
+            ]
+          },
+          {
+            "op": "47/cross",
+            "actor": "auto",
+            "after": [
+              "47/stage"
+            ]
+          },
+          {
+            "op": "47/load",
+            "actor": "auto",
+            "after": [
+              "47/cross"
+            ]
+          },
+          {
+            "op": "47/manifest",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "depart",
+            "actor": "auto",
+            "after": [
+              "47/load",
+              "47/manifest"
+            ]
+          }
+        ]
+      },
+      "model": null,
+      "usage": {},
+      "verdict": "accepted",
+      "feedback": "",
+      "validation_ms": 6.25,
+      "bindings": {
+        "47/collect": "Wick",
+        "47/stage": "Wick",
+        "47/cross": "Skim",
+        "47/load": "Jack",
+        "47/manifest": "Patch",
+        "depart": "Signal box"
+      },
+      "effort": 28
+    }
+  ],
+  "execution": [
+    {
+      "op": "47/collect",
+      "actor": "Wick",
+      "effects": {
+        "47/cargo": "picked"
+      }
+    },
+    {
+      "op": "47/manifest",
+      "actor": "Patch",
+      "effects": {
+        "47/manifest": "signed"
+      }
+    },
+    {
+      "op": "47/stage",
+      "actor": "Wick",
+      "effects": {
+        "47/cargo": "staged"
+      }
+    },
+    {
+      "op": "47/cross",
+      "actor": "Skim",
+      "effects": {
+        "47/cargo": "platform"
+      }
+    },
+    {
+      "op": "47/load",
+      "actor": "Jack",
+      "effects": {
+        "47/cargo": "aboard"
+      }
+    },
+    {
+      "op": "depart",
+      "actor": "Signal box",
+      "effects": {
+        "signal": "green"
+      }
+    }
+  ],
+  "status": "executed",
+  "final": {
+    "signal": "green",
+    "bags": [
+      {
+        "bag": "47",
+        "stage": "aboard",
+        "holder": "Coach A",
+        "coach": "Coach A",
+        "waybill": "signed"
+      }
+    ]
+  },
+  "correct": true,
+  "first_correct": true,
+  "tokens": 0,
+  "model_ms": 0,
+  "validation_ms": 6.25,
+  "decision_sha256": "c5192a51dacbb89e33ccf69a92e936766b05d59b5159ecaa5fdd5a395612eca3"
+}

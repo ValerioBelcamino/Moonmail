@@ -184,6 +184,18 @@ def snapshot(db, rev):
     return {"revision": rev, "nodes": nodes, "edges": edges}
 
 
+def retained_assignments(plan):
+    """Pending actors and dependencies that survive into the next proposal."""
+    pending = {r["uid"]: r for r in plan["nodes"] if r["state"] == "pending"}
+    retained = {r["op"]: {"actor": r["actor"], "after": []} for r in pending.values()}
+    for edge in plan["edges"]:
+        if edge["source"] in pending and edge["target"] in pending:
+            retained[pending[edge["target"]]["op"]]["after"].append(
+                pending[edge["source"]]["op"]
+            )
+    return retained
+
+
 def invalidate(db, rev, issues, event):
     roots = {row["uid"] for row in issues}
     all_stale = set(roots)

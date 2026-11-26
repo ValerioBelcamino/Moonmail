@@ -1,0 +1,239 @@
+{
+  "case": "midrun-6-single-probe",
+  "trial": 1,
+  "mode": "local",
+  "expected": "goal",
+  "options": {},
+  "history": [],
+  "schemas": {},
+  "requests": [],
+  "attempts": [
+    {
+      "arguments": "{\"steps\": [{\"op\": \"47/hoist\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"47/manifest\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"52/cross\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"52/load\", \"actor\": \"auto\", \"after\": [\"52/cross\"]}, {\"op\": \"68/manifest\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"74/load\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"74/manifest\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"81/cross\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"81/load\", \"actor\": \"auto\", \"after\": [\"81/cross\"]}, {\"op\": \"96/manifest\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"depart\", \"actor\": \"auto\", \"after\": [\"47/hoist\", \"47/manifest\", \"52/load\", \"68/manifest\", \"74/load\", \"74/manifest\", \"81/load\", \"96/manifest\"]}]}",
+      "proposal": {
+        "steps": [
+          {
+            "op": "47/hoist",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "47/manifest",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "52/cross",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "52/load",
+            "actor": "auto",
+            "after": [
+              "52/cross"
+            ]
+          },
+          {
+            "op": "68/manifest",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "74/load",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "74/manifest",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "81/cross",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "81/load",
+            "actor": "auto",
+            "after": [
+              "81/cross"
+            ]
+          },
+          {
+            "op": "96/manifest",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "depart",
+            "actor": "auto",
+            "after": [
+              "47/hoist",
+              "47/manifest",
+              "52/load",
+              "68/manifest",
+              "74/load",
+              "74/manifest",
+              "81/load",
+              "96/manifest"
+            ]
+          }
+        ]
+      },
+      "model": null,
+      "usage": {},
+      "verdict": "accepted",
+      "feedback": "",
+      "validation_ms": 10.33,
+      "bindings": {
+        "47/hoist": "Skim",
+        "47/manifest": "Patch",
+        "52/cross": "Dash",
+        "52/load": "Fern",
+        "68/manifest": "Fern",
+        "74/load": "Fern",
+        "74/manifest": "Fern",
+        "81/cross": "Zip",
+        "81/load": "Fern",
+        "96/manifest": "Fern",
+        "depart": "Signal box"
+      },
+      "effort": 113
+    }
+  ],
+  "execution": [
+    {
+      "op": "47/hoist",
+      "actor": "Skim",
+      "effects": {
+        "47/cargo": "aboard"
+      }
+    },
+    {
+      "op": "47/manifest",
+      "actor": "Patch",
+      "effects": {
+        "47/manifest": "signed"
+      }
+    },
+    {
+      "op": "52/cross",
+      "actor": "Dash",
+      "effects": {
+        "52/cargo": "platform"
+      }
+    },
+    {
+      "op": "68/manifest",
+      "actor": "Fern",
+      "effects": {
+        "68/manifest": "signed"
+      }
+    },
+    {
+      "op": "74/load",
+      "actor": "Fern",
+      "effects": {
+        "74/cargo": "aboard"
+      }
+    },
+    {
+      "op": "74/manifest",
+      "actor": "Fern",
+      "effects": {
+        "74/manifest": "signed"
+      }
+    },
+    {
+      "op": "81/cross",
+      "actor": "Zip",
+      "effects": {
+        "81/cargo": "platform"
+      }
+    },
+    {
+      "op": "96/manifest",
+      "actor": "Fern",
+      "effects": {
+        "96/manifest": "signed"
+      }
+    },
+    {
+      "op": "52/load",
+      "actor": "Fern",
+      "effects": {
+        "52/cargo": "aboard"
+      }
+    },
+    {
+      "op": "81/load",
+      "actor": "Fern",
+      "effects": {
+        "81/cargo": "aboard"
+      }
+    },
+    {
+      "op": "depart",
+      "actor": "Signal box",
+      "effects": {
+        "signal": "green"
+      }
+    }
+  ],
+  "status": "executed",
+  "final": {
+    "signal": "green",
+    "bags": [
+      {
+        "bag": "47",
+        "stage": "aboard",
+        "holder": "Coach A",
+        "coach": "Coach A",
+        "waybill": "signed"
+      },
+      {
+        "bag": "52",
+        "stage": "aboard",
+        "holder": "Coach B",
+        "coach": "Coach B",
+        "waybill": "signed"
+      },
+      {
+        "bag": "68",
+        "stage": "aboard",
+        "holder": "Coach C",
+        "coach": "Coach C",
+        "waybill": "signed"
+      },
+      {
+        "bag": "74",
+        "stage": "aboard",
+        "holder": "Coach D",
+        "coach": "Coach D",
+        "waybill": "signed"
+      },
+      {
+        "bag": "81",
+        "stage": "aboard",
+        "holder": "Coach E",
+        "coach": "Coach E",
+        "waybill": "signed"
+      },
+      {
+        "bag": "96",
+        "stage": "aboard",
+        "holder": "Coach F",
+        "coach": "Coach F",
+        "waybill": "signed"
+      }
+    ]
+  },
+  "correct": true,
+  "first_correct": true,
+  "tokens": 0,
+  "model_ms": 0,
+  "validation_ms": 10.33,
+  "decision_sha256": "c1492be203f3b708ac6d555c4ec3cb2c453357167f914375da74dd48c39c910c"
+}

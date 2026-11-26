@@ -1,0 +1,254 @@
+{
+  "case": "use-hoist",
+  "trial": 2,
+  "mode": "relate",
+  "expected": "goal",
+  "options": {
+    "tool_choice": "required",
+    "parallel_tool_calls": false,
+    "store": false,
+    "max_output_tokens": 4096,
+    "reasoning": {
+      "effort": "low"
+    }
+  },
+  "history": [
+    {
+      "role": "developer",
+      "content": "Plan the registered-mail train departure. Read the graph. Author the remaining action DAG from its operator contracts. Use each needed operation once. To satisfy a false precondition, select an operation that establishes its exact value and name it in after. Independent branches stay independent. Include only direct causal links. Already true facts need no supplying step. Preserve pending retained nodes. Prefer low combined handling and travel effort; consider repair versus hoist. Delegate body binding using actor=auto. A rejected proposal gets a solver counterexample; use it to correct your plan. If there is no solution, submit an empty steps array."
+    },
+    {
+      "role": "user",
+      "content": "Deliver Bag 47 to the addressed coaches and sign every waybill before releasing one train."
+    },
+    {
+      "id": "fc_00d8e96526fb73bc016b084d25a99c819685d97a86a1ce8887",
+      "type": "function_call",
+      "status": "completed",
+      "arguments": "{}",
+      "call_id": "call_g5ONZODoPissgy2tkwefe2UQ",
+      "name": "read_dispatch_graph"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_g5ONZODoPissgy2tkwefe2UQ",
+      "output": "{\"goal\": \"Deliver Bag 47 to the addressed coaches and sign every waybill before releasing one train.\", \"terminal\": \"depart\", \"world\": {\"signal\": \"red\", \"47/cargo\": \"platform\", \"47/manifest\": \"unsigned\", \"forks\": \"offline\", \"47/hatch\": \"open\", \"47/address\": \"matched\", \"47/clearance\": \"fits\", \"47/lift\": \"connected\", \"interface\": \"unavailable\"}, \"current_holder\": \"Skim\", \"destination\": \"Junction Mail\", \"retained\": {\"47/manifest\": {\"actor\": \"Patch\", \"after\": []}}, \"instrument_interfaces\": [{\"robot\": \"Patch\", \"instrument\": \"Inspection probe\", \"fits\": \"Test socket\", \"needs\": \"Hex collar\", \"tool\": \"Jack forks\", \"patient\": \"Jack\"}], \"operators\": {\"47/collect\": {\"requires\": {\"47/cargo\": \"shelf\"}, \"establishes\": {\"47/cargo\": \"picked\"}, \"effort\": 2, \"eligible_and_approach\": {\"Wick\": 2}}, \"47/stage\": {\"requires\": {\"47/cargo\": \"picked\"}, \"establishes\": {\"47/cargo\": \"staged\"}, \"effort\": 2, \"eligible_and_approach\": {\"Wick\": 7}}, \"47/cross\": {\"requires\": {\"47/cargo\": \"staged\", \"47/hatch\": \"open\", \"47/clearance\": \"fits\"}, \"establishes\": {\"47/cargo\": \"platform\"}, \"effort\": 2, \"eligible_and_approach\": {\"Skim\": 6}}, \"47/manifest\": {\"requires\": {\"47/manifest\": \"unsigned\", \"47/address\": \"matched\"}, \"establishes\": {\"47/manifest\": \"signed\"}, \"effort\": 2, \"eligible_and_approach\": {\"Patch\": 2, \"Jack\": 3, \"Skim\": 5}}, \"47/repair\": {\"requires\": {\"forks\": \"offline\", \"interface\": \"fits\"}, \"establishes\": {\"forks\": \"online\"}, \"effort\": 4, \"eligible_and_approach\": {}}, \"47/load\": {\"requires\": {\"47/cargo\": \"platform\", \"forks\": \"online\", \"47/address\": \"matched\"}, \"establishes\": {\"47/cargo\": \"aboard\"}, \"effort\": 4, \"eligible_and_approach\": {\"Jack\": 1}}, \"47/hoist\": {\"requires\": {\"47/cargo\": \"platform\", \"47/lift\": \"connected\", \"47/address\": \"matched\"}, \"establishes\": {\"47/cargo\": \"aboard\"}, \"effort\": 16, \"eligible_and_approach\": {\"Skim\": 8}}, \"depart\": {\"requires\": {\"signal\": \"red\", \"47/cargo\": \"aboard\", \"47/manifest\": \"signed\", \"47/address\": \"matched\"}, \"establishes\": {\"signal\": \"green\"}, \"effort\": 1, \"eligible_and_approach\": {\"Signal box\": 0}}}, \"orders\": {\"47\": {\"holder\": \"Skim\", \"coach\": \"Coach A\", \"address\": \"Northport\", \"waybill\": \"unsigned\"}}}"
+    }
+  ],
+  "schemas": {
+    "read_dispatch_graph": {
+      "type": "function",
+      "name": "read_dispatch_graph",
+      "description": "Read the dispatch state, operator contracts and fleet information for planning.",
+      "strict": true,
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    "propose_dag": {
+      "type": "function",
+      "name": "propose_dag",
+      "description": "Submit the remaining action DAG for solver validation. Empty steps requests a verified hold.",
+      "strict": true,
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "op": {
+                  "type": "string",
+                  "enum": [
+                    "47/collect",
+                    "47/stage",
+                    "47/cross",
+                    "47/manifest",
+                    "47/repair",
+                    "47/load",
+                    "47/hoist",
+                    "depart"
+                  ]
+                },
+                "after": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "47/collect",
+                      "47/stage",
+                      "47/cross",
+                      "47/manifest",
+                      "47/repair",
+                      "47/load",
+                      "47/hoist",
+                      "depart"
+                    ]
+                  }
+                },
+                "actor": {
+                  "type": "string",
+                  "enum": [
+                    "auto",
+                    "Jack",
+                    "Patch",
+                    "Signal box",
+                    "Skim",
+                    "Wick"
+                  ]
+                }
+              },
+              "required": [
+                "op",
+                "after",
+                "actor"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "steps"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "requests": [
+    {
+      "tool": "read_dispatch_graph",
+      "history_length": 2,
+      "ms": 1468,
+      "model": "gpt-6-luna",
+      "usage": {
+        "input_tokens": 266,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 15,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 281
+      },
+      "response_status": "completed",
+      "arguments": "{}"
+    },
+    {
+      "tool": "propose_dag",
+      "history_length": 4,
+      "ms": 7560,
+      "model": "gpt-6-luna",
+      "usage": {
+        "input_tokens": 1134,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 365,
+        "output_tokens_details": {
+          "reasoning_tokens": 294
+        },
+        "total_tokens": 1499
+      },
+      "response_status": "completed",
+      "arguments": "{\"steps\":[{\"op\":\"47/manifest\",\"after\":[],\"actor\":\"Patch\"},{\"op\":\"47/hoist\",\"after\":[],\"actor\":\"Skim\"},{\"op\":\"depart\",\"after\":[\"47/manifest\",\"47/hoist\"],\"actor\":\"Signal box\"}]}"
+    }
+  ],
+  "attempts": [
+    {
+      "arguments": "{\"steps\":[{\"op\":\"47/manifest\",\"after\":[],\"actor\":\"Patch\"},{\"op\":\"47/hoist\",\"after\":[],\"actor\":\"Skim\"},{\"op\":\"depart\",\"after\":[\"47/manifest\",\"47/hoist\"],\"actor\":\"Signal box\"}]}",
+      "proposal": {
+        "steps": [
+          {
+            "op": "47/manifest",
+            "after": [],
+            "actor": "Patch"
+          },
+          {
+            "op": "47/hoist",
+            "after": [],
+            "actor": "Skim"
+          },
+          {
+            "op": "depart",
+            "after": [
+              "47/manifest",
+              "47/hoist"
+            ],
+            "actor": "Signal box"
+          }
+        ]
+      },
+      "model": "gpt-6-luna",
+      "usage": {
+        "input_tokens": 1134,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 365,
+        "output_tokens_details": {
+          "reasoning_tokens": 294
+        },
+        "total_tokens": 1499
+      },
+      "verdict": "accepted",
+      "feedback": "",
+      "validation_ms": 4.15,
+      "bindings": {
+        "47/manifest": "Patch",
+        "47/hoist": "Skim",
+        "depart": "Signal box"
+      },
+      "effort": 29
+    }
+  ],
+  "execution": [
+    {
+      "op": "47/manifest",
+      "actor": "Patch",
+      "effects": {
+        "47/manifest": "signed"
+      }
+    },
+    {
+      "op": "47/hoist",
+      "actor": "Skim",
+      "effects": {
+        "47/cargo": "aboard"
+      }
+    },
+    {
+      "op": "depart",
+      "actor": "Signal box",
+      "effects": {
+        "signal": "green"
+      }
+    }
+  ],
+  "status": "executed",
+  "final": {
+    "signal": "green",
+    "bags": [
+      {
+        "bag": "47",
+        "stage": "aboard",
+        "holder": "Coach A",
+        "coach": "Coach A",
+        "waybill": "signed"
+      }
+    ]
+  },
+  "correct": true,
+  "first_correct": true,
+  "tokens": 1780,
+  "model_ms": 9028,
+  "validation_ms": 4.15,
+  "decision_sha256": "7e911ed8f14de599f455c2f32aed2f8523c26a457d87ece7e77011ae5ff8e1b7"
+}

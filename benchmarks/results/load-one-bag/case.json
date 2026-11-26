@@ -1,0 +1,137 @@
+{
+  "fixture": {
+    "id": "load-one-bag",
+    "title": "Load only Bag 52 and keep the signal red",
+    "orders": 3,
+    "forklifts": 1,
+    "mechanics": 1,
+    "scanner": false,
+    "missing_courier": false,
+    "platform": false,
+    "signed": false,
+    "load_only": true,
+    "fault": false,
+    "kit": "driver",
+    "lift": true,
+    "feasible": true
+  },
+  "goal": "Get Bag 52 aboard its addressed coach. Confirm delivery and leave the train at red. Other bags and signatures are outside this goal.",
+  "retained": {},
+  "revision": 1,
+  "robots": 8,
+  "chassis": 4,
+  "candidate_pairs": 20,
+  "initial": {
+    "signal": "red",
+    "bags": [
+      {
+        "bag": "47",
+        "stage": "shelf",
+        "holder": "Shelf 47",
+        "coach": "Coach A",
+        "waybill": "unsigned"
+      },
+      {
+        "bag": "52",
+        "stage": "shelf",
+        "holder": "Shelf 52",
+        "coach": "Coach B",
+        "waybill": "unsigned"
+      },
+      {
+        "bag": "68",
+        "stage": "shelf",
+        "holder": "Shelf 68",
+        "coach": "Coach C",
+        "waybill": "unsigned"
+      }
+    ]
+  },
+  "instructions": "Plan the requested registered-mail goal. Read the graph. Author the remaining action DAG from its operator contracts. Use each needed operation once. To satisfy a false precondition, select an operation that establishes its exact value and name it in after. Independent branches stay independent. Include only direct causal links. Already true facts need no supplying step. Preserve pending retained nodes. Prefer low combined handling and travel effort; consider repair versus hoist. Delegate body binding using actor=auto. A rejected proposal gets a solver counterexample; use it to correct your plan. If there is no solution, submit an empty steps array.",
+  "preparation_ms": {
+    "shared_state": 16.71,
+    "relate_projection": 3.03,
+    "flat_projection": 1.52
+  },
+  "evidence": [
+    {
+      "question": "Delivery routes",
+      "cypher": "MATCH (o:Order)-[:REQUESTS]->(p:Parcel)-[:ADDRESSED_TO]->(route:Route)\n       <-[:SERVES]-(coach:Station)<-[:DELIVER_TO]-(o),(w:Waybill)-[:COVERS]->(p),\n       (o)-[:ON_TRAIN]->(t:Train)-[:HAS_COACH]->(coach)\n       RETURN o.id AS order,p.id AS bag,route.id AS route,coach.id AS coach,w.id AS bill ORDER BY bag",
+      "params": {},
+      "rows": [
+        {
+          "order": "47",
+          "bag": "Bag 47",
+          "route": "Northport",
+          "coach": "Coach A",
+          "bill": "Waybill 47"
+        },
+        {
+          "order": "52",
+          "bag": "Bag 52",
+          "route": "Eastbank",
+          "coach": "Coach B",
+          "bill": "Waybill 52"
+        },
+        {
+          "order": "68",
+          "bag": "Bag 68",
+          "route": "Westmere",
+          "coach": "Coach C",
+          "bill": "Waybill 68"
+        }
+      ]
+    },
+    {
+      "question": "Couriers fitting each hatch",
+      "cypher": "MATCH (o:Order)-[:VIA]->(g:Passage),(o)-[:REQUESTS]->(p:Parcel)\nOPTIONAL MATCH (r:Robot)-[:SERVICES]->(o),(r)-[:INSTANCE_OF]->(b)-[:HAS_SKILL]->(:Skill {id:'Passive deck'})\nWHERE b.cm<=g.cm AND b.deck+p.cm<=g.cm\nRETURN o.id AS bag,g.id AS hatch,r.id AS courier ORDER BY bag,courier",
+      "params": {},
+      "rows": [
+        {
+          "bag": "47",
+          "hatch": "Hatch 47",
+          "courier": "Skim"
+        },
+        {
+          "bag": "52",
+          "hatch": "Hatch 52",
+          "courier": "Dash"
+        },
+        {
+          "bag": "68",
+          "hatch": "Hatch 68",
+          "courier": "Moss"
+        }
+      ]
+    },
+    {
+      "question": "Parcel custody and waybills",
+      "cypher": "MATCH (o:Order)-[:REQUESTS]->(p:Parcel)-[:HELD_BY]->(h),\n(o)-[:DELIVER_TO]->(c:Station),(w:Waybill)-[:COVERS]->(p)\nRETURN o.id AS bag,p.stage AS stage,h.id AS holder,c.id AS coach,w.status AS waybill ORDER BY bag",
+      "params": {},
+      "rows": [
+        {
+          "bag": "47",
+          "stage": "shelf",
+          "holder": "Shelf 47",
+          "coach": "Coach A",
+          "waybill": "unsigned"
+        },
+        {
+          "bag": "52",
+          "stage": "shelf",
+          "holder": "Shelf 52",
+          "coach": "Coach B",
+          "waybill": "unsigned"
+        },
+        {
+          "bag": "68",
+          "stage": "shelf",
+          "holder": "Shelf 68",
+          "coach": "Coach C",
+          "waybill": "unsigned"
+        }
+      ]
+    }
+  ],
+  "sha256": "d3ee26718a683ec2c75903ae63bf526f6b0e2af5a6897ea660f9e54225c9ccda"
+}

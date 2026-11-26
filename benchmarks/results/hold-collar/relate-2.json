@@ -1,0 +1,288 @@
+{
+  "case": "hold-collar",
+  "trial": 2,
+  "mode": "relate",
+  "expected": "hold",
+  "options": {
+    "tool_choice": "required",
+    "parallel_tool_calls": false,
+    "store": false,
+    "max_output_tokens": 4096,
+    "reasoning": {
+      "effort": "low"
+    }
+  },
+  "history": [
+    {
+      "role": "developer",
+      "content": "Plan the registered-mail train departure. Read the graph. Author the remaining action DAG from its operator contracts. Use each needed operation once. To satisfy a false precondition, select an operation that establishes its exact value and name it in after. Independent branches stay independent. Include only direct causal links. Already true facts need no supplying step. Preserve pending retained nodes. Prefer low combined handling and travel effort; consider repair versus hoist. Delegate body binding using actor=auto. A rejected proposal gets a solver counterexample; use it to correct your plan. If there is no solution, submit an empty steps array."
+    },
+    {
+      "role": "user",
+      "content": "Deliver Bag 47 to the addressed coaches and sign every waybill before releasing one train."
+    },
+    {
+      "id": "fc_0bddfe72677693c3016b084d06dcc881968fcb91f6e6644dd4",
+      "type": "function_call",
+      "status": "completed",
+      "arguments": "{}",
+      "call_id": "call_JtWb5acFg3wwwwzv0BPGb5pi",
+      "name": "read_dispatch_graph"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_JtWb5acFg3wwwwzv0BPGb5pi",
+      "output": "{\"goal\": \"Deliver Bag 47 to the addressed coaches and sign every waybill before releasing one train.\", \"terminal\": \"depart\", \"world\": {\"signal\": \"red\", \"47/cargo\": \"platform\", \"47/manifest\": \"unsigned\", \"forks\": \"offline\", \"47/hatch\": \"open\", \"47/address\": \"matched\", \"47/clearance\": \"fits\", \"47/lift\": \"disconnected\", \"interface\": \"unavailable\"}, \"current_holder\": \"Skim\", \"destination\": \"Junction Mail\", \"retained\": {\"47/manifest\": {\"actor\": \"Patch\", \"after\": []}}, \"instrument_interfaces\": [{\"robot\": \"Patch\", \"instrument\": \"Inspection probe\", \"fits\": \"Test socket\", \"needs\": \"Hex collar\", \"tool\": \"Jack forks\", \"patient\": \"Jack\"}], \"operators\": {\"47/collect\": {\"requires\": {\"47/cargo\": \"shelf\"}, \"establishes\": {\"47/cargo\": \"picked\"}, \"effort\": 2, \"eligible_and_approach\": {\"Wick\": 2}}, \"47/stage\": {\"requires\": {\"47/cargo\": \"picked\"}, \"establishes\": {\"47/cargo\": \"staged\"}, \"effort\": 2, \"eligible_and_approach\": {\"Wick\": 7}}, \"47/cross\": {\"requires\": {\"47/cargo\": \"staged\", \"47/hatch\": \"open\", \"47/clearance\": \"fits\"}, \"establishes\": {\"47/cargo\": \"platform\"}, \"effort\": 2, \"eligible_and_approach\": {\"Skim\": 6}}, \"47/manifest\": {\"requires\": {\"47/manifest\": \"unsigned\", \"47/address\": \"matched\"}, \"establishes\": {\"47/manifest\": \"signed\"}, \"effort\": 2, \"eligible_and_approach\": {\"Patch\": 2, \"Jack\": 3, \"Skim\": 5}}, \"47/repair\": {\"requires\": {\"forks\": \"offline\", \"interface\": \"fits\"}, \"establishes\": {\"forks\": \"online\"}, \"effort\": 4, \"eligible_and_approach\": {}}, \"47/load\": {\"requires\": {\"47/cargo\": \"platform\", \"forks\": \"online\", \"47/address\": \"matched\"}, \"establishes\": {\"47/cargo\": \"aboard\"}, \"effort\": 4, \"eligible_and_approach\": {\"Jack\": 1}}, \"47/hoist\": {\"requires\": {\"47/cargo\": \"platform\", \"47/lift\": \"connected\", \"47/address\": \"matched\"}, \"establishes\": {\"47/cargo\": \"aboard\"}, \"effort\": 16, \"eligible_and_approach\": {}}, \"depart\": {\"requires\": {\"signal\": \"red\", \"47/cargo\": \"aboard\", \"47/manifest\": \"signed\", \"47/address\": \"matched\"}, \"establishes\": {\"signal\": \"green\"}, \"effort\": 1, \"eligible_and_approach\": {\"Signal box\": 0}}}, \"orders\": {\"47\": {\"holder\": \"Skim\", \"coach\": \"Coach A\", \"address\": \"Northport\", \"waybill\": \"unsigned\"}}}"
+    },
+    {
+      "id": "fc_0bddfe72677693c3016b084d0862148196b9caec91f3840c41",
+      "type": "function_call",
+      "status": "completed",
+      "arguments": "{\"steps\":[{\"op\":\"47/manifest\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"47/repair\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"47/load\",\"after\":[\"47/repair\"],\"actor\":\"auto\"},{\"op\":\"depart\",\"after\":[\"47/manifest\",\"47/load\"],\"actor\":\"auto\"}]}",
+      "call_id": "call_BmrcWdhO6UR32eb2JKyxo34F",
+      "name": "propose_dag"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_BmrcWdhO6UR32eb2JKyxo34F",
+      "output": "{\"accepted\": false, \"counterexample\": \"47/repair has no eligible body in the graph\"}"
+    }
+  ],
+  "schemas": {
+    "read_dispatch_graph": {
+      "type": "function",
+      "name": "read_dispatch_graph",
+      "description": "Read the dispatch state, operator contracts and fleet information for planning.",
+      "strict": true,
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    "propose_dag": {
+      "type": "function",
+      "name": "propose_dag",
+      "description": "Submit the remaining action DAG for solver validation. Empty steps requests a verified hold.",
+      "strict": true,
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "op": {
+                  "type": "string",
+                  "enum": [
+                    "47/collect",
+                    "47/stage",
+                    "47/cross",
+                    "47/manifest",
+                    "47/repair",
+                    "47/load",
+                    "47/hoist",
+                    "depart"
+                  ]
+                },
+                "after": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "47/collect",
+                      "47/stage",
+                      "47/cross",
+                      "47/manifest",
+                      "47/repair",
+                      "47/load",
+                      "47/hoist",
+                      "depart"
+                    ]
+                  }
+                },
+                "actor": {
+                  "type": "string",
+                  "enum": [
+                    "auto",
+                    "Jack",
+                    "Patch",
+                    "Signal box",
+                    "Skim",
+                    "Wick"
+                  ]
+                }
+              },
+              "required": [
+                "op",
+                "after",
+                "actor"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "steps"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "requests": [
+    {
+      "tool": "read_dispatch_graph",
+      "history_length": 2,
+      "ms": 1490,
+      "model": "gpt-6-luna",
+      "usage": {
+        "input_tokens": 266,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 15,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 281
+      },
+      "response_status": "completed",
+      "arguments": "{}"
+    },
+    {
+      "tool": "propose_dag",
+      "history_length": 4,
+      "ms": 2063,
+      "model": "gpt-6-luna",
+      "usage": {
+        "input_tokens": 1130,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 80,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 1210
+      },
+      "response_status": "completed",
+      "arguments": "{\"steps\":[{\"op\":\"47/manifest\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"47/repair\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"47/load\",\"after\":[\"47/repair\"],\"actor\":\"auto\"},{\"op\":\"depart\",\"after\":[\"47/manifest\",\"47/load\"],\"actor\":\"auto\"}]}"
+    },
+    {
+      "tool": "propose_dag",
+      "history_length": 6,
+      "ms": 5688,
+      "model": "gpt-6-luna",
+      "usage": {
+        "input_tokens": 1244,
+        "input_tokens_details": {
+          "cache_write_tokens": 1118,
+          "cached_tokens": 0
+        },
+        "output_tokens": 236,
+        "output_tokens_details": {
+          "reasoning_tokens": 215
+        },
+        "total_tokens": 1480
+      },
+      "response_status": "completed",
+      "arguments": "{\"steps\":[]}"
+    }
+  ],
+  "attempts": [
+    {
+      "arguments": "{\"steps\":[{\"op\":\"47/manifest\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"47/repair\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"47/load\",\"after\":[\"47/repair\"],\"actor\":\"auto\"},{\"op\":\"depart\",\"after\":[\"47/manifest\",\"47/load\"],\"actor\":\"auto\"}]}",
+      "proposal": {
+        "steps": [
+          {
+            "op": "47/manifest",
+            "after": [],
+            "actor": "auto"
+          },
+          {
+            "op": "47/repair",
+            "after": [],
+            "actor": "auto"
+          },
+          {
+            "op": "47/load",
+            "after": [
+              "47/repair"
+            ],
+            "actor": "auto"
+          },
+          {
+            "op": "depart",
+            "after": [
+              "47/manifest",
+              "47/load"
+            ],
+            "actor": "auto"
+          }
+        ]
+      },
+      "model": "gpt-6-luna",
+      "usage": {
+        "input_tokens": 1130,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 80,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 1210
+      },
+      "verdict": "rejected",
+      "feedback": "47/repair has no eligible body in the graph",
+      "validation_ms": 3.89
+    },
+    {
+      "arguments": "{\"steps\":[]}",
+      "proposal": {
+        "steps": []
+      },
+      "model": "gpt-6-luna",
+      "usage": {
+        "input_tokens": 1244,
+        "input_tokens_details": {
+          "cache_write_tokens": 1118,
+          "cached_tokens": 0
+        },
+        "output_tokens": 236,
+        "output_tokens_details": {
+          "reasoning_tokens": 215
+        },
+        "total_tokens": 1480
+      },
+      "verdict": "hold",
+      "feedback": "",
+      "validation_ms": 0.06
+    }
+  ],
+  "execution": [],
+  "status": "hold",
+  "final": {
+    "signal": "red",
+    "bags": [
+      {
+        "bag": "47",
+        "stage": "platform",
+        "holder": "Skim",
+        "coach": "Coach A",
+        "waybill": "unsigned"
+      }
+    ]
+  },
+  "correct": true,
+  "first_correct": false,
+  "tokens": 2971,
+  "model_ms": 9241,
+  "validation_ms": 3.95,
+  "decision_sha256": "371e808caa0c6aea1f7e77e99fd7a7dbb7215478b3f3146c8084fe0ef92f8a9f"
+}

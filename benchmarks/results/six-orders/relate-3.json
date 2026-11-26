@@ -1,0 +1,769 @@
+{
+  "case": "six-orders",
+  "trial": 3,
+  "mode": "relate",
+  "expected": "goal",
+  "options": {
+    "tool_choice": "required",
+    "parallel_tool_calls": false,
+    "store": false,
+    "max_output_tokens": 4096,
+    "reasoning": {
+      "effort": "low"
+    }
+  },
+  "history": [
+    {
+      "role": "developer",
+      "content": "Plan the registered-mail train departure. Read the graph. Author the remaining action DAG from its operator contracts. Use each needed operation once. To satisfy a false precondition, select an operation that establishes its exact value and name it in after. Independent branches stay independent. Include only direct causal links. Already true facts need no supplying step. Preserve pending retained nodes. Prefer low combined handling and travel effort; consider repair versus hoist. Delegate body binding using actor=auto. A rejected proposal gets a solver counterexample; use it to correct your plan. If there is no solution, submit an empty steps array."
+    },
+    {
+      "role": "user",
+      "content": "Deliver Bag 47, Bag 52, Bag 68, Bag 74, Bag 81, Bag 96 to the addressed coaches and sign every waybill before releasing one train."
+    },
+    {
+      "id": "fc_073c31bfd92b3af2016b084c8f0e848193ba362341719fb56e",
+      "type": "function_call",
+      "status": "completed",
+      "arguments": "{}",
+      "call_id": "call_UJ4cAJSkOQueOp8II1sN6xmL",
+      "name": "read_dispatch_graph"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_UJ4cAJSkOQueOp8II1sN6xmL",
+      "output": "{\"goal\": \"Deliver Bag 47, Bag 52, Bag 68, Bag 74, Bag 81, Bag 96 to the addressed coaches and sign every waybill before releasing one train.\", \"terminal\": \"depart\", \"world\": {\"signal\": \"red\", \"47/cargo\": \"shelf\", \"47/manifest\": \"unsigned\", \"forks\": \"online\", \"47/hatch\": \"open\", \"47/address\": \"matched\", \"47/clearance\": \"fits\", \"47/lift\": \"connected\", \"52/cargo\": \"shelf\", \"52/manifest\": \"unsigned\", \"52/hatch\": \"open\", \"52/address\": \"matched\", \"52/clearance\": \"fits\", \"52/lift\": \"disconnected\", \"68/cargo\": \"shelf\", \"68/manifest\": \"unsigned\", \"68/hatch\": \"open\", \"68/address\": \"matched\", \"68/clearance\": \"fits\", \"68/lift\": \"disconnected\", \"74/cargo\": \"shelf\", \"74/manifest\": \"unsigned\", \"74/hatch\": \"open\", \"74/address\": \"matched\", \"74/clearance\": \"fits\", \"74/lift\": \"disconnected\", \"81/cargo\": \"shelf\", \"81/manifest\": \"unsigned\", \"81/hatch\": \"open\", \"81/address\": \"matched\", \"81/clearance\": \"fits\", \"81/lift\": \"disconnected\", \"96/cargo\": \"shelf\", \"96/manifest\": \"unsigned\", \"96/hatch\": \"open\", \"96/address\": \"matched\", \"96/clearance\": \"fits\", \"96/lift\": \"disconnected\", \"interface\": \"unavailable\"}, \"current_holder\": \"Shelf 47\", \"destination\": \"Junction Mail\", \"retained\": {}, \"instrument_interfaces\": [{\"robot\": \"Patch\", \"instrument\": \"Hex driver\", \"fits\": \"Hex collar\", \"needs\": \"Hex collar\", \"tool\": \"Jack forks\", \"patient\": \"Jack\"}], \"operators\": {\"47/collect\": {\"requires\": {\"47/cargo\": \"shelf\"}, \"establishes\": {\"47/cargo\": \"picked\"}, \"effort\": 2, \"eligible_and_approach\": {\"Wick\": 2}}, \"47/stage\": {\"requires\": {\"47/cargo\": \"picked\"}, \"establishes\": {\"47/cargo\": \"staged\"}, \"effort\": 2, \"eligible_and_approach\": {\"Wick\": 7}}, \"47/cross\": {\"requires\": {\"47/cargo\": \"staged\", \"47/hatch\": \"open\", \"47/clearance\": \"fits\"}, \"establishes\": {\"47/cargo\": \"platform\"}, \"effort\": 2, \"eligible_and_approach\": {\"Skim\": 3}}, \"47/manifest\": {\"requires\": {\"47/manifest\": \"unsigned\", \"47/address\": \"matched\"}, \"establishes\": {\"47/manifest\": \"signed\"}, \"effort\": 2, \"eligible_and_approach\": {\"Patch\": 2, \"Jack\": 3}}, \"47/repair\": {\"requires\": {\"forks\": \"offline\", \"interface\": \"fits\"}, \"establishes\": {\"forks\": \"online\"}, \"effort\": 4, \"eligible_and_approach\": {}}, \"47/load\": {\"requires\": {\"47/cargo\": \"platform\", \"forks\": \"online\", \"47/address\": \"matched\"}, \"establishes\": {\"47/cargo\": \"aboard\"}, \"effort\": 4, \"eligible_and_approach\": {\"Jack\": 1}}, \"47/hoist\": {\"requires\": {\"47/cargo\": \"platform\", \"47/lift\": \"connected\", \"47/address\": \"matched\"}, \"establishes\": {\"47/cargo\": \"aboard\"}, \"effort\": 16, \"eligible_and_approach\": {\"Skim\": 15}}, \"52/collect\": {\"requires\": {\"52/cargo\": \"shelf\"}, \"establishes\": {\"52/cargo\": \"picked\"}, \"effort\": 2, \"eligible_and_approach\": {\"Pip\": 1}}, \"52/stage\": {\"requires\": {\"52/cargo\": \"picked\"}, \"establishes\": {\"52/cargo\": \"staged\"}, \"effort\": 2, \"eligible_and_approach\": {\"Pip\": 7}}, \"52/cross\": {\"requires\": {\"52/cargo\": \"staged\", \"52/hatch\": \"open\", \"52/clearance\": \"fits\"}, \"establishes\": {\"52/cargo\": \"platform\"}, \"effort\": 2, \"eligible_and_approach\": {\"Dash\": 3}}, \"52/manifest\": {\"requires\": {\"52/manifest\": \"unsigned\", \"52/address\": \"matched\"}, \"establishes\": {\"52/manifest\": \"signed\"}, \"effort\": 2, \"eligible_and_approach\": {\"Patch\": 4, \"Jack\": 7}}, \"52/load\": {\"requires\": {\"52/cargo\": \"platform\", \"forks\": \"online\", \"52/address\": \"matched\"}, \"establishes\": {\"52/cargo\": \"aboard\"}, \"effort\": 4, \"eligible_and_approach\": {\"Jack\": 5}}, \"52/hoist\": {\"requires\": {\"52/cargo\": \"platform\", \"52/lift\": \"connected\", \"52/address\": \"matched\"}, \"establishes\": {\"52/cargo\": \"aboard\"}, \"effort\": 16, \"eligible_and_approach\": {}}, \"68/collect\": {\"requires\": {\"68/cargo\": \"shelf\"}, \"establishes\": {\"68/cargo\": \"picked\"}, \"effort\": 2, \"eligible_and_approach\": {\"Rue\": 2}}, \"68/stage\": {\"requires\": {\"68/cargo\": \"picked\"}, \"establishes\": {\"68/cargo\": \"staged\"}, \"effort\": 2, \"eligible_and_approach\": {\"Rue\": 7}}, \"68/cross\": {\"requires\": {\"68/cargo\": \"staged\", \"68/hatch\": \"open\", \"68/clearance\": \"fits\"}, \"establishes\": {\"68/cargo\": \"platform\"}, \"effort\": 2, \"eligible_and_approach\": {\"Moss\": 5}}, \"68/manifest\": {\"requires\": {\"68/manifest\": \"unsigned\", \"68/address\": \"matched\"}, \"establishes\": {\"68/manifest\": \"signed\"}, \"effort\": 2, \"eligible_and_approach\": {\"Patch\": 8, \"Jack\": 11}}, \"68/load\": {\"requires\": {\"68/cargo\": \"platform\", \"forks\": \"online\", \"68/address\": \"matched\"}, \"establishes\": {\"68/cargo\": \"aboard\"}, \"effort\": 4, \"eligible_and_approach\": {\"Jack\": 9}}, \"68/hoist\": {\"requires\": {\"68/cargo\": \"platform\", \"68/lift\": \"connected\", \"68/address\": \"matched\"}, \"establishes\": {\"68/cargo\": \"aboard\"}, \"effort\": 16, \"eligible_and_approach\": {}}, \"74/collect\": {\"requires\": {\"74/cargo\": \"shelf\"}, \"establishes\": {\"74/cargo\": \"picked\"}, \"effort\": 2, \"eligible_and_approach\": {\"Pax\": 1}}, \"74/stage\": {\"requires\": {\"74/cargo\": \"picked\"}, \"establishes\": {\"74/cargo\": \"staged\"}, \"effort\": 2, \"eligible_and_approach\": {\"Pax\": 7}}, \"74/cross\": {\"requires\": {\"74/cargo\": \"staged\", \"74/hatch\": \"open\", \"74/clearance\": \"fits\"}, \"establishes\": {\"74/cargo\": \"platform\"}, \"effort\": 2, \"eligible_and_approach\": {\"Kite\": 3}}, \"74/manifest\": {\"requires\": {\"74/manifest\": \"unsigned\", \"74/address\": \"matched\"}, \"establishes\": {\"74/manifest\": \"signed\"}, \"effort\": 2, \"eligible_and_approach\": {\"Patch\": 12, \"Jack\": 15}}, \"74/load\": {\"requires\": {\"74/cargo\": \"platform\", \"forks\": \"online\", \"74/address\": \"matched\"}, \"establishes\": {\"74/cargo\": \"aboard\"}, \"effort\": 4, \"eligible_and_approach\": {\"Jack\": 13}}, \"74/hoist\": {\"requires\": {\"74/cargo\": \"platform\", \"74/lift\": \"connected\", \"74/address\": \"matched\"}, \"establishes\": {\"74/cargo\": \"aboard\"}, \"effort\": 16, \"eligible_and_approach\": {}}, \"81/collect\": {\"requires\": {\"81/cargo\": \"shelf\"}, \"establishes\": {\"81/cargo\": \"picked\"}, \"effort\": 2, \"eligible_and_approach\": {\"Lark\": 1}}, \"81/stage\": {\"requires\": {\"81/cargo\": \"picked\"}, \"establishes\": {\"81/cargo\": \"staged\"}, \"effort\": 2, \"eligible_and_approach\": {\"Lark\": 7}}, \"81/cross\": {\"requires\": {\"81/cargo\": \"staged\", \"81/hatch\": \"open\", \"81/clearance\": \"fits\"}, \"establishes\": {\"81/cargo\": \"platform\"}, \"effort\": 2, \"eligible_and_approach\": {\"Zip\": 3}}, \"81/manifest\": {\"requires\": {\"81/manifest\": \"unsigned\", \"81/address\": \"matched\"}, \"establishes\": {\"81/manifest\": \"signed\"}, \"effort\": 2, \"eligible_and_approach\": {\"Patch\": 16, \"Jack\": 19}}, \"81/load\": {\"requires\": {\"81/cargo\": \"platform\", \"forks\": \"online\", \"81/address\": \"matched\"}, \"establishes\": {\"81/cargo\": \"aboard\"}, \"effort\": 4, \"eligible_and_approach\": {\"Jack\": 17}}, \"81/hoist\": {\"requires\": {\"81/cargo\": \"platform\", \"81/lift\": \"connected\", \"81/address\": \"matched\"}, \"establishes\": {\"81/cargo\": \"aboard\"}, \"effort\": 16, \"eligible_and_approach\": {}}, \"96/collect\": {\"requires\": {\"96/cargo\": \"shelf\"}, \"establishes\": {\"96/cargo\": \"picked\"}, \"effort\": 2, \"eligible_and_approach\": {\"Elm\": 1}}, \"96/stage\": {\"requires\": {\"96/cargo\": \"picked\"}, \"establishes\": {\"96/cargo\": \"staged\"}, \"effort\": 2, \"eligible_and_approach\": {\"Elm\": 7}}, \"96/cross\": {\"requires\": {\"96/cargo\": \"staged\", \"96/hatch\": \"open\", \"96/clearance\": \"fits\"}, \"establishes\": {\"96/cargo\": \"platform\"}, \"effort\": 2, \"eligible_and_approach\": {\"Puck\": 3}}, \"96/manifest\": {\"requires\": {\"96/manifest\": \"unsigned\", \"96/address\": \"matched\"}, \"establishes\": {\"96/manifest\": \"signed\"}, \"effort\": 2, \"eligible_and_approach\": {\"Patch\": 20, \"Jack\": 23}}, \"96/load\": {\"requires\": {\"96/cargo\": \"platform\", \"forks\": \"online\", \"96/address\": \"matched\"}, \"establishes\": {\"96/cargo\": \"aboard\"}, \"effort\": 4, \"eligible_and_approach\": {\"Jack\": 21}}, \"96/hoist\": {\"requires\": {\"96/cargo\": \"platform\", \"96/lift\": \"connected\", \"96/address\": \"matched\"}, \"establishes\": {\"96/cargo\": \"aboard\"}, \"effort\": 16, \"eligible_and_approach\": {}}, \"depart\": {\"requires\": {\"signal\": \"red\", \"47/cargo\": \"aboard\", \"47/manifest\": \"signed\", \"47/address\": \"matched\", \"52/cargo\": \"aboard\", \"52/manifest\": \"signed\", \"52/address\": \"matched\", \"68/cargo\": \"aboard\", \"68/manifest\": \"signed\", \"68/address\": \"matched\", \"74/cargo\": \"aboard\", \"74/manifest\": \"signed\", \"74/address\": \"matched\", \"81/cargo\": \"aboard\", \"81/manifest\": \"signed\", \"81/address\": \"matched\", \"96/cargo\": \"aboard\", \"96/manifest\": \"signed\", \"96/address\": \"matched\"}, \"establishes\": {\"signal\": \"green\"}, \"effort\": 1, \"eligible_and_approach\": {\"Signal box\": 0}}}, \"orders\": {\"47\": {\"holder\": \"Shelf 47\", \"coach\": \"Coach A\", \"address\": \"Northport\", \"waybill\": \"unsigned\"}, \"52\": {\"holder\": \"Shelf 52\", \"coach\": \"Coach B\", \"address\": \"Eastbank\", \"waybill\": \"unsigned\"}, \"68\": {\"holder\": \"Shelf 68\", \"coach\": \"Coach C\", \"address\": \"Westmere\", \"waybill\": \"unsigned\"}, \"74\": {\"holder\": \"Shelf 74\", \"coach\": \"Coach D\", \"address\": \"Southgate\", \"waybill\": \"unsigned\"}, \"81\": {\"holder\": \"Shelf 81\", \"coach\": \"Coach E\", \"address\": \"Longford\", \"waybill\": \"unsigned\"}, \"96\": {\"holder\": \"Shelf 96\", \"coach\": \"Coach F\", \"address\": \"Ashfield\", \"waybill\": \"unsigned\"}}}"
+    }
+  ],
+  "schemas": {
+    "read_dispatch_graph": {
+      "type": "function",
+      "name": "read_dispatch_graph",
+      "description": "Read the dispatch state, operator contracts and fleet information for planning.",
+      "strict": true,
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    "propose_dag": {
+      "type": "function",
+      "name": "propose_dag",
+      "description": "Submit the remaining action DAG for solver validation. Empty steps requests a verified hold.",
+      "strict": true,
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "op": {
+                  "type": "string",
+                  "enum": [
+                    "47/collect",
+                    "47/stage",
+                    "47/cross",
+                    "47/manifest",
+                    "47/repair",
+                    "47/load",
+                    "47/hoist",
+                    "52/collect",
+                    "52/stage",
+                    "52/cross",
+                    "52/manifest",
+                    "52/load",
+                    "52/hoist",
+                    "68/collect",
+                    "68/stage",
+                    "68/cross",
+                    "68/manifest",
+                    "68/load",
+                    "68/hoist",
+                    "74/collect",
+                    "74/stage",
+                    "74/cross",
+                    "74/manifest",
+                    "74/load",
+                    "74/hoist",
+                    "81/collect",
+                    "81/stage",
+                    "81/cross",
+                    "81/manifest",
+                    "81/load",
+                    "81/hoist",
+                    "96/collect",
+                    "96/stage",
+                    "96/cross",
+                    "96/manifest",
+                    "96/load",
+                    "96/hoist",
+                    "depart"
+                  ]
+                },
+                "after": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "47/collect",
+                      "47/stage",
+                      "47/cross",
+                      "47/manifest",
+                      "47/repair",
+                      "47/load",
+                      "47/hoist",
+                      "52/collect",
+                      "52/stage",
+                      "52/cross",
+                      "52/manifest",
+                      "52/load",
+                      "52/hoist",
+                      "68/collect",
+                      "68/stage",
+                      "68/cross",
+                      "68/manifest",
+                      "68/load",
+                      "68/hoist",
+                      "74/collect",
+                      "74/stage",
+                      "74/cross",
+                      "74/manifest",
+                      "74/load",
+                      "74/hoist",
+                      "81/collect",
+                      "81/stage",
+                      "81/cross",
+                      "81/manifest",
+                      "81/load",
+                      "81/hoist",
+                      "96/collect",
+                      "96/stage",
+                      "96/cross",
+                      "96/manifest",
+                      "96/load",
+                      "96/hoist",
+                      "depart"
+                    ]
+                  }
+                },
+                "actor": {
+                  "type": "string",
+                  "enum": [
+                    "auto",
+                    "Dash",
+                    "Elm",
+                    "Jack",
+                    "Kite",
+                    "Lark",
+                    "Moss",
+                    "Patch",
+                    "Pax",
+                    "Pip",
+                    "Puck",
+                    "Rue",
+                    "Signal box",
+                    "Skim",
+                    "Wick",
+                    "Zip"
+                  ]
+                }
+              },
+              "required": [
+                "op",
+                "after",
+                "actor"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "steps"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "requests": [
+    {
+      "tool": "read_dispatch_graph",
+      "history_length": 2,
+      "ms": 2019,
+      "model": "gpt-6-luna",
+      "usage": {
+        "input_tokens": 286,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 15,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 301
+      },
+      "response_status": "completed",
+      "arguments": "{}"
+    },
+    {
+      "tool": "propose_dag",
+      "history_length": 4,
+      "ms": 7552,
+      "model": "gpt-6-luna",
+      "usage": {
+        "input_tokens": 3870,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 3744
+        },
+        "output_tokens": 646,
+        "output_tokens_details": {
+          "reasoning_tokens": 115
+        },
+        "total_tokens": 4516
+      },
+      "response_status": "completed",
+      "arguments": "{\"steps\":[{\"op\":\"47/collect\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"47/stage\",\"after\":[\"47/collect\"],\"actor\":\"auto\"},{\"op\":\"47/cross\",\"after\":[\"47/stage\"],\"actor\":\"auto\"},{\"op\":\"47/load\",\"after\":[\"47/cross\"],\"actor\":\"auto\"},{\"op\":\"47/manifest\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"52/collect\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"52/stage\",\"after\":[\"52/collect\"],\"actor\":\"auto\"},{\"op\":\"52/cross\",\"after\":[\"52/stage\"],\"actor\":\"auto\"},{\"op\":\"52/load\",\"after\":[\"52/cross\"],\"actor\":\"auto\"},{\"op\":\"52/manifest\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"68/collect\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"68/stage\",\"after\":[\"68/collect\"],\"actor\":\"auto\"},{\"op\":\"68/cross\",\"after\":[\"68/stage\"],\"actor\":\"auto\"},{\"op\":\"68/load\",\"after\":[\"68/cross\"],\"actor\":\"auto\"},{\"op\":\"68/manifest\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"74/collect\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"74/stage\",\"after\":[\"74/collect\"],\"actor\":\"auto\"},{\"op\":\"74/cross\",\"after\":[\"74/stage\"],\"actor\":\"auto\"},{\"op\":\"74/load\",\"after\":[\"74/cross\"],\"actor\":\"auto\"},{\"op\":\"74/manifest\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"81/collect\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"81/stage\",\"after\":[\"81/collect\"],\"actor\":\"auto\"},{\"op\":\"81/cross\",\"after\":[\"81/stage\"],\"actor\":\"auto\"},{\"op\":\"81/load\",\"after\":[\"81/cross\"],\"actor\":\"auto\"},{\"op\":\"81/manifest\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"96/collect\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"96/stage\",\"after\":[\"96/collect\"],\"actor\":\"auto\"},{\"op\":\"96/cross\",\"after\":[\"96/stage\"],\"actor\":\"auto\"},{\"op\":\"96/load\",\"after\":[\"96/cross\"],\"actor\":\"auto\"},{\"op\":\"96/manifest\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"depart\",\"after\":[\"47/load\",\"47/manifest\",\"52/load\",\"52/manifest\",\"68/load\",\"68/manifest\",\"74/load\",\"74/manifest\",\"81/load\",\"81/manifest\",\"96/load\",\"96/manifest\"],\"actor\":\"auto\"}]}"
+    }
+  ],
+  "attempts": [
+    {
+      "arguments": "{\"steps\":[{\"op\":\"47/collect\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"47/stage\",\"after\":[\"47/collect\"],\"actor\":\"auto\"},{\"op\":\"47/cross\",\"after\":[\"47/stage\"],\"actor\":\"auto\"},{\"op\":\"47/load\",\"after\":[\"47/cross\"],\"actor\":\"auto\"},{\"op\":\"47/manifest\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"52/collect\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"52/stage\",\"after\":[\"52/collect\"],\"actor\":\"auto\"},{\"op\":\"52/cross\",\"after\":[\"52/stage\"],\"actor\":\"auto\"},{\"op\":\"52/load\",\"after\":[\"52/cross\"],\"actor\":\"auto\"},{\"op\":\"52/manifest\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"68/collect\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"68/stage\",\"after\":[\"68/collect\"],\"actor\":\"auto\"},{\"op\":\"68/cross\",\"after\":[\"68/stage\"],\"actor\":\"auto\"},{\"op\":\"68/load\",\"after\":[\"68/cross\"],\"actor\":\"auto\"},{\"op\":\"68/manifest\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"74/collect\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"74/stage\",\"after\":[\"74/collect\"],\"actor\":\"auto\"},{\"op\":\"74/cross\",\"after\":[\"74/stage\"],\"actor\":\"auto\"},{\"op\":\"74/load\",\"after\":[\"74/cross\"],\"actor\":\"auto\"},{\"op\":\"74/manifest\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"81/collect\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"81/stage\",\"after\":[\"81/collect\"],\"actor\":\"auto\"},{\"op\":\"81/cross\",\"after\":[\"81/stage\"],\"actor\":\"auto\"},{\"op\":\"81/load\",\"after\":[\"81/cross\"],\"actor\":\"auto\"},{\"op\":\"81/manifest\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"96/collect\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"96/stage\",\"after\":[\"96/collect\"],\"actor\":\"auto\"},{\"op\":\"96/cross\",\"after\":[\"96/stage\"],\"actor\":\"auto\"},{\"op\":\"96/load\",\"after\":[\"96/cross\"],\"actor\":\"auto\"},{\"op\":\"96/manifest\",\"after\":[],\"actor\":\"auto\"},{\"op\":\"depart\",\"after\":[\"47/load\",\"47/manifest\",\"52/load\",\"52/manifest\",\"68/load\",\"68/manifest\",\"74/load\",\"74/manifest\",\"81/load\",\"81/manifest\",\"96/load\",\"96/manifest\"],\"actor\":\"auto\"}]}",
+      "proposal": {
+        "steps": [
+          {
+            "op": "47/collect",
+            "after": [],
+            "actor": "auto"
+          },
+          {
+            "op": "47/stage",
+            "after": [
+              "47/collect"
+            ],
+            "actor": "auto"
+          },
+          {
+            "op": "47/cross",
+            "after": [
+              "47/stage"
+            ],
+            "actor": "auto"
+          },
+          {
+            "op": "47/load",
+            "after": [
+              "47/cross"
+            ],
+            "actor": "auto"
+          },
+          {
+            "op": "47/manifest",
+            "after": [],
+            "actor": "auto"
+          },
+          {
+            "op": "52/collect",
+            "after": [],
+            "actor": "auto"
+          },
+          {
+            "op": "52/stage",
+            "after": [
+              "52/collect"
+            ],
+            "actor": "auto"
+          },
+          {
+            "op": "52/cross",
+            "after": [
+              "52/stage"
+            ],
+            "actor": "auto"
+          },
+          {
+            "op": "52/load",
+            "after": [
+              "52/cross"
+            ],
+            "actor": "auto"
+          },
+          {
+            "op": "52/manifest",
+            "after": [],
+            "actor": "auto"
+          },
+          {
+            "op": "68/collect",
+            "after": [],
+            "actor": "auto"
+          },
+          {
+            "op": "68/stage",
+            "after": [
+              "68/collect"
+            ],
+            "actor": "auto"
+          },
+          {
+            "op": "68/cross",
+            "after": [
+              "68/stage"
+            ],
+            "actor": "auto"
+          },
+          {
+            "op": "68/load",
+            "after": [
+              "68/cross"
+            ],
+            "actor": "auto"
+          },
+          {
+            "op": "68/manifest",
+            "after": [],
+            "actor": "auto"
+          },
+          {
+            "op": "74/collect",
+            "after": [],
+            "actor": "auto"
+          },
+          {
+            "op": "74/stage",
+            "after": [
+              "74/collect"
+            ],
+            "actor": "auto"
+          },
+          {
+            "op": "74/cross",
+            "after": [
+              "74/stage"
+            ],
+            "actor": "auto"
+          },
+          {
+            "op": "74/load",
+            "after": [
+              "74/cross"
+            ],
+            "actor": "auto"
+          },
+          {
+            "op": "74/manifest",
+            "after": [],
+            "actor": "auto"
+          },
+          {
+            "op": "81/collect",
+            "after": [],
+            "actor": "auto"
+          },
+          {
+            "op": "81/stage",
+            "after": [
+              "81/collect"
+            ],
+            "actor": "auto"
+          },
+          {
+            "op": "81/cross",
+            "after": [
+              "81/stage"
+            ],
+            "actor": "auto"
+          },
+          {
+            "op": "81/load",
+            "after": [
+              "81/cross"
+            ],
+            "actor": "auto"
+          },
+          {
+            "op": "81/manifest",
+            "after": [],
+            "actor": "auto"
+          },
+          {
+            "op": "96/collect",
+            "after": [],
+            "actor": "auto"
+          },
+          {
+            "op": "96/stage",
+            "after": [
+              "96/collect"
+            ],
+            "actor": "auto"
+          },
+          {
+            "op": "96/cross",
+            "after": [
+              "96/stage"
+            ],
+            "actor": "auto"
+          },
+          {
+            "op": "96/load",
+            "after": [
+              "96/cross"
+            ],
+            "actor": "auto"
+          },
+          {
+            "op": "96/manifest",
+            "after": [],
+            "actor": "auto"
+          },
+          {
+            "op": "depart",
+            "after": [
+              "47/load",
+              "47/manifest",
+              "52/load",
+              "52/manifest",
+              "68/load",
+              "68/manifest",
+              "74/load",
+              "74/manifest",
+              "81/load",
+              "81/manifest",
+              "96/load",
+              "96/manifest"
+            ],
+            "actor": "auto"
+          }
+        ]
+      },
+      "model": "gpt-6-luna",
+      "usage": {
+        "input_tokens": 3870,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 3744
+        },
+        "output_tokens": 646,
+        "output_tokens_details": {
+          "reasoning_tokens": 115
+        },
+        "total_tokens": 4516
+      },
+      "verdict": "accepted",
+      "feedback": "",
+      "validation_ms": 26.98,
+      "bindings": {
+        "47/collect": "Wick",
+        "47/stage": "Wick",
+        "47/cross": "Skim",
+        "47/load": "Jack",
+        "47/manifest": "Patch",
+        "52/collect": "Pip",
+        "52/stage": "Pip",
+        "52/cross": "Dash",
+        "52/load": "Jack",
+        "52/manifest": "Patch",
+        "68/collect": "Rue",
+        "68/stage": "Rue",
+        "68/cross": "Moss",
+        "68/load": "Jack",
+        "68/manifest": "Patch",
+        "74/collect": "Pax",
+        "74/stage": "Pax",
+        "74/cross": "Kite",
+        "74/load": "Jack",
+        "74/manifest": "Patch",
+        "81/collect": "Lark",
+        "81/stage": "Lark",
+        "81/cross": "Zip",
+        "81/load": "Jack",
+        "81/manifest": "Patch",
+        "96/collect": "Elm",
+        "96/stage": "Elm",
+        "96/cross": "Puck",
+        "96/load": "Jack",
+        "96/manifest": "Patch",
+        "depart": "Signal box"
+      },
+      "effort": 271
+    }
+  ],
+  "execution": [
+    {
+      "op": "47/collect",
+      "actor": "Wick",
+      "effects": {
+        "47/cargo": "picked"
+      }
+    },
+    {
+      "op": "47/manifest",
+      "actor": "Patch",
+      "effects": {
+        "47/manifest": "signed"
+      }
+    },
+    {
+      "op": "52/collect",
+      "actor": "Pip",
+      "effects": {
+        "52/cargo": "picked"
+      }
+    },
+    {
+      "op": "52/manifest",
+      "actor": "Patch",
+      "effects": {
+        "52/manifest": "signed"
+      }
+    },
+    {
+      "op": "68/collect",
+      "actor": "Rue",
+      "effects": {
+        "68/cargo": "picked"
+      }
+    },
+    {
+      "op": "68/manifest",
+      "actor": "Patch",
+      "effects": {
+        "68/manifest": "signed"
+      }
+    },
+    {
+      "op": "74/collect",
+      "actor": "Pax",
+      "effects": {
+        "74/cargo": "picked"
+      }
+    },
+    {
+      "op": "74/manifest",
+      "actor": "Patch",
+      "effects": {
+        "74/manifest": "signed"
+      }
+    },
+    {
+      "op": "81/collect",
+      "actor": "Lark",
+      "effects": {
+        "81/cargo": "picked"
+      }
+    },
+    {
+      "op": "81/manifest",
+      "actor": "Patch",
+      "effects": {
+        "81/manifest": "signed"
+      }
+    },
+    {
+      "op": "96/collect",
+      "actor": "Elm",
+      "effects": {
+        "96/cargo": "picked"
+      }
+    },
+    {
+      "op": "96/manifest",
+      "actor": "Patch",
+      "effects": {
+        "96/manifest": "signed"
+      }
+    },
+    {
+      "op": "47/stage",
+      "actor": "Wick",
+      "effects": {
+        "47/cargo": "staged"
+      }
+    },
+    {
+      "op": "52/stage",
+      "actor": "Pip",
+      "effects": {
+        "52/cargo": "staged"
+      }
+    },
+    {
+      "op": "68/stage",
+      "actor": "Rue",
+      "effects": {
+        "68/cargo": "staged"
+      }
+    },
+    {
+      "op": "74/stage",
+      "actor": "Pax",
+      "effects": {
+        "74/cargo": "staged"
+      }
+    },
+    {
+      "op": "81/stage",
+      "actor": "Lark",
+      "effects": {
+        "81/cargo": "staged"
+      }
+    },
+    {
+      "op": "96/stage",
+      "actor": "Elm",
+      "effects": {
+        "96/cargo": "staged"
+      }
+    },
+    {
+      "op": "47/cross",
+      "actor": "Skim",
+      "effects": {
+        "47/cargo": "platform"
+      }
+    },
+    {
+      "op": "52/cross",
+      "actor": "Dash",
+      "effects": {
+        "52/cargo": "platform"
+      }
+    },
+    {
+      "op": "68/cross",
+      "actor": "Moss",
+      "effects": {
+        "68/cargo": "platform"
+      }
+    },
+    {
+      "op": "74/cross",
+      "actor": "Kite",
+      "effects": {
+        "74/cargo": "platform"
+      }
+    },
+    {
+      "op": "81/cross",
+      "actor": "Zip",
+      "effects": {
+        "81/cargo": "platform"
+      }
+    },
+    {
+      "op": "96/cross",
+      "actor": "Puck",
+      "effects": {
+        "96/cargo": "platform"
+      }
+    },
+    {
+      "op": "47/load",
+      "actor": "Jack",
+      "effects": {
+        "47/cargo": "aboard"
+      }
+    },
+    {
+      "op": "52/load",
+      "actor": "Jack",
+      "effects": {
+        "52/cargo": "aboard"
+      }
+    },
+    {
+      "op": "68/load",
+      "actor": "Jack",
+      "effects": {
+        "68/cargo": "aboard"
+      }
+    },
+    {
+      "op": "74/load",
+      "actor": "Jack",
+      "effects": {
+        "74/cargo": "aboard"
+      }
+    },
+    {
+      "op": "81/load",
+      "actor": "Jack",
+      "effects": {
+        "81/cargo": "aboard"
+      }
+    },
+    {
+      "op": "96/load",
+      "actor": "Jack",
+      "effects": {
+        "96/cargo": "aboard"
+      }
+    },
+    {
+      "op": "depart",
+      "actor": "Signal box",
+      "effects": {
+        "signal": "green"
+      }
+    }
+  ],
+  "status": "executed",
+  "final": {
+    "signal": "green",
+    "bags": [
+      {
+        "bag": "47",
+        "stage": "aboard",
+        "holder": "Coach A",
+        "coach": "Coach A",
+        "waybill": "signed"
+      },
+      {
+        "bag": "52",
+        "stage": "aboard",
+        "holder": "Coach B",
+        "coach": "Coach B",
+        "waybill": "signed"
+      },
+      {
+        "bag": "68",
+        "stage": "aboard",
+        "holder": "Coach C",
+        "coach": "Coach C",
+        "waybill": "signed"
+      },
+      {
+        "bag": "74",
+        "stage": "aboard",
+        "holder": "Coach D",
+        "coach": "Coach D",
+        "waybill": "signed"
+      },
+      {
+        "bag": "81",
+        "stage": "aboard",
+        "holder": "Coach E",
+        "coach": "Coach E",
+        "waybill": "signed"
+      },
+      {
+        "bag": "96",
+        "stage": "aboard",
+        "holder": "Coach F",
+        "coach": "Coach F",
+        "waybill": "signed"
+      }
+    ]
+  },
+  "correct": true,
+  "first_correct": true,
+  "tokens": 4817,
+  "model_ms": 9571,
+  "validation_ms": 26.98,
+  "decision_sha256": "a873dd847edc69036b450557af42265a74f4905ec16be252c7fc12055bb10adf"
+}

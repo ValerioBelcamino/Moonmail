@@ -1,0 +1,224 @@
+{
+  "fixture": {
+    "id": "midrun-6-shared-probe",
+    "title": "6 orders · shared carriage · inspection probe",
+    "orders": 6,
+    "forklifts": 2,
+    "mechanics": 1,
+    "scanner": false,
+    "missing_courier": false,
+    "platform": false,
+    "signed": false,
+    "load_only": false,
+    "fault": true,
+    "kit": "probe",
+    "lift": true,
+    "feasible": false,
+    "mixed_progress": true,
+    "shared_carriage": true
+  },
+  "goal": "Deliver Bag 47, Bag 52, Bag 68, Bag 74, Bag 81, Bag 96 to the addressed coaches and sign every waybill before releasing one train.",
+  "retained": {
+    "47/manifest": {
+      "actor": "Patch",
+      "after": []
+    },
+    "52/cross": {
+      "actor": "Dash",
+      "after": []
+    },
+    "68/manifest": {
+      "actor": "Fern",
+      "after": []
+    },
+    "74/load": {
+      "actor": "Fern",
+      "after": []
+    },
+    "74/manifest": {
+      "actor": "Fern",
+      "after": []
+    },
+    "81/cross": {
+      "actor": "Zip",
+      "after": []
+    },
+    "96/manifest": {
+      "actor": "Fern",
+      "after": []
+    }
+  },
+  "revision": 2,
+  "robots": 15,
+  "chassis": 4,
+  "candidate_pairs": 48,
+  "initial": {
+    "signal": "red",
+    "bags": [
+      {
+        "bag": "47",
+        "stage": "platform",
+        "holder": "Skim",
+        "coach": "Coach A",
+        "waybill": "unsigned"
+      },
+      {
+        "bag": "52",
+        "stage": "staged",
+        "holder": "Dash",
+        "coach": "Coach B",
+        "waybill": "signed"
+      },
+      {
+        "bag": "68",
+        "stage": "aboard",
+        "holder": "Coach C",
+        "coach": "Coach C",
+        "waybill": "unsigned"
+      },
+      {
+        "bag": "74",
+        "stage": "platform",
+        "holder": "Kite",
+        "coach": "Coach D",
+        "waybill": "unsigned"
+      },
+      {
+        "bag": "81",
+        "stage": "staged",
+        "holder": "Zip",
+        "coach": "Coach E",
+        "waybill": "signed"
+      },
+      {
+        "bag": "96",
+        "stage": "aboard",
+        "holder": "Coach F",
+        "coach": "Coach F",
+        "waybill": "unsigned"
+      }
+    ]
+  },
+  "instructions": "Plan the registered-mail train departure. Read the graph. Author the remaining action DAG from its operator contracts. Use each needed operation once. To satisfy a false precondition, select an operation that establishes its exact value and name it in after. Independent branches stay independent. Include only direct causal links. Already true facts need no supplying step. Preserve pending retained nodes. Prefer low combined handling and travel effort; consider repair versus hoist. Delegate body binding using actor=auto. A rejected proposal gets a solver counterexample; use it to correct your plan. If there is no solution, submit an empty steps array.",
+  "preparation_ms": {
+    "shared_state": 22.24,
+    "relate_projection": 5.43,
+    "flat_projection": 2.39
+  },
+  "evidence": [
+    {
+      "question": "Loading carriages at the checkpoint",
+      "cypher": "MATCH (o:Order)-[:LOADS_WITH]->(t:Tool)<-[:MOUNTS]-(r:Robot),\n    (o)-[:REQUESTS]->(p:Parcel)<-[:COVERS]-(w:Waybill)\n    RETURN o.id AS bag,p.stage AS stage,w.status AS waybill,r.id AS forklift,t.online AS online ORDER BY bag",
+      "params": {},
+      "rows": [
+        {
+          "bag": "47",
+          "stage": "platform",
+          "waybill": "unsigned",
+          "forklift": "Jack",
+          "online": false
+        },
+        {
+          "bag": "52",
+          "stage": "staged",
+          "waybill": "signed",
+          "forklift": "Jack",
+          "online": false
+        },
+        {
+          "bag": "68",
+          "stage": "aboard",
+          "waybill": "unsigned",
+          "forklift": "Fern",
+          "online": true
+        },
+        {
+          "bag": "74",
+          "stage": "platform",
+          "waybill": "unsigned",
+          "forklift": "Fern",
+          "online": true
+        },
+        {
+          "bag": "81",
+          "stage": "staged",
+          "waybill": "signed",
+          "forklift": "Jack",
+          "online": false
+        },
+        {
+          "bag": "96",
+          "stage": "aboard",
+          "waybill": "unsigned",
+          "forklift": "Fern",
+          "online": true
+        }
+      ]
+    },
+    {
+      "question": "Instrument and carriage interfaces",
+      "cypher": "MATCH (r:Robot)-[:MOUNTS]->(i:Instrument)-[:FITS]->(port:Interface),\n       (r)-[:INSTANCE_OF]->(:Embodiment)-[:HAS_SKILL]->(:Skill {id:'Service wrist'}),\n       (t:Tool)<-[:MOUNTS]-(p:Robot),(t)-[:USES_PORT]->(need:Interface)\n       RETURN r.id AS robot,i.id AS instrument,port.id AS fits,need.id AS needs,t.id AS tool,p.id AS patient",
+      "params": {},
+      "rows": [
+        {
+          "robot": "Patch",
+          "instrument": "Inspection probe",
+          "fits": "Test socket",
+          "needs": "Hex collar",
+          "tool": "Fern forks",
+          "patient": "Fern"
+        },
+        {
+          "robot": "Patch",
+          "instrument": "Inspection probe",
+          "fits": "Test socket",
+          "needs": "Hex collar",
+          "tool": "Jack forks",
+          "patient": "Jack"
+        }
+      ]
+    },
+    {
+      "question": "Connected hoist",
+      "cypher": "MATCH (l:LoadingLift)-[:FEEDS]->(c:Station)<-[:DELIVER_TO]-(o:Order),\n       (o)-[:REQUESTS]->(:Parcel)-[:USES]->(t:Tray)<-[:ACCEPTS]-(l),\n       (r:Robot)-[:SERVICES]->(o),(r)-[:INSTANCE_OF]->(:Embodiment)-[:HAS_SKILL]->(s)<-[:DOCKS_WITH]-(l)\n       RETURN o.id AS bag,r.id AS actor,l.id AS lift",
+      "params": {},
+      "rows": [
+        {
+          "bag": "47",
+          "actor": "Skim",
+          "lift": "Mail lift"
+        }
+      ]
+    },
+    {
+      "question": "Fault impact on the prior plan",
+      "cypher": "MATCH (e:Event {id:$event})-[k]->(a:Action)\nWHERE type(k)='INVALIDATES' OR type(k)='BLOCKS'\nRETURN type(k) AS effect,a.uid AS uid,a.label AS action ORDER BY effect,uid",
+      "params": {
+        "event": 1
+      },
+      "rows": [
+        {
+          "effect": "BLOCKS",
+          "uid": "1/depart",
+          "action": "Release train"
+        },
+        {
+          "effect": "INVALIDATES",
+          "uid": "1/47/load",
+          "action": "Load coach"
+        },
+        {
+          "effect": "INVALIDATES",
+          "uid": "1/52/load",
+          "action": "Load coach"
+        },
+        {
+          "effect": "INVALIDATES",
+          "uid": "1/81/load",
+          "action": "Load coach"
+        }
+      ]
+    }
+  ],
+  "sha256": "8868b21a065419cf17874ecad8f31c7d1220e05813ecc6c2e0265e5dc351674e"
+}

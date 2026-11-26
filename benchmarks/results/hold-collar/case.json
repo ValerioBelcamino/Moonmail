@@ -1,0 +1,90 @@
+{
+  "fixture": {
+    "id": "hold-collar",
+    "title": "Carriage fault with a probe and no station lift",
+    "orders": 1,
+    "forklifts": 1,
+    "mechanics": 1,
+    "scanner": false,
+    "missing_courier": false,
+    "platform": false,
+    "signed": false,
+    "load_only": false,
+    "fault": true,
+    "kit": "probe",
+    "lift": false,
+    "feasible": false
+  },
+  "goal": "Deliver Bag 47 to the addressed coaches and sign every waybill before releasing one train.",
+  "retained": {
+    "47/manifest": {
+      "actor": "Patch",
+      "after": []
+    }
+  },
+  "revision": 2,
+  "robots": 4,
+  "chassis": 4,
+  "candidate_pairs": 8,
+  "initial": {
+    "signal": "red",
+    "bags": [
+      {
+        "bag": "47",
+        "stage": "platform",
+        "holder": "Skim",
+        "coach": "Coach A",
+        "waybill": "unsigned"
+      }
+    ]
+  },
+  "instructions": "Plan the registered-mail train departure. Read the graph. Author the remaining action DAG from its operator contracts. Use each needed operation once. To satisfy a false precondition, select an operation that establishes its exact value and name it in after. Independent branches stay independent. Include only direct causal links. Already true facts need no supplying step. Preserve pending retained nodes. Prefer low combined handling and travel effort; consider repair versus hoist. Delegate body binding using actor=auto. A rejected proposal gets a solver counterexample; use it to correct your plan. If there is no solution, submit an empty steps array.",
+  "preparation_ms": {
+    "shared_state": 10.15,
+    "relate_projection": 3.38,
+    "flat_projection": 1.48
+  },
+  "evidence": [
+    {
+      "question": "Instrument and carriage interfaces",
+      "cypher": "MATCH (r:Robot)-[:MOUNTS]->(i:Instrument)-[:FITS]->(port:Interface),\n       (r)-[:INSTANCE_OF]->(:Embodiment)-[:HAS_SKILL]->(:Skill {id:'Service wrist'}),\n       (t:Tool)<-[:MOUNTS]-(p:Robot),(t)-[:USES_PORT]->(need:Interface)\n       RETURN r.id AS robot,i.id AS instrument,port.id AS fits,need.id AS needs,t.id AS tool,p.id AS patient",
+      "params": {},
+      "rows": [
+        {
+          "robot": "Patch",
+          "instrument": "Inspection probe",
+          "fits": "Test socket",
+          "needs": "Hex collar",
+          "tool": "Jack forks",
+          "patient": "Jack"
+        }
+      ]
+    },
+    {
+      "question": "Connected hoist",
+      "cypher": "MATCH (l:LoadingLift)-[:FEEDS]->(c:Station)<-[:DELIVER_TO]-(o:Order),\n       (o)-[:REQUESTS]->(:Parcel)-[:USES]->(t:Tray)<-[:ACCEPTS]-(l),\n       (r:Robot)-[:SERVICES]->(o),(r)-[:INSTANCE_OF]->(:Embodiment)-[:HAS_SKILL]->(s)<-[:DOCKS_WITH]-(l)\n       RETURN o.id AS bag,r.id AS actor,l.id AS lift",
+      "params": {},
+      "rows": []
+    },
+    {
+      "question": "Fault impact on the prior plan",
+      "cypher": "MATCH (e:Event {id:$event})-[k]->(a:Action)\nWHERE type(k)='INVALIDATES' OR type(k)='BLOCKS'\nRETURN type(k) AS effect,a.uid AS uid,a.label AS action ORDER BY effect,uid",
+      "params": {
+        "event": 1
+      },
+      "rows": [
+        {
+          "effect": "BLOCKS",
+          "uid": "1/depart",
+          "action": "Release train"
+        },
+        {
+          "effect": "INVALIDATES",
+          "uid": "1/47/load",
+          "action": "Load coach"
+        }
+      ]
+    }
+  ],
+  "sha256": "371e808caa0c6aea1f7e77e99fd7a7dbb7215478b3f3146c8084fe0ef92f8a9f"
+}

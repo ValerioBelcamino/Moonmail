@@ -1,0 +1,133 @@
+{
+  "case": "load-one-bag",
+  "trial": 1,
+  "mode": "local",
+  "expected": "goal",
+  "options": {},
+  "history": [],
+  "schemas": {},
+  "requests": [],
+  "attempts": [
+    {
+      "arguments": "{\"steps\": [{\"op\": \"52/collect\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"52/stage\", \"actor\": \"auto\", \"after\": [\"52/collect\"]}, {\"op\": \"52/cross\", \"actor\": \"auto\", \"after\": [\"52/stage\"]}, {\"op\": \"52/load\", \"actor\": \"auto\", \"after\": [\"52/cross\"]}, {\"op\": \"confirm_delivery\", \"actor\": \"auto\", \"after\": [\"52/load\"]}]}",
+      "proposal": {
+        "steps": [
+          {
+            "op": "52/collect",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "52/stage",
+            "actor": "auto",
+            "after": [
+              "52/collect"
+            ]
+          },
+          {
+            "op": "52/cross",
+            "actor": "auto",
+            "after": [
+              "52/stage"
+            ]
+          },
+          {
+            "op": "52/load",
+            "actor": "auto",
+            "after": [
+              "52/cross"
+            ]
+          },
+          {
+            "op": "confirm_delivery",
+            "actor": "auto",
+            "after": [
+              "52/load"
+            ]
+          }
+        ]
+      },
+      "model": null,
+      "usage": {},
+      "verdict": "accepted",
+      "feedback": "",
+      "validation_ms": 5.3,
+      "bindings": {
+        "52/collect": "Pip",
+        "52/stage": "Pip",
+        "52/cross": "Dash",
+        "52/load": "Jack",
+        "confirm_delivery": "Signal box"
+      },
+      "effort": 26
+    }
+  ],
+  "execution": [
+    {
+      "op": "52/collect",
+      "actor": "Pip",
+      "effects": {
+        "52/cargo": "picked"
+      }
+    },
+    {
+      "op": "52/stage",
+      "actor": "Pip",
+      "effects": {
+        "52/cargo": "staged"
+      }
+    },
+    {
+      "op": "52/cross",
+      "actor": "Dash",
+      "effects": {
+        "52/cargo": "platform"
+      }
+    },
+    {
+      "op": "52/load",
+      "actor": "Jack",
+      "effects": {
+        "52/cargo": "aboard"
+      }
+    },
+    {
+      "op": "confirm_delivery",
+      "actor": "Signal box",
+      "effects": {}
+    }
+  ],
+  "status": "executed",
+  "final": {
+    "signal": "red",
+    "bags": [
+      {
+        "bag": "47",
+        "stage": "shelf",
+        "holder": "Shelf 47",
+        "coach": "Coach A",
+        "waybill": "unsigned"
+      },
+      {
+        "bag": "52",
+        "stage": "aboard",
+        "holder": "Coach B",
+        "coach": "Coach B",
+        "waybill": "unsigned"
+      },
+      {
+        "bag": "68",
+        "stage": "shelf",
+        "holder": "Shelf 68",
+        "coach": "Coach C",
+        "waybill": "unsigned"
+      }
+    ]
+  },
+  "correct": true,
+  "first_correct": true,
+  "tokens": 0,
+  "model_ms": 0,
+  "validation_ms": 5.3,
+  "decision_sha256": "d3ee26718a683ec2c75903ae63bf526f6b0e2af5a6897ea660f9e54225c9ccda"
+}

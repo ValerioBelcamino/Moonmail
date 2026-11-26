@@ -12,3 +12,5 @@
 !docs/
 !docs/presentation.pdf
 !moonmail-demo.mp4
+!benchmarks/
+!benchmarks/**

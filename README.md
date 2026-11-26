@@ -6,6 +6,8 @@ The setting is a railway mail depot. Each bag must reach the coach serving its d
 
 [Watch the film · 1 min 59 s](moonmail-demo.mp4) · [Run the station](#run-it) · [Architecture slides (PDF)](docs/presentation.pdf) · [Repository guide](#repository-guide)
 
+Across 68 paired dispatch trials, Moonmail produced **52 correct first drafts** versus **33** when the same model received the full depot state. With validator feedback, Moonmail reached the expected outcome in **68/68** trials versus **65/68** and used **55.3% fewer model tokens** overall. [Planning benchmark and recorded decisions](benchmarks/results/README.md)
+
 ## From a goal to an executable plan
 
 The LLM proposes a directed acyclic graph (DAG) of actions and their prerequisites. It can nominate robots or leave assignments open. The validator checks eligibility with Z3 and verifies that each precondition holds now or follows from a declared predecessor. A rejected draft returns to the model with the failed check.
@@ -84,5 +86,6 @@ From a clone or the extracted project ZIP, run either command. [Download ZIP](ht
 | To explore | Open |
 | --- | --- |
 | Inspect a decision in the database | [Worked example and Cypher](docs/architecture.md) · [Three recorded Relate files](viewer/public/episodes/) |
+| Compare the same LLM with two ways of reading the world | [Paired decisions and scores](benchmarks/results/README.md) · [Benchmark design and reproduction](benchmarks/README.md) |
 | Follow the implementation | [LLM tools](moonmail/mail_agent.py) · [Plan validation](moonmail/mail_planning.py) · [Relate queries](moonmail/mail_store.py) · [3D viewer](viewer/src/) |
 | Review the competition materials | [Submission brief](docs/submission.md) · [English captions](docs/moonmail.en.srt) · [How the film was made](tools/film_review/README.md) |

@@ -6,6 +6,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from .bench import add_cli
 from .depot import Scenario, YardFleet
 from .episode import run_episode
 
@@ -15,6 +16,7 @@ def main():
         prog="moonmail", description="Open the Moonmail station or run a dispatch."
     )
     commands = parser.add_subparsers(dest="command")
+    add_cli(commands)
     serve = commands.add_parser(
         "serve", help="Serve the interactive depot and competition film"
     )
@@ -65,6 +67,12 @@ def main():
     elif argv[0].startswith("--") and argv[0] != "--help":
         argv = ["run", *argv]
     args = parser.parse_args(argv)
+    if args.command == "bench":
+        try:
+            args.bench_func(args)
+        except (ValueError, FileNotFoundError) as error:
+            parser.error(str(error))
+        return
     if args.command == "serve":
         import uvicorn
 

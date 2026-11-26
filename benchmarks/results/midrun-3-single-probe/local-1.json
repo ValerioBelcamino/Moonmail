@@ -1,0 +1,147 @@
+{
+  "case": "midrun-3-single-probe",
+  "trial": 1,
+  "mode": "local",
+  "expected": "goal",
+  "options": {},
+  "history": [],
+  "schemas": {},
+  "requests": [],
+  "attempts": [
+    {
+      "arguments": "{\"steps\": [{\"op\": \"47/hoist\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"47/manifest\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"52/cross\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"52/load\", \"actor\": \"auto\", \"after\": [\"52/cross\"]}, {\"op\": \"68/manifest\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"depart\", \"actor\": \"auto\", \"after\": [\"47/hoist\", \"47/manifest\", \"52/load\", \"68/manifest\"]}]}",
+      "proposal": {
+        "steps": [
+          {
+            "op": "47/hoist",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "47/manifest",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "52/cross",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "52/load",
+            "actor": "auto",
+            "after": [
+              "52/cross"
+            ]
+          },
+          {
+            "op": "68/manifest",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "depart",
+            "actor": "auto",
+            "after": [
+              "47/hoist",
+              "47/manifest",
+              "52/load",
+              "68/manifest"
+            ]
+          }
+        ]
+      },
+      "model": null,
+      "usage": {},
+      "verdict": "accepted",
+      "feedback": "",
+      "validation_ms": 9.97,
+      "bindings": {
+        "47/hoist": "Skim",
+        "47/manifest": "Patch",
+        "52/cross": "Dash",
+        "52/load": "Fern",
+        "68/manifest": "Fern",
+        "depart": "Signal box"
+      },
+      "effort": 48
+    }
+  ],
+  "execution": [
+    {
+      "op": "47/hoist",
+      "actor": "Skim",
+      "effects": {
+        "47/cargo": "aboard"
+      }
+    },
+    {
+      "op": "47/manifest",
+      "actor": "Patch",
+      "effects": {
+        "47/manifest": "signed"
+      }
+    },
+    {
+      "op": "52/cross",
+      "actor": "Dash",
+      "effects": {
+        "52/cargo": "platform"
+      }
+    },
+    {
+      "op": "68/manifest",
+      "actor": "Fern",
+      "effects": {
+        "68/manifest": "signed"
+      }
+    },
+    {
+      "op": "52/load",
+      "actor": "Fern",
+      "effects": {
+        "52/cargo": "aboard"
+      }
+    },
+    {
+      "op": "depart",
+      "actor": "Signal box",
+      "effects": {
+        "signal": "green"
+      }
+    }
+  ],
+  "status": "executed",
+  "final": {
+    "signal": "green",
+    "bags": [
+      {
+        "bag": "47",
+        "stage": "aboard",
+        "holder": "Coach A",
+        "coach": "Coach A",
+        "waybill": "signed"
+      },
+      {
+        "bag": "52",
+        "stage": "aboard",
+        "holder": "Coach B",
+        "coach": "Coach B",
+        "waybill": "signed"
+      },
+      {
+        "bag": "68",
+        "stage": "aboard",
+        "holder": "Coach C",
+        "coach": "Coach C",
+        "waybill": "signed"
+      }
+    ]
+  },
+  "correct": true,
+  "first_correct": true,
+  "tokens": 0,
+  "model_ms": 0,
+  "validation_ms": 9.97,
+  "decision_sha256": "84b4d27185990c5c7a9921cef2db85c30eb2199843177fdcf7a9d6668258fab2"
+}

@@ -14,6 +14,8 @@ In the film, the fault blocks loading and delays departure. Jack’s signature s
 
 ## Try it
 
+Across 20 benchmark cases, the same model made 52 of 68 decisions correctly on its first draft with Moonmail’s Relate read, compared with 33 of 68 from the full-state prompt. With the same validator and retry budget, Moonmail reached 68/68 correct outcomes and the baseline reached 65/68. Moonmail used 55.3% fewer model tokens. The six-bag repair trace shows why an unaffected forklift could keep working while its neighbor waited for a repair. [Benchmark results](../benchmarks/results/README.md) · [Paired repair decisions](../benchmarks/results/midrun-6-shared-driver/README.md#trial-4)
+
 From the downloaded project, `docker compose up --build` or `uv run --locked -m moonmail` starts the browser station at `http://127.0.0.1:8041/`. **Play** replays recorded decisions. **Quick guide** points to the controls as you use them. **Robot bodies** traces chassis, tools and skills. In **Run options → Custom fleet**, judges can change the active orders and the number of robots of each type, then watch a fresh simulation beside its action graph. The local planner needs no key. Judges can also connect their own Azure OpenAI deployment for fresh LLM proposals. **Query graph** pauses at a selected step and queries the evidence available then. The three bundled runs and each new experiment have their own persistent Relate file.
 
 ## What we built with

@@ -1,0 +1,57 @@
+{
+  "case": "midrun-3-shared-probe",
+  "trial": 1,
+  "mode": "local",
+  "expected": "hold",
+  "options": {},
+  "history": [],
+  "schemas": {},
+  "requests": [],
+  "attempts": [
+    {
+      "arguments": "{\"steps\": []}",
+      "proposal": {
+        "steps": []
+      },
+      "model": null,
+      "usage": {},
+      "verdict": "hold",
+      "feedback": "",
+      "validation_ms": 0.03
+    }
+  ],
+  "execution": [],
+  "status": "hold",
+  "final": {
+    "signal": "red",
+    "bags": [
+      {
+        "bag": "47",
+        "stage": "platform",
+        "holder": "Skim",
+        "coach": "Coach A",
+        "waybill": "unsigned"
+      },
+      {
+        "bag": "52",
+        "stage": "staged",
+        "holder": "Dash",
+        "coach": "Coach B",
+        "waybill": "signed"
+      },
+      {
+        "bag": "68",
+        "stage": "aboard",
+        "holder": "Coach C",
+        "coach": "Coach C",
+        "waybill": "unsigned"
+      }
+    ]
+  },
+  "correct": true,
+  "first_correct": true,
+  "tokens": 0,
+  "model_ms": 0,
+  "validation_ms": 0.03,
+  "decision_sha256": "0d409d4e39526dc1d77148547999e6fd5aca4625d64da6752ae184fdd32b8328"
+}

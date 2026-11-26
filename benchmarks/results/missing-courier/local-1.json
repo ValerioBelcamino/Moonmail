@@ -1,0 +1,57 @@
+{
+  "case": "missing-courier",
+  "trial": 1,
+  "mode": "local",
+  "expected": "hold",
+  "options": {},
+  "history": [],
+  "schemas": {},
+  "requests": [],
+  "attempts": [
+    {
+      "arguments": "{\"steps\": []}",
+      "proposal": {
+        "steps": []
+      },
+      "model": null,
+      "usage": {},
+      "verdict": "hold",
+      "feedback": "",
+      "validation_ms": 0.04
+    }
+  ],
+  "execution": [],
+  "status": "hold",
+  "final": {
+    "signal": "red",
+    "bags": [
+      {
+        "bag": "47",
+        "stage": "shelf",
+        "holder": "Shelf 47",
+        "coach": "Coach A",
+        "waybill": "unsigned"
+      },
+      {
+        "bag": "52",
+        "stage": "shelf",
+        "holder": "Shelf 52",
+        "coach": "Coach B",
+        "waybill": "unsigned"
+      },
+      {
+        "bag": "68",
+        "stage": "shelf",
+        "holder": "Shelf 68",
+        "coach": "Coach C",
+        "waybill": "unsigned"
+      }
+    ]
+  },
+  "correct": true,
+  "first_correct": true,
+  "tokens": 0,
+  "model_ms": 0,
+  "validation_ms": 0.04,
+  "decision_sha256": "685a0c620f7ca56159bcf50639e08403b914b8a113b4abb560ac8cb192b79920"
+}

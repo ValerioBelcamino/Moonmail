@@ -82,6 +82,7 @@ class World:
     )
 
     order_manifest: dict = field(default_factory=dict)
+    terminal: str = "depart"
 
     def orders(self):
         return self.bag_holders or {"": self.holder}
@@ -134,8 +135,10 @@ def verify(proposal, world, retained=None):
             raise InvalidPlan(f"Invalid or duplicate step {op}.")
         deps[op] = parents
         nominations[op] = actor
-    if "depart" not in deps or set(retained) - deps.keys():
-        raise InvalidPlan("Include departure and retain the unaffected pending work.")
+    if world.terminal not in deps or set(retained) - deps.keys():
+        raise InvalidPlan(
+            f"Include {world.terminal} and retain the unaffected pending work."
+        )
     for op, parents in deps.items():
         if set(parents) - deps.keys():
             raise InvalidPlan(f"{op} names a predecessor outside this proposal.")
@@ -144,8 +147,10 @@ def verify(proposal, world, retained=None):
     except CycleError as e:
         raise InvalidPlan("The proposed dependency edges contain a cycle.") from e
     above = ancestors(deps, order)
-    if above["depart"] != set(deps) - {"depart"}:
-        raise InvalidPlan("Every proposed operation must contribute to departure.")
+    if above[world.terminal] != set(deps) - {world.terminal}:
+        raise InvalidPlan(
+            f"Every proposed operation must contribute to {world.terminal}."
+        )
 
     ctx = z3.Context()
     solver = z3.Solver(ctx=ctx)
@@ -259,7 +264,7 @@ def verify(proposal, world, retained=None):
     )
 
 
-def _departure_proposal(world, disabled):
+def _goal_proposal(world, disabled):
     graph = {}
 
     def visit(op, trail):
@@ -285,7 +290,7 @@ def _departure_proposal(world, disabled):
         graph[op] = parents
         return True
 
-    if not visit("depart", set()):
+    if not visit(world.terminal, set()):
         return None
     return {
         "steps": [
@@ -296,13 +301,21 @@ def _departure_proposal(world, disabled):
 
 
 def local_plan(world, retained):
-    """Regress the departure goal over the operator effects, including both loading modes."""
+    """Regress the terminal goal over the operator effects, including both loading modes."""
     choices = []
-    alternatives = [
-        (scoped(bag, "load"), scoped(bag, "hoist")) for bag in world.orders()
-    ]
+    alternatives = []
+    for bag in world.orders():
+        load, hoist = scoped(bag, "load"), scoped(bag, "hoist")
+        # The search disables one loading mode. A mode with no candidates can
+        # already be discarded without branching over it a second time.
+        if not world.options.get(hoist):
+            alternatives.append((hoist,))
+        elif not world.options.get(load):
+            alternatives.append((load,))
+        else:
+            alternatives.append((load, hoist))
     for disabled in product(*alternatives):
-        raw = _departure_proposal(world, set(disabled))
+        raw = _goal_proposal(world, set(disabled))
         if raw:
             try:
                 choices.append((verify(raw, world, retained).cost, raw))

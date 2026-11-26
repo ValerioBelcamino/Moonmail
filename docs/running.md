@@ -41,6 +41,8 @@ Restart with **`docker compose up`** or **`uv run --locked --env-file .env.local
 
 ## Inspect or develop from the terminal
 
+The planning benchmark includes 20 checkpoints and runs without the 3D viewer. Open the report to compare all 68 paired decisions without a model key. To see why a healthy forklift could keep working during a repair, use `uv run --locked -m moonmail bench inspect midrun-6-shared-driver --why` to query the saved database. [Results](../benchmarks/results/README.md) · [Inspection and reproduction commands](../benchmarks/README.md)
+
 - Bundled stores are `viewer/public/episodes/post.rl`, `post-probe.rl` and `yard.rl`. Their JSON companions provide layout and motion. Run `uv run --locked python tools/inspect_dispatch.py` to query the recorded decisions directly.
 - A terminal-only experiment uses `uv run --locked -m moonmail run --mission mail --seed 7 --service-kit probe --fault forks`. It prints the outcome and the path of the new store. For the two-bay shared-forklift experiment, use `uv run --locked -m moonmail run --fleet 2 2 2 1 1 --service-kit driver --fault forks`.
 - Rebuild the frontend with Node 22.12+ or 24, `npm --prefix viewer ci`, then `npm --prefix viewer run build`. Run the Python suite with `uv run --locked pytest -q`. [Graph schema and queries](architecture.md) · [Film sources](../tools/film_review/README.md)

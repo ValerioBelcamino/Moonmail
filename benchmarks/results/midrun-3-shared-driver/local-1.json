@@ -1,0 +1,163 @@
+{
+  "case": "midrun-3-shared-driver",
+  "trial": 1,
+  "mode": "local",
+  "expected": "goal",
+  "options": {},
+  "history": [],
+  "schemas": {},
+  "requests": [],
+  "attempts": [
+    {
+      "arguments": "{\"steps\": [{\"op\": \"47/repair\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"47/load\", \"actor\": \"auto\", \"after\": [\"47/repair\"]}, {\"op\": \"47/manifest\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"52/cross\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"52/load\", \"actor\": \"auto\", \"after\": [\"52/cross\", \"47/repair\"]}, {\"op\": \"68/manifest\", \"actor\": \"auto\", \"after\": []}, {\"op\": \"depart\", \"actor\": \"auto\", \"after\": [\"47/load\", \"47/manifest\", \"52/load\", \"68/manifest\"]}]}",
+      "proposal": {
+        "steps": [
+          {
+            "op": "47/repair",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "47/load",
+            "actor": "auto",
+            "after": [
+              "47/repair"
+            ]
+          },
+          {
+            "op": "47/manifest",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "52/cross",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "52/load",
+            "actor": "auto",
+            "after": [
+              "52/cross",
+              "47/repair"
+            ]
+          },
+          {
+            "op": "68/manifest",
+            "actor": "auto",
+            "after": []
+          },
+          {
+            "op": "depart",
+            "actor": "auto",
+            "after": [
+              "47/load",
+              "47/manifest",
+              "52/load",
+              "68/manifest"
+            ]
+          }
+        ]
+      },
+      "model": null,
+      "usage": {},
+      "verdict": "accepted",
+      "feedback": "",
+      "validation_ms": 6.27,
+      "bindings": {
+        "47/repair": "Patch",
+        "47/load": "Jack",
+        "47/manifest": "Patch",
+        "52/cross": "Dash",
+        "52/load": "Jack",
+        "68/manifest": "Fern",
+        "depart": "Signal box"
+      },
+      "effort": 40
+    }
+  ],
+  "execution": [
+    {
+      "op": "47/repair",
+      "actor": "Patch",
+      "effects": {
+        "forks": "online"
+      }
+    },
+    {
+      "op": "47/manifest",
+      "actor": "Patch",
+      "effects": {
+        "47/manifest": "signed"
+      }
+    },
+    {
+      "op": "52/cross",
+      "actor": "Dash",
+      "effects": {
+        "52/cargo": "platform"
+      }
+    },
+    {
+      "op": "68/manifest",
+      "actor": "Fern",
+      "effects": {
+        "68/manifest": "signed"
+      }
+    },
+    {
+      "op": "47/load",
+      "actor": "Jack",
+      "effects": {
+        "47/cargo": "aboard"
+      }
+    },
+    {
+      "op": "52/load",
+      "actor": "Jack",
+      "effects": {
+        "52/cargo": "aboard"
+      }
+    },
+    {
+      "op": "depart",
+      "actor": "Signal box",
+      "effects": {
+        "signal": "green"
+      }
+    }
+  ],
+  "status": "executed",
+  "final": {
+    "signal": "green",
+    "bags": [
+      {
+        "bag": "47",
+        "stage": "aboard",
+        "holder": "Coach A",
+        "coach": "Coach A",
+        "waybill": "signed"
+      },
+      {
+        "bag": "52",
+        "stage": "aboard",
+        "holder": "Coach B",
+        "coach": "Coach B",
+        "waybill": "signed"
+      },
+      {
+        "bag": "68",
+        "stage": "aboard",
+        "holder": "Coach C",
+        "coach": "Coach C",
+        "waybill": "signed"
+      }
+    ]
+  },
+  "correct": true,
+  "first_correct": true,
+  "tokens": 0,
+  "model_ms": 0,
+  "validation_ms": 6.27,
+  "decision_sha256": "1ddfe3f06246fd6ee52523214fa4865630906089ecadebad21bea50c6c9fe076"
+}
