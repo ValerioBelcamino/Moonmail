@@ -337,3 +337,42 @@ def test_inspect_handles_mixed_trial_counts_in_one_report(capsys):
     args.case = "six-orders"
     with pytest.raises(ValueError, match="1 to 3"):
         inspect(args)
+
+
+def test_report_compares_median_trial_times_independently_of_tokens():
+    from moonmail.bench_report import paired_results
+
+    suite = {
+        "cases": ["dispatch"],
+        "modes": ["relate", "flat"],
+        "max_proposals": 4,
+        "repetitions_by_case": {"dispatch": 3},
+    }
+    trials = []
+    for mode, tokens, times in [
+        ("relate", 50, [6000, 8000, 9000]),
+        ("flat", 100, [1000, 4000, 30000]),
+    ]:
+        for ms in times:
+            trials.append(
+                dict(
+                    mode=mode,
+                    tokens=tokens,
+                    model_ms=ms,
+                    expected="goal",
+                    attempts=1,
+                    first_correct=True,
+                    correct=True,
+                    transport_errors=0,
+                )
+            )
+
+    def report():
+        return "\n".join(paired_results(suite, trials, {"test-model"}))
+
+    text = report()
+    assert "50.0% fewer model tokens" in text
+    assert "100.0% higher" in text
+    assert "| Median time in model calls per trial | 8.00 s | 4.00 s |" in text
+    trials[0]["transport_errors"] = 1
+    assert "100.0% higher" not in report()

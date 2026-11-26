@@ -4,6 +4,12 @@ Before the train can leave, Bag 47 must reach Coach B and a robot must sign the 
 
 The picker’s arm reaches 125 cm. The shelf is 110 cm high. The courier can fit through the hatch while carrying the bag. These capabilities exist before any plan does. Compare them with a fact that changes during execution: at step 22, the bag’s holder becomes the courier. Those two kinds of information let the orchestrator answer both “who could do this?” and “who can do it now?” [Picker assignment](http://127.0.0.1:8041/?reel=post&at=4) · [Recorded handoff](http://127.0.0.1:8041/?reel=post&at=22)
 
+## How the two planners use the graph
+
+The planning horizon is the current delivery goal. In the three-order recording, one proposal covers 16 actions through train departure. The yard executor starts five of them together, after checking their prerequisites and reserving the robots and routes. A fault can trigger a new planning decision before the train reaches that goal. [The recorded three-order plan](#the-larger-run) · [Yard execution](../moonmail/yard.py)
+
+The local symbolic planner searches backward through action effects and compares feasible forklift and hoist combinations. The LLM reads the goal and the same action contracts, then proposes actions, robot assignments and causal dependencies. It can try a different combination when the validator explains why a draft failed. Both planners can recover from a fault. Relate tells each which pending assignments must survive, and the validator enforces those commitments in the next revision. [Symbolic planner](../moonmail/mail_planning.py) · [LLM proposal and correction loop](../moonmail/mail_agent.py)
+
 ## One dispatch cycle
 
 ```mermaid

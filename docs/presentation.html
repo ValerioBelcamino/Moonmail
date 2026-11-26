@@ -330,6 +330,9 @@
       .scanner-case .choices tbody th { width: 28%; }
       .scanner-case .choices th, .scanner-case .choices td { padding-top: 11px; padding-bottom: 11px; }
       .scanner-case .note { margin-top: 22px; }
+      .benchmark .choices { font-variant-numeric: tabular-nums; }
+      .benchmark .choices th, .benchmark .choices td { padding-block: 14px; }
+      .benchmark .choices tbody th { width: 41%; }
       .yard-outcome .photo-spread { grid-template-columns: 1.08fr 1fr; gap: 46px; }
       .yard-outcome h2 { margin-top: 0; }
       .yard-outcome .copy p { margin-top: 18px; max-width: none; font-size: 23px; line-height: 1.34; }
@@ -386,7 +389,7 @@
       <p class="intro">The planner and executor share one embedded Relate file per dispatch. An action links to its assigned robot, the facts it needs and the work it depends on.</p>
       <div class="content">
         <svg id="shared-graph" class="chart" viewBox="0 0 1156 285" role="img" aria-label="A plan revision includes an action. It is assigned to a robot, requires a world fact and depends on an earlier action."></svg>
-        <p class="note">The executor updates facts as jobs run. Those links let the dispatcher trace what a change affects.</p>
+        <p class="note">The yard starts independent jobs together. If a fault blocks a job, the graph shows which other assignments still hold.</p>
       </div>
       <footer class="folio"><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/graph-schema.md">Full graph schema</a><span class="page"></span></footer>
     </section>
@@ -394,9 +397,10 @@
     <section class="slide deck night" aria-labelledby="components">
       <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Architecture</span></header>
       <h2 id="components">How a dispatch runs</h2>
-      <p class="intro">One language model (LLM) reads the goal and eligible robots with <code>read_dispatch_graph</code>. It uses <code>propose_dag</code> to submit a directed acyclic graph (DAG) of actions.</p>
+      <p class="intro">The language model (LLM) reads the goal and eligible robots with <code>read_dispatch_graph</code>. It calls <code>propose_dag</code> to submit the remaining plan as a directed acyclic graph (DAG) of actions.</p>
       <div class="content">
         <svg id="dispatch-loop" class="chart" viewBox="0 0 1156 300" role="img" aria-label="Relate supplies facts to the LLM. The validator returns failed checks or commits an accepted plan. The executor reads ready jobs and writes their effects to Relate."></svg>
+        <p class="note">The local symbolic planner searches backward from the goal. The LLM proposes the dependencies and can revise them after a failed check. Both use the same validator.</p>
       </div>
       <footer class="folio"><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/architecture.md#one-dispatch-cycle">Dispatch sequence and tool calls</a><span class="page"></span></footer>
     </section>
@@ -657,6 +661,24 @@
         </figure>
       </div>
       <footer class="folio"><span><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/architecture.md#the-larger-run">See the recorded plan and queries</a> · <a href="https://github.com/ValerioBelcamino/Moonmail#run-it">Run Moonmail</a></span><span class="page"></span></footer>
+    </section>
+    <section class="slide deck night benchmark" aria-labelledby="benchmark">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Planning benchmark</span></header>
+      <h2 id="benchmark">Median time in model calls fell by 21.6%</h2>
+      <p class="intro">At 20 dispatch checkpoints, the same LLM received either the full depot state or Relate’s eligible robots and surviving work. Both inputs had the same validator and four-draft limit.</p>
+      <div class="content">
+        <table class="choices" aria-label="Planning time, token use and correct decisions across 68 trials per input">
+          <thead><tr><th scope="col">Across 68 paired trials</th><th scope="col">Full-state prompt</th><th scope="col">Moonmail with Relate</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Median time in model calls per trial</th><td>10.09 s</td><td class="choice">7.91 s</td></tr>
+            <tr><th scope="row">Total model tokens</th><td>771,336</td><td class="choice">344,864 (55.3% fewer)</td></tr>
+            <tr><th scope="row">Correct on the first draft</th><td>33 / 68</td><td class="choice">52 / 68</td></tr>
+            <tr><th scope="row">Correct within four drafts</th><td>65 / 68</td><td class="choice">68 / 68</td></tr>
+          </tbody>
+        </table>
+        <p class="explain">Time sums the read and proposal calls, including retries. A required hold counts as a correct decision.</p>
+      </div>
+      <footer class="folio"><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/benchmarks/results/README.md">Benchmark results and recorded decisions</a><span class="page"></span></footer>
     </section>
     <nav class="viewer-nav" aria-label="Slide navigation">
       <button type="button" id="previous" aria-label="Previous slide">←</button>

@@ -354,22 +354,23 @@ def paired_results(suite, records, model_names):
         f"Correct within {budget} drafts",
         "Extra drafts",
         "Total model tokens",
-        "Median model time per trial",
+        "Median time in model calls per trial",
     ]
     columns, progress = [], []
-    first, tokens = {}, {}
+    first, tokens, median_model_ms = {}, {}, {}
     for mode, trials in samples.items():
         n = len(trials)
         first[mode] = sum(t["first_correct"] for t in trials)
         final = sum(t["correct"] for t in trials)
         tokens[mode] = sum(t["tokens"] for t in trials)
+        median_model_ms[mode] = median(t["model_ms"] for t in trials)
         columns.append(
             [
                 f"{first[mode]}/{n} ({first[mode] / n:.1%})",
                 f"{final}/{n} ({final / n:.1%})",
                 sum(max(0, t["attempts"] - 1) for t in trials),
                 f"{tokens[mode]:,}",
-                f"{median(t['model_ms'] for t in trials) / 1000:.2f} s",
+                f"{median_model_ms[mode] / 1000:.2f} s",
             ]
         )
         progress.append(
@@ -396,6 +397,16 @@ def paired_results(suite, records, model_names):
         change = (tokens["relate"] - tokens["flat"]) / tokens["flat"]
         direction = "fewer" if change < 0 else "more"
         headline += f" It used **{abs(change):.1%} {direction} model tokens** across all trials, including corrections."
+    # A transport failure can leave a trial with only part of its model time.
+    if all(median_model_ms.values()) and not any(
+        r["transport_errors"] for r in records
+    ):
+        change = (
+            median_model_ms["relate"] - median_model_ms["flat"]
+        ) / median_model_ms["flat"]
+        if change:
+            direction = "lower" if change < 0 else "higher"
+            headline += f" Median time spent in model calls per trial was **{abs(change):.1%} {direction}**."
     parts.extend(
         [
             headline,
@@ -439,7 +450,9 @@ def paired_results(suite, records, model_names):
     parts.append(
         f"The schedule per input was {schedule}. Every trial has equal weight. "
         "The local reference runs once per checkpoint and is counted separately. "
-        "Token totals include all reported input and output tokens. Model time sums completed calls within each trial."
+        "Token totals include all reported input and output tokens. For each trial we sum the elapsed time of "
+        "the initial read request and all proposal requests that returned a response, including retries. "
+        "The table reports the median of those totals for each input. The timer runs only while the dispatcher calls the model service."
     )
     if suite.get("collections"):
         parts.append(

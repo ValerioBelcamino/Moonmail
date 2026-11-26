@@ -2,7 +2,7 @@
 
 20 dispatch checkpoints · 68 trials per input · gpt-6-luna. Each pair starts from the same saved Relate database and uses the station’s planner, Z3 validator and symbolic executor.
 
-Moonmail produced **19 more correct first drafts** than the full-state baseline. It used **55.3% fewer model tokens** across all trials, including corrections.
+Moonmail produced **19 more correct first drafts** than the full-state baseline. It used **55.3% fewer model tokens** across all trials, including corrections. Median time spent in model calls per trial was **21.6% lower**.
 
 | Metric | Moonmail with Relate | Full-state baseline |
 | --- | --- | --- |
@@ -10,7 +10,7 @@ Moonmail produced **19 more correct first drafts** than the full-state baseline.
 | Correct within 4 drafts | 68/68 (100.0%) | 65/68 (95.6%) |
 | Extra drafts | 31 | 49 |
 | Total model tokens | 344,864 | 771,336 |
-| Median model time per trial | 7.91 s | 10.09 s |
+| Median time in model calls per trial | 7.91 s | 10.09 s |
 
 Moonmail reads eligible robots and surviving assignments directly from Relate. The baseline receives the entities, relationships and rules from which it can derive them. Both get the same goal, action contracts, tool schema and validator feedback. A correct decision reaches the requested goal or correctly holds an infeasible dispatch.
 
@@ -32,7 +32,7 @@ Each cell shows correct first drafts → correct final outcomes. A rejected draf
 | Moonmail with Relate | 52/68 | 57/68 | 64/68 | 68/68 |
 | Full-state baseline | 33/68 | 57/68 | 65/68 | 65/68 |
 
-The schedule per input was 12 cases × 3 trials and 8 cases × 4 trials. Every trial has equal weight. The local reference runs once per checkpoint and is counted separately. Token totals include all reported input and output tokens. Model time sums completed calls within each trial.
+The schedule per input was 12 cases × 3 trials and 8 cases × 4 trials. Every trial has equal weight. The local reference runs once per checkpoint and is counted separately. Token totals include all reported input and output tokens. For each trial we sum the elapsed time of the initial read request and all proposal requests that returned a response, including retries. The table reports the median of those totals for each input. The timer runs only while the dispatcher calls the model service.
 
 The recorded trials were collected in two batches on the same deployment. [Collection settings](suite.json)
 

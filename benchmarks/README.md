@@ -21,9 +21,11 @@ Both start from private copies of the same Relate file. The model uses the stati
 | A broken carriage | Repair it with a compatible driver, use a connected hoist or hold if neither route works. |
 | A fault partway through three or six orders | Preserve completed and unaffected work. Vary which bags share Jack’s carriage and whether Patch’s tool can repair it. |
 
-A **correct first draft** reaches the requested goal or correctly holds an infeasible dispatch before receiving feedback. **Final success** allows up to four proposals. An exhausted budget, execution failure or provider error counts as a failed trial. Token totals include all reported input and output tokens, including corrections.
+A **correct first draft** reaches the requested goal or correctly holds an infeasible dispatch before receiving feedback. **Final success** allows up to four proposals. An exhausted budget, execution failure or provider error counts as a failed trial.
 
-The recorded benchmark uses one deployment and 68 trials per input. We collected twelve cases with three repetitions each and eight mid-delivery cases with four each. Both inputs received the same number of trials for every case. Totals weight each trial equally. A deterministic reference runs once per case and is scored separately. [Collection settings and per-case schedule](results/suite.json) · [Per-trial CSV](results/scores.csv)
+Token totals count all reported input and output tokens. **Time in model calls** adds the elapsed time for the initial read request and every proposal request that returned a response, including corrections. We compare the median of those per-trial totals. The benchmark logs local validation time separately. [Per-trial timings and token counts](results/scores.csv)
+
+The recorded benchmark uses one deployment and 68 trials per input. We collected twelve cases with three repetitions each and eight mid-delivery cases with four each. Both inputs received the same number of trials for every case. Totals weight each trial equally. A deterministic reference runs once per case and is scored separately. [Collection settings and per-case schedule](results/suite.json)
 
 ## Inspect a decision without an API key
 

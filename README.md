@@ -1,16 +1,16 @@
 # Moonmail
 
-**Moonmail is a multi-robot dispatch simulator built on Relate, Neo4j’s embedded graph database.** A single LLM turns a delivery goal into a plan for robots with different bodies and tools. It reads the graph to find eligible robots and proposes who does each job and what must finish first. The executor records progress alongside the accepted plan in that same graph, so the orchestrator can see which assignments still hold when conditions change.
+**Moonmail is a multi-robot dispatch simulator built on Relate, Neo4j’s embedded graph database.** Given a delivery goal, a single LLM reads the fleet’s capabilities and proposes the remaining jobs and their dependencies in one plan. Robots in the yard can start independent jobs together. When a breakdown derails the plan, Relate shows which assignments still hold, and the LLM uses those facts to revise the affected work.
 
 The setting is a railway mail depot. Each bag must reach the coach serving its destination, and its delivery slip must be signed before the train leaves. A picker can reach a high shelf, a low courier fits through the service hatch, and a forklift can lift the tray into the coach. A robot with a scanner can sign independently of loading. The 3D depot animates grid moves and symbolic handoffs beside the graph, so you can pause at a decision and inspect the facts behind it.
 
 [Watch the film · 1 min 59 s](moonmail-demo.mp4) · [Run the station](#run-it) · [Architecture slides (PDF)](docs/presentation.pdf) · [Repository guide](#repository-guide)
 
-Across 68 paired dispatch trials, Moonmail produced **52 correct first drafts** versus **33** when the same model received the full depot state. With validator feedback, Moonmail reached the expected outcome in **68/68** trials versus **65/68** and used **55.3% fewer model tokens** overall. [Planning benchmark and recorded decisions](benchmarks/results/README.md)
+Across 68 paired trials, **median time spent in model calls fell from 10.09 to 7.91 seconds per trial (21.6%)**, and Moonmail used **55.3% fewer tokens**. The same model produced 52 correct first drafts with the Relate read versus 33 with the full-state prompt. With validator feedback, the final scores were 68/68 and 65/68. [Planning benchmark and recorded decisions](benchmarks/results/README.md)
 
 ## From a goal to an executable plan
 
-The LLM proposes a directed acyclic graph (DAG) of actions and their prerequisites. It can nominate robots or leave assignments open. The validator checks eligibility with Z3 and verifies that each precondition holds now or follows from a declared predecessor. A rejected draft returns to the model with the failed check.
+Moonmail’s local symbolic planner works backward from the goal through the actions that can satisfy it. The LLM reads the same action contracts and proposes its own directed acyclic graph (DAG), choosing which actions to combine and which must finish first. Both planners can replan after a fault. The LLM can also revise a rejected draft using the validator’s explanation. Z3 checks robot assignments in either mode. [How the planners use the graph](docs/architecture.md#how-the-two-planners-use-the-graph)
 
 ```mermaid
 ---
@@ -35,7 +35,7 @@ flowchart TB
     class store memory
 ```
 
-The executor queries the accepted revision for ready jobs and records their effects, such as a parcel changing hands. If a required fact changes, the dispatcher follows dependencies to the affected work. A revised plan can link to an existing action, preserving its assignment and status. [Compare two recoveries from the same fault](docs/architecture.md#a-decision-you-can-reproduce)
+In one recorded run, the validator rejects a repair because the mechanic’s probe does not fit the broken carriage. The LLM switches the load to the station hoist and keeps the existing signing assignment. Both plan revisions point to the same signing action in Relate. [Compare two recoveries from the same fault](docs/architecture.md#a-decision-you-can-reproduce)
 
 <details>
 <summary>See one recorded dispatch move through the loop</summary>
