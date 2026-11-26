@@ -70,14 +70,17 @@ export function eventLink(
   }
   if (
     e.kind === "rejected" &&
-    e.feedback?.counterexample.toLowerCase().includes("repair")
+    ep.layout.starts.Patch && e.feedback?.counterexample.toLowerCase().includes("repair has no eligible body")
   )
     return link("Patch", "Tool cannot repair", orderOp("repair"), true);
   if (e.kind === "decision" || e.kind === "proposal") {
     const revised = (e.targetRevision ?? e.planGraph?.revision ?? 1) > 1;
     const ops = e.proposal?.steps.map((s) => s.op) ?? e.new ?? [];
-    if (revised && ops.some((o) => o.endsWith("repair")))
-      return link("Patch", "Patch · " + instrument, orderOp("repair"));
+    if (revised && ops.some((o) => o.endsWith("repair"))) {
+      const actor = e.bindings?.[yard ? "47/repair" : "repair"] ?? e.proposal?.steps.find(s => s.op.endsWith("repair"))?.actor;
+      if (actor && actor !== "auto" && actor in ep.layout.starts)
+        return link(actor, actor + " · " + instrument, orderOp("repair"));
+    }
     if (revised && ops.some((o) => o.endsWith("hoist")))
       return link("Mail lift", "Station lift", orderOp("hoist"));
     if (!revised && !yard)

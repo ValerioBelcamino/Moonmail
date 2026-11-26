@@ -1196,7 +1196,7 @@ class JunctionMiniature {
             ? lift
             : shelf;
       const picker = order.picker,
-        rest = local(picker, new T.Vector3(0.54, 0.74, 0.34));
+        rest = this.robots.has(picker) ? local(picker, new T.Vector3(0.54, 0.74, 0.34)) : shelf;
       let hand = owner === picker ? location : rest,
         open = owner === picker ? 0 : 1;
       if (yard.bodies[owner] === "Jack") forkTargets.set(owner, location);
@@ -1265,16 +1265,16 @@ class JunctionMiniature {
           location = liftAndSet(lift, onboard, p, 0.1);
         }
       }
-      pickerTargets.set(picker, { at: hand, open });
+      if (this.robots.has(picker)) pickerTargets.set(picker, { at: hand, open });
       bag.position.copy(location);
     }
     for (const [id, p] of pickerTargets) {
       const rig = this.robots.get(id)!;
       rig.arm!.pose(rig.body.worldToLocal(p.at.clone()), p.open, 0);
     }
-    const jack = this.robots.get("Jack")!,
-      patch = this.robots.get("Patch");
     const repair = jobs.find((n) => n.op.endsWith("/repair"));
+    const jack = this.robots.get("Jack"),
+      patch = this.robots.get(repair?.actor ?? "Patch");
     const repairProgress = repair
       ? progress(repair.uid, 4, (i) => {
           const p = cell(i, repair.actor),
@@ -1283,7 +1283,7 @@ class JunctionMiniature {
         })
       : 0;
     const fault = history.find((e) => e.kind === "fork fault");
-    serviceFault(
+    if (jack) serviceFault(
       jack,
       at,
       fault?.tick,
@@ -1292,7 +1292,7 @@ class JunctionMiniature {
     );
     for (const [id, point] of forkTargets)
       setForkTray(this.robots.get(id)!, point);
-    if (patch) {
+    if (patch && jack) {
       const rest = new T.Vector3(0.58, 0.73, 0.38);
       const contact = patch.body.worldToLocal(
         jack.collar!.getWorldPosition(new T.Vector3()),

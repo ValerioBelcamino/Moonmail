@@ -14,7 +14,7 @@ In the film, the fault blocks loading and delays departure. Jack’s signature s
 
 ## Try it
 
-From the downloaded project, `uv run --locked -m moonmail` starts the browser station at `http://127.0.0.1:8041/`. **Play tour** replays actual LLM decisions. **Run options** lets judges change the depot, tool, fault and seed, then watch a fresh simulation beside its action graph. The local planner needs no key. Judges can also connect their own Azure OpenAI deployment for fresh LLM proposals. **Inspect graph data** exposes the evidence for each decision. The three bundled runs and each new experiment have their own persistent Relate file.
+From the downloaded project, `docker compose up --build` or `uv run --locked -m moonmail` starts the browser station at `http://127.0.0.1:8041/`. **Play tour** replays actual LLM decisions. **Quick guide** opens the walkthrough. **Robot bodies** traces chassis, tools and skills. In **Run options → Custom fleet**, judges can change the active orders and the number of robots of each type, then watch a fresh simulation beside its action graph. The local planner needs no key. Judges can also connect their own Azure OpenAI deployment for fresh LLM proposals. **Query graph** pauses at a selected step and queries the evidence available then. The three bundled runs and each new experiment have their own persistent Relate file.
 
 ## What we built with
 
@@ -24,8 +24,8 @@ The design draws on our earlier graph-planning and robot-simulation experiments.
 
 ## Publishing the entry
 
-Use the title, short pitch and sections above for the Devpost description. The submission form also needs the public repository and demo URLs.
+Use the title, short pitch and sections above for the Devpost description. The project is published on [GitHub](https://github.com/ValerioBelcamino/Moonmail). Use its public URL and the approved demo URL in the submission form.
 
-- Publish the repository on GitHub, add the required topic `relate` and keep it public through the winner announcement. The organizers also recommend `relate-neo4j-hackathon`. [Submission checklist](https://relate.devpost.com/#requirements)
+- Add the required GitHub topic `relate` and keep the repository public and tagged through the winner announcement. The organizers also recommend `relate-neo4j-hackathon`. [Submission checklist](https://relate.devpost.com/#requirements)
 - Upload the 1:59.4 film and check its link in a signed-out browser. Section 4 allows a film of up to two minutes or a working demo link. [Film](../moonmail-demo.mp4) · [English captions](moonmail.en.srt) · [Official rules](https://relate.devpost.com/rules)
-- The two-robot capability graph and the larger dispatch make complementary gallery images. The slides are available for a longer walkthrough. [Robot capabilities](embodiment-frame.webp) · [Final action graph](fleet-action-graph.webp) · [Presentation](presentation.pdf)
+- Use the depot portrait for the project thumbnail. The two-robot capability graph and larger dispatch make complementary gallery images. [Depot portrait](depot.webp) · [Robot capabilities](embodiment-frame.webp) · [Final action graph](fleet-action-graph.webp) · [Architecture slides](presentation.pdf)

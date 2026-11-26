@@ -1,10 +1,12 @@
 """Launch the station or execute a new dispatch from the command line."""
 
 import argparse
-from pathlib import Path
 import sys
+from pathlib import Path
 
-from .depot import Scenario
+from pydantic import ValidationError
+
+from .depot import Scenario, YardFleet
 from .episode import run_episode
 
 
@@ -19,7 +21,14 @@ def main():
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8041)
     run = commands.add_parser("run", help="Write a new episode.rl and motion trace")
-    run.add_argument("--mission", choices=["mail", "yard"], default="mail")
+    run.add_argument("--mission", choices=["mail", "yard"])
+    run.add_argument(
+        "--fleet",
+        nargs=5,
+        type=int,
+        metavar=("ORDERS", "PICKERS", "COURIERS", "FORKLIFTS", "MECHANICS"),
+        help="Build a custom yard roster with these counts",
+    )
     run.add_argument("--seed", type=int, default=7)
     run.add_argument(
         "--service-kit", choices=["off", "driver", "probe"], default="driver"
@@ -62,8 +71,24 @@ def main():
         print(f"Open Moonmail at http://{args.host}:{args.port}/", flush=True)
         uvicorn.run("moonmail.server:app", host=args.host, port=args.port)
         return
+    fleet = None
+    if args.fleet:
+        if args.mission == "mail":
+            parser.error("--fleet uses the yard mission")
+        try:
+            fleet = YardFleet(
+                **dict(
+                    zip(
+                        ("orders", "pickers", "couriers", "forklifts", "mechanics"),
+                        args.fleet,
+                    )
+                )
+            )
+        except ValidationError as exc:
+            parser.error(str(exc))
     scenario = Scenario(
-        mission=args.mission,
+        mission=args.mission or ("yard" if fleet else "mail"),
+        fleet=fleet,
         seed=args.seed,
         service_kit=args.service_kit,
         mail_fault=None if args.fault == "none" else args.fault,

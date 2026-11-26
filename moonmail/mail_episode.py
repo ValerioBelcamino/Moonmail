@@ -30,6 +30,7 @@ from .mail_store import (
     violations,
 )
 from .planning import path_to
+from .recordings import fleet_graph, live_checkpoint_lock
 
 # One body occupies the aisle at a time. Ready work on the moving bag has priority.
 ORDER = ["collect", "stage", "cross", "manifest", "repair", "load", "hoist", "depart"]
@@ -209,12 +210,36 @@ class MailRun:
         with transaction(self.db):
             self.frame()
             if solution is None:
+                reason = f"No verified continuation reaches a loaded coach and a signed waybill. The bag stays with {self.holder}."
+                if self.world.order_manifest:
+                    reason = "The current fleet and station facts cannot satisfy every departure condition."
+                    for bag in self.world.order_manifest:
+                        needs = {
+                            "collect": "a picker for its shelf",
+                            "cross": "a low courier for its hatch",
+                            "manifest": "a scanner on the platform",
+                        }
+                        missing = next(
+                            (
+                                label
+                                for op, label in needs.items()
+                                if not self.world.options[f"{bag}/{op}"]
+                            ),
+                            None,
+                        )
+                        if missing and self.rev == 0:
+                            reason = f"Bag {bag} needs {missing}. Its service bay has no eligible robot for that job."
+                            break
+                        if not any(
+                            self.world.options[f"{bag}/{op}"]
+                            for op in ("load", "hoist")
+                        ):
+                            reason = f"Bag {bag} has neither a compatible forklift nor a connected station lift at its coach."
+                            break
                 self.event(
                     "hold",
                     "Hold the train",
-                    "The train stays at the junction. The graph records custody for each open order."
-                    if self.scene.get("yard")
-                    else f"No verified continuation reaches a loaded coach and a signed waybill. The bag stays with {self.holder}.",
+                    reason,
                     tools=trace,
                 )
                 return False
@@ -239,7 +264,7 @@ class MailRun:
                     if self.rev == 1
                     else "Revise the affected branch"
                 )
-                reason = "Z3 verified the assignments. All three loading and signing branches meet at the same departure signal."
+                reason = "Z3 verified the assignments. Each order’s load and signature feed the same departure signal."
             elif self.rev == 1:
                 title = "Two jobs before departure"
                 reason = "The dispatcher proposes the branches. Z3 matches jobs to bodies. Relate releases each action when its prerequisites are complete."
@@ -302,7 +327,7 @@ class MailRun:
             )
         )
         if self.scene.get("yard") and kind == "fork fault":
-            reason = "Bag 47’s load requires working forks. The shared departure waits for that load. The other two loading branches keep their assignments."
+            reason = "The jobs that require Jack’s carriage lose their loading precondition. The shared departure waits for those loads."
         self.frame()
         self.event(
             kind,
@@ -602,10 +627,11 @@ class MailRun:
         return True
 
 
-def mail_steps(scenario, root: Path, controller, env_file):
+def mail_steps(scenario, root: Path, controller, env_file, *, live_inspection=False):
     root.mkdir(exist_ok=True, parents=True)
     run_id = uuid4().hex
     folder = Path(tempfile.mkdtemp(prefix=".building-", dir=root))
+    published = root / f".live-{run_id}.rl"
     try:
         from .yard import YardRun, seed_yard, yard_layout
 
@@ -632,7 +658,9 @@ def mail_steps(scenario, root: Path, controller, env_file):
             crew = "Four" if len(run.positions) == 4 else "Three"
             run.event(
                 "order",
-                "Three orders. One departure." if yard else "The Northport night post",
+                "One train for the active orders"
+                if yard
+                else "The Northport night post",
                 run.world.goal
                 if yard
                 else f"{crew} robots share one order. Bag 47 must reach the coach serving Northport, and the train needs a signed waybill before it can leave.",
@@ -644,6 +672,13 @@ def mail_steps(scenario, root: Path, controller, env_file):
             def delta():
                 nonlocal sent_e, sent_f
                 data = {"events": run.events[sent_e:], "frames": run.frames[sent_f:]}
+                if live_inspection and data["events"]:
+                    # Readers open a complete checkpoint. The writer keeps its own connection.
+                    db.flush()
+                    snapshot_file = folder / "inspection.tmp"
+                    shutil.copyfile(folder / "episode.rl", snapshot_file)
+                    with live_checkpoint_lock:
+                        os.replace(snapshot_file, published)
                 sent_e = len(run.events)
                 sent_f = len(run.frames)
                 return data
@@ -654,6 +689,7 @@ def mail_steps(scenario, root: Path, controller, env_file):
                 "layout": scene,
                 "scenario": scenario.model_dump(),
                 "controller": controller,
+                "fleetGraph": fleet_graph(db),
             }
             yield {"type": "init", **header, **delta()}
             fault = scenario.mail_fault or ("forks" if scenario.fork_fault else None)
@@ -712,7 +748,7 @@ def mail_steps(scenario, root: Path, controller, env_file):
                 run.event(
                     "delivered",
                     "The junction train departs" if yard else "The night post departs",
-                    "Three bags are aboard their addressed coaches. Three waybills are signed. The shared signal is green."
+                    "Every bag is aboard its addressed coach and every waybill is signed. The shared signal is green."
                     if yard
                     else "Bag 47 is aboard Coach B. Waybill 47 is signed. Both branches are complete.",
                 )
@@ -731,5 +767,9 @@ def mail_steps(scenario, root: Path, controller, env_file):
     except BaseException:
         shutil.rmtree(folder, ignore_errors=True)
         raise
+    finally:
+        if live_inspection:
+            with live_checkpoint_lock:
+                published.unlink(missing_ok=True)
     yield {"type": "update", **last}
     yield {"type": "complete", "episode": episode}

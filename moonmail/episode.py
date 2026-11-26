@@ -1,4 +1,4 @@
-"""Public execution entry points for a single order or a three-order depot."""
+"""Public execution entry points for the small station and the multi-bay yard."""
 
 from pathlib import Path
 
@@ -7,11 +7,18 @@ from .mail_episode import mail_steps
 
 
 def episode_steps(
-    scenario: Scenario, root: Path, controller="deterministic", env_file=None
+    scenario: Scenario,
+    root: Path,
+    controller="deterministic",
+    env_file=None,
+    *,
+    live_inspection=False,
 ):
     if controller not in {"deterministic", "azure"}:
         raise ValueError("Unknown controller")
-    yield from mail_steps(scenario, root, controller, env_file)
+    yield from mail_steps(
+        scenario, root, controller, env_file, live_inspection=live_inspection
+    )
 
 
 def run_episode(

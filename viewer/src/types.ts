@@ -50,6 +50,14 @@ export interface Scenario {
   parcel_cm: number;
   service_kit?: "off" | "driver" | "probe";
   fork_fault?: boolean;
+  fleet?: YardFleet | null;
+}
+export interface YardFleet {
+  orders: number; pickers: number; couriers: number; forklifts: number; mechanics: number;
+}
+export interface FleetGraph {
+  skills: {robot: string; body: string; reach_cm: number; height_cm: number; skill: string}[];
+  mounts: {robot: string; mounted: string; provides: string | null; fits: string | null}[];
 }
 export interface Frame {
   tick: number;
@@ -146,6 +154,7 @@ export interface Episode {
   controller: string;
   scenario: Scenario;
   layout: Layout;
+  fleetGraph: FleetGraph;
   outcome: string;
   checkpoint?: { tick: number; holder: string } | null;
   branch?: {

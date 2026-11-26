@@ -5,9 +5,25 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from .inspection import LIFTS, REPAIRS
+
+
+class YardFleet(BaseModel):
+    orders: int = Field(3, ge=1, le=3)
+    pickers: int = Field(3, ge=0, le=3)
+    couriers: int = Field(3, ge=0, le=3)
+    forklifts: int = Field(2, ge=0, le=3)
+    mechanics: int = Field(1, ge=0, le=2)
+
+    @model_validator(mode="after")
+    def bay_capacity(self):
+        if max(self.pickers, self.couriers) > self.orders:
+            raise ValueError(
+                "Each active bay has space for one picker and one courier."
+            )
+        return self
 
 
 class Scenario(BaseModel):
@@ -18,6 +34,13 @@ class Scenario(BaseModel):
     seed: int = Field(7, ge=0, le=9999)
     service_kit: Literal["off", "driver", "probe"] = "off"
     fork_fault: bool = False
+    fleet: YardFleet | None = None
+
+    @model_validator(mode="after")
+    def fleet_station(self):
+        if self.fleet is not None and self.mission != "yard":
+            raise ValueError("A custom fleet uses the yard mission.")
+        return self
 
 
 def layout(seed, service_kit="off"):
@@ -123,16 +146,8 @@ def seed_graph(db, scene, height):
                 (r:Robot {id:$name, x:$x, z:$z})-[:INSTANCE_OF]->
                 (b:Embodiment {id:$body, cm:$cm, deck:$deck, reach:$reach}),
                 (r)-[:IN_ZONE]->(z)""",
-                dict(
-                    name=name,
-                    body=body,
-                    cm=cm,
-                    deck=deck,
-                    reach=reach,
-                    x=x,
-                    z=z,
-                    zone=zone,
-                ),
+                {"name": name, "body": body, "cm": cm, "deck": deck,
+                 "reach": reach, "x": x, "z": z, "zone": zone},
             )
             for skill in skills:
                 db.execute("MERGE (:Skill {id:$skill})", {"skill": skill})

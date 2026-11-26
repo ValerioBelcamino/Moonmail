@@ -3,6 +3,8 @@ import { Depot } from "./scene";
 import { FloorPlan } from "./grid";
 import { eventLink, markNode } from "./storyFocus";
 import { dispatchDrawing } from "./dispatchDrawing";
+import { drawEmbodiment } from "./embodiment";
+import { readFleet, resizeBays, setFleet } from "./fleetControls";
 import type { Episode, DepotEvent, Frame } from "./types";
 const el = <T extends HTMLElement = HTMLElement>(id: string) =>
   document.getElementById(id) as T;
@@ -11,6 +13,7 @@ const put = (id: string, s: string) => {
 };
 const project = el<HTMLDialogElement>("projector"),
   sources = el<HTMLDialogElement>("sources"),
+  guide = el<HTMLDialogElement>("guide"),
   slider = el<HTMLInputElement>("time");
 let stage: Depot | FloorPlan;
 try {
@@ -32,6 +35,7 @@ let ep: Episode | undefined,
   lastStop = -1,
   touring = false,
   top = false;
+let bodyView = false;
 let active: AbortController | undefined,
   streaming = false,
   waiting = false,
@@ -96,6 +100,7 @@ function header() {
   el("stop").hidden = !streaming;
   const link = el<HTMLAnchorElement>("database");
   link.hidden = !asset && !ep.outcome;
+  el("cypher-console").hidden = link.hidden;
   link.href = asset
     ? "./episodes/" + asset + ".rl"
     : "/api/episodes/" + ep.id + "/graph";
@@ -227,9 +232,9 @@ function explain(e: DepotEvent, event: DepotEvent) {
       (frame.fork_online ? "online" : "offline");
   if (kind === "order") {
     chapter = "Starting state";
-    title = yard ? "One plan for nine robots." : "Which robot can do each job?";
+    title = yard ? "One plan for the fleet." : "Which robot can do each job?";
     reason = yard
-      ? "Nine robots share three orders. Relate holds all six departure conditions and the assignments in one plan."
+      ? `Relate links ${Object.keys(data.layout.starts).length} robots to the active orders. Each bag needs a load and a signature before departure.`
       : "The bag starts on the shelf. The train needs the bag aboard and a signed delivery slip before it can leave.";
     graphTitle = "Initial station state";
   } else if (reading) {
@@ -259,7 +264,7 @@ function explain(e: DepotEvent, event: DepotEvent) {
             (issue?.actual ?? "updated");
     } else {
       reason = yard
-        ? "One graph read gathers all three orders, their goals and the workers eligible in each bay."
+        ? "One graph read gathers the active orders, their goals and the robots eligible in each bay."
         : "Relate stores the starting scene, the goal and each body’s capabilities. The orchestrator reads which arm can reach the shelf and which courier fits the hatch.";
       detail = yard
         ? (ctx?.goal ?? detail)
@@ -282,7 +287,7 @@ function explain(e: DepotEvent, event: DepotEvent) {
     if (local && pendingRevision === 1) title = "The planner proposes a plan.";
     reason =
       pendingRevision > 1
-        ? "The orchestrator submits the jobs that still need doing. The validator checks them against the updated graph."
+        ? "The " + author.toLowerCase() + " submits the remaining jobs. The validator checks them against the updated graph."
         : "An arrow means the earlier action must finish first. Loading the bag and signing its delivery slip can happen independently.";
     graphTitle = "Proposed action plan";
     evidence = "What was proposed";
@@ -310,9 +315,9 @@ function explain(e: DepotEvent, event: DepotEvent) {
       rev === 1
         ? "The validator uses Z3 to check robot abilities and the order of the jobs. Relate stores the accepted assignments."
         : yard
-          ? "Only the failed load and the shared departure need replacing. Both other orders keep their loading jobs."
+          ? `This revision reuses ${kept} original actions and adds ${added}. Follow the new prerequisites into the shared departure.`
           : event.new?.includes("repair")
-            ? "Patch’s driver fits the collar. The new load waits for the repair, and Jack keeps his waybill assignment."
+            ? "The mechanic’s driver fits the collar. The new load waits for that repair, and the existing signature action keeps its identity."
             : (e.reason ?? "The surviving actions keep their IDs.");
     graphTitle = "Approved action plan";
     evidence = "Validator approved";
@@ -329,18 +334,20 @@ function explain(e: DepotEvent, event: DepotEvent) {
           " new actions · Revision " +
           rev;
   } else if (fault || rejected) {
+    const probeMismatch = data.scenario.service_kit === "probe" && data.layout.starts.Patch &&
+      event.feedback?.counterexample.includes("repair has no eligible body");
     chapter = rejected ? "Plan check" : kind === "fork fault" ? "Equipment failure" : "Dispatch condition changed";
     title = rejected
-      ? event.feedback?.counterexample.includes("repair")
+      ? probeMismatch
         ? "This tool cannot repair the fork."
         : "Why did the plan fail?"
       : kind === "fork fault"
         ? "Which jobs does the fork stop?"
         : e.title;
     if (rejected)
-      reason = event.feedback?.counterexample?.includes("repair")
+      reason = probeMismatch
         ? "The mechanic’s probe fits a test socket. No robot can repair this fork, so the orchestrator gets another attempt."
-        : "The validator returns the failed check to the agent for another proposal.";
+        : event.feedback?.counterexample ?? "The validator returns the failed check to the agent for another proposal.";
     graphTitle = rejected ? "Rejected proposal" : "Impact on the stored plan";
     evidence = rejected ? "Why the plan failed" : "Effect on the plan";
     if (previousFault && fault) {
@@ -353,7 +360,7 @@ function explain(e: DepotEvent, event: DepotEvent) {
           : "The orchestrator will read the updated conditions.");
       reason =
         yard && kind === "fork fault"
-          ? "Jack’s fork carriage went offline. Follow its loading job to the shared departure. The other two loading branches survive."
+          ? "Jack’s carriage went offline. The marked loads need that carriage, and departure depends on those loads."
           : kind === "fork fault"
             ? "The forklift cannot load the coach. Departure needs that load. The same robot can still sign using its scanner."
             : (e.reason ?? "");
@@ -371,9 +378,9 @@ function explain(e: DepotEvent, event: DepotEvent) {
     chapter = "Order fulfilled";
     graphTitle = "Goal reached";
     evidence = "Signal green";
-    title = yard ? "All three orders are ready." : "The train can leave.";
+    title = "The train can leave.";
     reason = yard
-      ? "All three bags are in their addressed coaches. All three waybills are signed. The shared train can leave."
+      ? "Every bag is in its addressed coach and every waybill is signed. The shared train can leave."
       : "Bag 47 is aboard Coach B. Its waybill is signed. The departure signal is green.";
   } else if (yard) {
     chapter = "Running the plan";
@@ -551,7 +558,7 @@ function positionLink() {
 }
 new ResizeObserver(positionLink).observe(world);
 function spotlight(event: DepotEvent, progress: number) {
-  if (!ep) return;
+  if (!ep || bodyView) return;
   const cue = eventLink(ep, event, progress);
   const key =
     event.seq +
@@ -595,6 +602,7 @@ function seek(n: number) {
       key = id;
       cue = current;
       explain(current, graphEvent);
+      if (bodyView) showBody();
     }
     spotlight(graphEvent, Math.min(1, t - graphEvent.tick));
   }
@@ -615,13 +623,19 @@ function install(data: Episode, file: string) {
   el<HTMLSelectElement>("fault").value =
     data.scenario.mail_fault ?? (data.scenario.fork_fault ? "forks" : "none");
   const yard = !!data.layout.yard;
-  el<HTMLSelectElement>("station").value = yard ? "yard" : "mail";
+  el<HTMLSelectElement>("station").value = data.scenario.fleet ? "custom" : yard ? "yard" : "mail";
+  if (data.scenario.fleet) setFleet(data.scenario.fleet);
+  const robot = el<HTMLSelectElement>("body-robot");
+  const previous = robot.value;
+  const names = [...new Set(data.fleetGraph.skills.map(r => r.robot))];
+  robot.replaceChildren(...names.map(name => new Option(name, name)));
+  robot.value = names.includes(previous) ? previous : names.includes("Jack") ? "Jack" : names[0] ?? "";
   updateRunHints();
   const fleet = Object.keys(data.layout.starts).length;
   put(
     "map-label",
     yard
-      ? fleet + " robots · three orders"
+      ? fleet + " robots · " + data.layout.yard!.orders.length + (data.layout.yard!.orders.length === 1 ? " order" : " orders")
       : fleet +
           " robots · one order" +
           (data.scenario.service_kit === "probe" ? " · inspection probe" : ""),
@@ -632,7 +646,7 @@ function install(data: Episode, file: string) {
   ))
     btn.setAttribute(
       "aria-pressed",
-      String((btn.dataset.station === "yard") === yard),
+      String(!data.scenario.fleet && (btn.dataset.station === "yard") === yard),
     );
   stage.composition(false);
   stage.load(data);
@@ -739,7 +753,8 @@ type Packet =
   | { type: "error"; message: string };
 async function live() {
   const token = cancel(),
-    fault = el<HTMLSelectElement>("fault").value;
+    fault = el<HTMLSelectElement>("fault").value,
+    setup = el<HTMLSelectElement>("station").value;
   project.close();
   streaming = true;
   header();
@@ -755,7 +770,8 @@ async function live() {
         signal: token.signal,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          mission: el<HTMLSelectElement>("station").value,
+          mission: setup === "custom" ? "yard" : setup,
+          ...(setup === "custom" ? {fleet: readFleet()} : {}),
           seed: Number(el<HTMLInputElement>("seed").value),
           service_kit: el<HTMLSelectElement>("kit").value,
           mail_fault: fault === "none" ? null : fault,
@@ -876,63 +892,141 @@ slider.oninput = () => {
   seek(Number(slider.value));
   play(false);
 };
+function fillTable(table: HTMLTableElement, records: Record<string, unknown>[]) {
+  table.replaceChildren();
+  if (!records.length) return;
+  const keys = Object.keys(records[0]);
+  const header = table.createTHead().insertRow();
+  for (const key of keys) {
+    const cell = document.createElement("th");
+    cell.scope = "col";
+    cell.textContent = key.replaceAll("_", " ");
+    header.append(cell);
+  }
+  const body = table.createTBody();
+  for (const record of records) {
+    const row = body.insertRow();
+    for (const key of keys) {
+      const value = record[key];
+      row.insertCell().textContent = typeof value === "string" ? value : JSON.stringify(value);
+    }
+  }
+}
+function graphEndpoint() {
+  return asset ? "/api/recordings/" + asset : "/api/episodes/" + ep!.id;
+}
 let queryRequest = 0;
+let customRequest = 0;
+el("cypher-run").onclick = async () => {
+  if (!ep || (!asset && !ep.outcome)) return;
+  const request = ++customRequest;
+  const table = el<HTMLTableElement>("cypher-rows");
+  table.replaceChildren();
+  put("cypher-status", "Reading the completed file…");
+  try {
+    const response = await fetch(graphEndpoint() + "/query", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({statement: el<HTMLTextAreaElement>("cypher-text").value, tick: Math.floor(t)}),
+    });
+    const result = await response.json();
+    if (request !== customRequest) return;
+    if (!response.ok) throw Error(typeof result.detail === "string" ? result.detail : "The query could not be executed.");
+    fillTable(table, result.rows);
+    put("cypher-status", result.truncated ? "Showing the first 100 rows." : result.rows.length + (result.rows.length === 1 ? " row." : " rows."));
+  } catch (error) {
+    if (request === customRequest) put("cypher-status", (error as Error).message);
+  }
+};
 async function inspectStore() {
   const request = ++queryRequest;
-  const panel = el("store-inspector");
-  panel.hidden = !asset && !ep?.outcome;
-  if (panel.hidden || !ep) return;
-  const base = asset ? "/api/recordings/" + asset : "/api/episodes/" + ep.id;
+  if (!ep) return;
+  const tick = Math.floor(t);
+  put("inspect-step", "Paused at step " + tick);
+  const base = graphEndpoint();
   const table = el<HTMLTableElement>("store-rows");
   table.replaceChildren();
   put("store-query", "");
   put("store-status", "Reading the Relate database…");
   try {
-    const response = await fetch(base + "/evidence/" + el<HTMLSelectElement>("store-question").value, { cache: "no-store" });
+    const question = el<HTMLSelectElement>("store-question").value;
+    const response = await fetch(base + "/evidence/" + question + "?tick=" + tick, { cache: "no-store" });
     if (!response.ok) throw Error("The database could not be read.");
-    const result: {database: string; query: string; rows: Record<string, string | number>[]} = await response.json();
+    const result: {database: string; query: string; bindings: Record<string,number>; event_tick: number | null; rows: Record<string, string | number>[]} = await response.json();
     if (request !== queryRequest) return;
-    put("store-query", result.query);
-    put("store-status", result.rows.length + (result.rows.length === 1 ? " row" : " rows") + " from " + result.database);
-    if (result.rows.length) {
-      const keys = Object.keys(result.rows[0]);
-      const header = table.createTHead().insertRow();
-      for (const key of keys) {
-        const cell = document.createElement("th");
-        cell.scope = "col";
-        cell.textContent = key.replaceAll("_", " ");
-        header.append(cell);
-      }
-      const body = table.createTBody();
-      for (const record of result.rows) {
-        const row = body.insertRow();
-        for (const key of keys) row.insertCell().textContent = String(record[key]);
-      }
-    }
+    put("store-query", result.query + (Object.keys(result.bindings).length ? "\n\nParameters  " + JSON.stringify(result.bindings) : ""));
+    const at = result.event_tick == null ? "" : " · " + (question === "candidates" ? "planning read" : "graph commit") + " at step " + result.event_tick;
+    put("store-status", result.rows.length ? result.rows.length + (result.rows.length === 1 ? " row" : " rows") + " from " + result.database + at : "No matching rows by step " + tick + ".");
+    fillTable(table, result.rows);
   } catch {
     if (request === queryRequest) put("store-status", "The saved database could not be read.");
   }
 }
 el("store-question").onchange = () => void inspectStore();
+function showBody() {
+  if (!ep) return;
+  const who = el<HTMLSelectElement>("body-robot").value;
+  const {svg,note} = drawEmbodiment(ep.fleetGraph, who, ep.frames[Math.floor(t)]);
+  el("body-drawing").replaceChildren(svg);
+  put("body-note", note);
+  linkedTarget = who;
+  pin.classList.remove("attention");
+  point.textContent = "";
+  caption.textContent = who;
+  positionLink();
+}
+function graphView(bodies: boolean) {
+  bodyView = bodies;
+  el("body-graph").hidden = !bodies;
+  el("graph").hidden = bodies;
+  el("plan-tab").setAttribute("aria-pressed", String(!bodies));
+  el("body-tab").setAttribute("aria-pressed", String(bodies));
+  if (bodies) { dismissTip(); play(false); showBody(); }
+  else { cueKey = ""; seek(t); }
+}
+el("body-robot").onchange = showBody;
+el("body-tab").onclick = () => graphView(true);
+el("plan-tab").onclick = () => graphView(false);
 el("proof").onclick = () => {
   play(false);
+  dismissTip();
   sources.showModal();
+  sources.scrollTop = 0;
+  el("store-question").focus({preventScroll: true});
+  ++customRequest;
+  el<HTMLDetailsElement>("cypher-console").open = false;
+  el("cypher-console").hidden = !asset && !ep?.outcome;
+  put("cypher-status", "");
+  el("cypher-rows").replaceChildren();
   const selected = cue;
   const heldAfterFault = selected?.kind === "hold" &&
     ep?.events.some(e => e.seq < selected.seq && e.issues?.length);
-  el<HTMLSelectElement>("store-question").value = selected?.kind === "delivered"
+  el<HTMLSelectElement>("store-question").value = bodyView ? "bodies" : selected?.kind === "delivered"
     ? "departure"
     : selected?.issues?.length || selected?.kind === "fork fault" || heldAfterFault
       ? "fault"
-      : "tools";
+      : selected?.kind === "read" ? "candidates" : "facts";
   void inspectStore();
 };
 function updateRunHints() {
   const station = el<HTMLSelectElement>("station").selectedOptions[0];
+  const custom = station.value === "custom";
+  const fleet = readFleet();
+  el("fleet-fields").hidden = !custom;
+  el<HTMLSelectElement>("kit").disabled = custom && fleet.mechanics === 0;
+  const condition = el<HTMLSelectElement>("fault");
+  const slip = condition.querySelector<HTMLOptionElement>('[value="forks"]')!;
+  slip.disabled = custom && fleet.forklifts === 0;
+  if (slip.disabled && condition.value === "forks") condition.value = "none";
+  put("fleet-summary", (fleet.pickers + fleet.couriers + fleet.forklifts + fleet.mechanics) + " robots · " + fleet.orders + (fleet.orders === 1 ? " active bay" : " active bays"));
   const fault = el<HTMLSelectElement>("fault").selectedOptions[0];
   put("seed-hint", station?.dataset.seedHint ?? "");
   put("fault-hint", fault?.dataset.hint ?? "");
 }
+setFleet();
+el("fleet-fields").onchange = (e) => {
+  if ((e.target as HTMLElement).id === "fleet-orders") resizeBays();
+  updateRunHints();
+};
 el("station").onchange = updateRunHints;
 el("fault").onchange = updateRunHints;
 el("options").onclick = () => {
@@ -940,6 +1034,17 @@ el("options").onclick = () => {
   updateRunHints();
   project.showModal();
 };
+function dismissTip() {
+  el("first-tip").hidden = true;
+  try { localStorage.setItem("moonmail-guide-seen", "1"); } catch { /* Storage is optional. */ }
+}
+function openGuide() { play(false); dismissTip(); guide.showModal(); }
+el("guide-open").onclick = el("tip-guide").onclick = openGuide;
+el("tip-close").onclick = dismissTip;
+el("guide-bodies").onclick = () => { guide.close(); graphView(true); el("body-robot").focus(); };
+el("guide-query").onclick = () => { guide.close(); el("proof").click(); };
+el("guide-run").onclick = () => { guide.close(); el("options").click(); };
+try { el("first-tip").hidden = Boolean(location.search || localStorage.getItem("moonmail-guide-seen")); } catch { /* The guide button is always available. */ }
 document
   .querySelectorAll<HTMLButtonElement>("dialog .close")
   .forEach((b) => (b.onclick = () => b.closest("dialog")!.close()));
@@ -980,7 +1085,7 @@ el("stop").onclick = () => {
 };
 document.addEventListener("keydown", (e) => {
   if (
-    project.open ||
+    project.open || guide.open ||
     sources.open ||
     ["INPUT", "SELECT", "BUTTON"].includes((e.target as HTMLElement).tagName)
   )

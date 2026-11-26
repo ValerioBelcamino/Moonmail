@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#08151e" />
     <title>Moonmail · How a robot fleet shares a plan</title>
-    <script type="module" crossorigin src="./assets/index-ONciEcWq.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-BWVY6qlh.css">
+    <script type="module" crossorigin src="./assets/index-DB_whwUH.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-poftkU_i.css">
   </head>
   <body>
     <main id="film" class="review opening">
@@ -19,6 +19,7 @@
         <div class="top-tools">
           <span id="source">Opening graph…</span>
           <a id="narrated" href="/review/film.html">Watch film</a>
+          <button id="guide-open">Quick guide</button>
           <button id="options" aria-label="Open playback and run options">
             Run options
           </button>
@@ -42,8 +43,9 @@
         <section id="book" aria-label="Synchronized dispatch graph">
           <div class="book-head">
             <h2>Relate knowledge graph</h2>
-            <button id="proof">Inspect graph data ↗</button>
+            <button id="proof">Query graph ↗</button>
           </div>
+          <div id="first-tip" hidden>Pause at any step to query the graph. <button id="tip-guide">Show me</button><button id="tip-close" aria-label="Dismiss tip">×</button></div>
           <div id="goal">
             <span class="small-title">Train can leave when</span>
             <div id="goals"></div>
@@ -70,6 +72,10 @@
               ><i aria-hidden="true">▷</i> Executor</span
             >
           </div>
+          <div class="graph-switch" role="group" aria-label="Graph view">
+            <button id="plan-tab" aria-pressed="true">Dispatch graph</button>
+            <button id="body-tab" aria-pressed="false">Robot bodies</button>
+          </div>
           <figure id="graph">
             <figcaption>
               <span id="graph-title">Initial state</span
@@ -77,6 +83,11 @@
             </figcaption>
             <div id="drawing"></div>
           </figure>
+          <section id="body-graph" hidden aria-label="Embodiment relationships">
+            <label for="body-robot">Inspect robot</label> <select id="body-robot"></select>
+            <div id="body-drawing"></div>
+            <p id="body-note"></p>
+          </section>
           <div id="evidence">
             <span class="small-title" id="evidence-label">World state</span>
             <p id="witness"></p>
@@ -125,6 +136,7 @@
             >Setup<select id="station">
               <option value="mail" data-seed-hint="Sets the pickup shelf and Skim’s starting tile. Reuse the seed to repeat the layout.">One order</option>
               <option value="yard" data-seed-hint="Picks one of two shelf positions in each bay. Reuse the seed to repeat the layout.">Three orders</option>
+              <option value="custom" data-seed-hint="Sets the pickup shelf position in each active bay.">Custom fleet</option>
             </select></label
           >
           <label
@@ -137,13 +149,25 @@
               <option value="probe">Inspection probe</option>
             </select></label
           >
+          <fieldset id="fleet-fields" hidden>
+            <legend>Build the fleet</legend>
+            <p>Each bay has a slot for a picker and a courier. Forklifts and mechanics work on the platform.</p>
+            <div class="fleet-inputs">
+              <label>Orders<select id="fleet-orders"></select></label>
+              <label>Pickers<select id="fleet-pickers"></select></label>
+              <label>Couriers<select id="fleet-couriers"></select></label>
+              <label>Forklifts<select id="fleet-forklifts"></select></label>
+              <label>Mechanics<select id="fleet-mechanics"></select></label>
+            </div>
+            <small id="fleet-summary" aria-live="polite"></small>
+          </fieldset>
           <div class="run-field">
             <label for="fault">Fault</label>
             <select id="fault" aria-describedby="fault-hint">
-              <option value="forks" data-hint="The train can leave after a collar repair or a transfer through the station lift.">Lift collar slips</option>
+              <option value="forks" data-hint="Jack’s carriage fails. The planner checks whether the fleet can repair it or use the station lift.">Lift collar slips</option>
               <option value="hatch" data-hint="The hatch stays closed. Bag 47 cannot cross, so the train is held.">Hatch closes</option>
               <option value="address" data-hint="No coach will serve Northport. Bag 47 cannot be delivered, so the train is held.">Coach route withdrawn</option>
-              <option value="none" data-hint="The depot operates normally. The train leaves once every bag is aboard and every slip is signed.">Clear run</option>
+              <option value="none" data-hint="Release requires a staffed route for every bag and a signed waybill for every order.">Clear run</option>
             </select>
             <small id="fault-hint" aria-live="polite"></small>
           </div>
@@ -155,6 +179,9 @@
           <button id="run">Start live run</button
           ><button id="stop" type="button" hidden>Stop live run</button>
         </form>
+        <details class="llm-setup"><summary>Connect a live LLM</summary>
+          <p>Copy <code>.env.example</code> to <code>.env.local</code>. Enter your Azure OpenAI endpoint, key and deployment name. Restart with <code>docker compose up</code> or <code>uv run --locked --env-file .env.local -m moonmail</code>. Then choose <b>LLM orchestrator</b> above.</p>
+        </details>
       </section>
       <section class="buttons">
         <button id="map">Overhead camera</button
@@ -163,30 +190,43 @@
     </dialog>
     <dialog id="sources">
       <div class="dialog-head">
-        <h2>Graph evidence</h2>
+        <h2>Query the graph</h2>
         <button class="close">Close ×</button>
       </div>
       <section id="store-inspector">
-        <h3>Query the saved graph</h3>
+        <h3 id="inspect-step">Paused step</h3>
         <label for="store-question">Show</label>
         <select id="store-question">
+          <option value="facts">World facts at this step</option>
+          <option value="actions">Action assignments and status</option>
+          <option value="custody">Parcel handoffs so far</option>
+          <option value="candidates">Candidates and unmet guards at the last planning read</option>
+          <option value="bodies">Robot bodies and chassis skills</option>
           <option value="tools">Tools mounted on each robot</option>
           <option value="fault">Actions affected by a fault</option>
-          <option value="departure">What the final departure needs</option>
+          <option value="departure">What this revision needs for departure</option>
         </select>
         <p id="store-status" role="status"></p>
         <div class="store-table"><table id="store-rows"></table></div>
-        <details><summary>Cypher query</summary><pre id="store-query"></pre></details>
+        <details><summary>Show Cypher and parameters</summary><pre id="store-query"></pre></details>
+        <details id="cypher-console">
+          <summary>Write Cypher on the completed run</summary>
+          <p>Query the full read-only file. The example uses <code>$tick</code> to restrict events to the paused step.</p>
+          <label for="cypher-text">Cypher</label>
+          <textarea id="cypher-text" rows="4" maxlength="4000" spellcheck="false">MATCH (e:Event) WHERE e.tick &lt;= $tick
+RETURN e.tick AS step, e.kind AS event
+ORDER BY step DESC LIMIT 10</textarea>
+          <button id="cypher-run">Run Cypher</button><span id="cypher-status" role="status"></span>
+          <div class="store-table"><table id="cypher-rows"></table></div>
+        </details>
       </section>
       <section>
         <h3 id="source-title"></h3>
         <p id="proof-note"></p>
         <code id="relation"></code>
-        <h4>Database query for this event</h4>
-        <pre id="query"></pre>
-        <details open>
-          <summary>Returned rows</summary>
-          <pre id="rows"></pre>
+        <details>
+          <summary>Query and rows captured for this event</summary>
+          <pre id="query"></pre><pre id="rows"></pre>
         </details>
         <details>
           <summary>Orchestrator input, proposal and feedback</summary>
@@ -196,6 +236,14 @@
           >Download the embedded graph ↓</a
         >
       </section>
+    </dialog>
+    <dialog id="guide" aria-labelledby="guide-title">
+      <div class="dialog-head"><h2 id="guide-title">Explore the depot</h2><button class="close">Close ×</button></div>
+      <ol class="guide-steps">
+        <li><h3>Start with the robots</h3><p>The station opens on a recorded LLM run. Select a robot to follow its chassis, skills and tool in Relate.</p><button id="guide-bodies">See robot bodies →</button></li>
+        <li><h3>Pause on a decision</h3><p>Use Play, Next event or the timeline. Query graph pauses playback. Choose world facts, action assignments or fault impact to inspect the selected step and its Cypher.</p><button id="guide-query">Query this step →</button></li>
+        <li><h3>Run your own experiment</h3><p>In Run options, choose a recording or start a fresh dispatch. The local planner works without a key. Connect your own deployment to choose LLM orchestrator. Both use the same graph and validator.</p><button id="guide-run">Open run options →</button></li>
+      </ol>
     </dialog>
   </body>
 </html>

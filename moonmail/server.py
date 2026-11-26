@@ -6,13 +6,22 @@ from pathlib import Path
 from typing import Literal
 from uuid import UUID
 
+import relate
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
 from .depot import Scenario
 from .episode import episode_steps, run_episode
-from .recordings import Question, Recording, inspect_store, recording
+from .recordings import (
+    Question,
+    Recording,
+    inspect_store,
+    live_checkpoint_lock,
+    query_completed_store,
+    recording,
+)
 
 ROOT = Path(__file__).resolve().parent.parent
 app = FastAPI(title="Moonmail")
@@ -73,6 +82,7 @@ async def live(
             ROOT / "runs",
             controller,
             os.environ.get("MOONMAIL_LIVE_AZURE_ENV_FILE"),
+            live_inspection=True,
         )
         loop = asyncio.get_running_loop()
         try:
@@ -109,16 +119,49 @@ def saved_recording(name: Recording):
 
 
 @app.get("/api/recordings/{name}/evidence/{question}")
-def saved_evidence(name: Recording, question: Question):
-    return inspect_store(ROOT / "viewer/public/episodes" / f"{name}.rl", question)
+def saved_evidence(
+    name: Recording, question: Question, tick: int | None = Query(None, ge=0)
+):
+    return inspect_store(ROOT / "viewer/public/episodes" / f"{name}.rl", question, tick)
 
 
 @app.get("/api/episodes/{run_id}/evidence/{question}")
-def run_evidence(run_id: UUID, question: Question):
-    path = ROOT / "runs" / run_id.hex / "episode.rl"
+def run_evidence(
+    run_id: UUID, question: Question, tick: int | None = Query(None, ge=0)
+):
+    folder = ROOT / "runs"
+    live = folder / f".live-{run_id.hex}.rl"
+    with live_checkpoint_lock:
+        if live.is_file():
+            return inspect_store(live, question, tick)
+    final = folder / run_id.hex / "episode.rl"
+    if final.is_file():
+        return inspect_store(final, question, tick)
+    raise HTTPException(404, "Episode does not exist")
+
+
+class GraphQuery(BaseModel):
+    statement: str = Field(min_length=1, max_length=4000)
+    tick: int = Field(ge=0)
+
+
+def execute_inspection(path: Path, request: GraphQuery):
     if not path.is_file():
-        raise HTTPException(404, "Episode does not exist")
-    return inspect_store(path, question)
+        raise HTTPException(404, "The completed graph is not available")
+    try:
+        return query_completed_store(path, request.statement, request.tick)
+    except (ValueError, relate.Error) as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
+@app.post("/api/recordings/{name}/query")
+def query_recording(name: Recording, request: GraphQuery):
+    return execute_inspection(ROOT / "viewer/public/episodes" / f"{name}.rl", request)
+
+
+@app.post("/api/episodes/{run_id}/query")
+def query_episode(run_id: UUID, request: GraphQuery):
+    return execute_inspection(ROOT / "runs" / run_id.hex / "episode.rl", request)
 
 
 @app.get("/presentation.pdf")

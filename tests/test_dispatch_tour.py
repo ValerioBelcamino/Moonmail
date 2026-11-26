@@ -235,8 +235,8 @@ def test_unreachable_junction_wave_becomes_a_graph_observation(tmp_path):
     [
         ("MATCH (:Robot {id:'Jack'})-[m:MOUNTS]->(:Tool) DELETE m", "unmounted"),
         (
-            "MATCH (t:Tool {id:'Jack forks'})-[p:PROVIDES]->(:Skill {id:'Fork'}), "
-            "(s:Skill {id:'Scan'}) DELETE p CREATE (t)-[:PROVIDES]->(s)",
+            ("MATCH (t:Tool {id:'Jack forks'})-[p:PROVIDES]->(:Skill {id:'Fork'}), "
+             "(s:Skill {id:'Scan'}) DELETE p CREATE (t)-[:PROVIDES]->(s)"),
             "online",
         ),
     ],
@@ -257,3 +257,88 @@ def test_loading_requires_the_matching_carriage_for_each_order(
         assert world.facts["Fern/forks"] == "online"
         for bag in ("52", "68"):
             assert set(world.options[f"{bag}/load"]) == {"Fern"}
+
+
+def test_playhead_queries_exclude_future_reads_faults_and_assignments():
+    with TestClient(server.app) as client:
+        def rows(question, tick):
+            response = client.get(f"/api/recordings/post/evidence/{question}", params={"tick": tick})
+            response.raise_for_status()
+            return response.json()
+
+        assert rows("actions", 2)["rows"] == []
+        assert rows("departure", 2)["rows"] == []
+        assert len(rows("departure", 3)["rows"]) == 2
+        assert rows("fault", 25)["rows"] == []
+        assert {r["effect"] for r in rows("fault", 26)["rows"]} == {"BLOCKS", "INVALIDATES"}
+        assert rows("candidates", 26)["event_tick"] == 1
+        assert rows("candidates", 27)["event_tick"] == 27
+        assert rows("custody", 21)["rows"][0]["holder"] == "Wick"
+        assert rows("custody", 22)["rows"][0]["holder"] == "Skim"
+        before = {r["fact"]: r["value"] for r in rows("facts", 25)["rows"]}
+        after = {r["fact"]: r["value"] for r in rows("facts", 26)["rows"]}
+        assert (before["forks"], after["forks"]) == ("online", "offline")
+        bodies = client.get("/api/recordings/post-probe").json()["fleetGraph"]
+        assert {"robot": "Patch", "mounted": "Inspection probe", "provides": None, "fits": "Test socket"} in bodies["mounts"]
+
+
+def test_live_checkpoint_is_queryable_before_completion_and_cleaned_on_cancel(tmp_path, monkeypatch):
+    monkeypatch.setattr(server, "ROOT", tmp_path)
+    scenario = Scenario(service_kit="driver", mail_fault="forks")
+    steps = episode_steps(scenario, tmp_path / "runs", live_inspection=True)
+    try:
+        header = next(steps)
+        url = "/api/episodes/" + header["id"]
+        with TestClient(server.app) as client:
+            assert client.get(url + "/evidence/bodies?tick=0").json()["rows"]
+            assert client.get(url + "/graph").status_code == 404
+            for packet in steps:
+                if any(e["kind"] == "decision" for e in packet.get("events", [])):
+                    break
+            assert len(client.get(url + "/evidence/actions?tick=3").json()["rows"]) == 6
+            assert client.get(url + "/evidence/actions?tick=0").json()["rows"] == []
+    finally:
+        steps.close()
+    assert list((tmp_path / "runs").iterdir()) == []
+
+
+@pytest.mark.parametrize("couriers, expected", [(1, "blocked"), (2, "delivered")])
+def test_custom_yard_changes_candidates_and_shared_fork_impact(tmp_path, couriers, expected):
+    scenario = Scenario(mission="yard", fleet={"orders": 2, "pickers": 2, "couriers": couriers,
+                        "forklifts": 1, "mechanics": 1}, service_kit="driver", mail_fault="forks")
+    ep = run_episode(scenario, tmp_path)
+    assert ep["outcome"] == expected
+    assert len(ep["layout"]["starts"]) == 4 + couriers
+    roster = {row["robot"] for row in ep["fleetGraph"]["skills"]}
+    assert roster == set(ep["layout"]["starts"])
+    with relate.connect(str(tmp_path / ep["id"] / "episode.rl"), read_only=True) as db:
+        pairs = db.execute("""MATCH (o:Order)-[:LOADS_WITH]->(:Tool)<-[:MOUNTS]-(r:Robot)
+                              RETURN o.id AS bag,r.id AS loader ORDER BY bag""").fetchall()
+        assert pairs == [{"bag": "47", "loader": "Jack"}, {"bag": "52", "loader": "Jack"}]
+    if couriers == 1:
+        read = next(e for e in ep["events"] if e["kind"] == "read")["modelInput"]
+        assert not read["operators"]["52/cross"]["eligible_and_approach"]
+        assert "Bag 52" in ep["events"][-1]["reason"]
+        assert ep["frames"][-1]["signal"] == "red"
+    else:
+        fault = next(e for e in ep["events"] if e["kind"] == "fork fault")
+        assert {r["uid"] for r in fault["proof"]["rows"]} == {"1/47/load", "1/52/load", "1/depart"}
+        assert ep["frames"][-1]["signal"] == "green"
+
+
+def test_completed_cypher_console_binds_the_playhead_and_preserves_readonly_store(tmp_path, monkeypatch):
+    folder = tmp_path / "viewer/public/episodes"
+    folder.mkdir(parents=True)
+    db = folder / "post.rl"
+    copyfile(server.ROOT / "viewer/public/episodes/post.rl", db)
+    monkeypatch.setattr(server, "ROOT", tmp_path)
+    original = db.read_bytes()
+    with TestClient(server.app) as client:
+        uri = "/api/recordings/post/query"
+        q = "MATCH (e:Event) WHERE e.tick <= $tick RETURN e.tick AS step ORDER BY step DESC LIMIT 1"
+        assert client.post(uri, json={"statement": q, "tick": 25}).json()["rows"] == [{"step": 25}]
+        read = "MATCH (a:Action) WHERE a.op='load' RETURN a"
+        assert client.post(uri, json={"statement": read, "tick": 0}).json()["rows"][0]["a"]["labels"] == ["Action"]
+        assert client.post(uri, json={"statement": "MATCH (a) DELETE a RETURN a", "tick": 0}).status_code == 400
+        assert client.post(uri, json={"statement": "MATCH (a) RETURN a; MATCH (b) RETURN b", "tick": 0}).status_code == 400
+    assert db.read_bytes() == original

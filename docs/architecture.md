@@ -1,6 +1,6 @@
 # How one graph coordinates a fleet
 
-Before the train can leave, Bag 47 must reach Coach B and a robot must sign the delivery slip. The orchestrator needs to find a robot for each job. If the fork carriage breaks, it also needs to know which jobs can still run. Moonmail keeps robot capabilities, live facts and action dependencies in one embedded Relate file per execution. Each accepted plan revision links to the actions it uses, so a later revision can reuse the surviving work. [Film](../moonmail-demo.mp4) · [Run the station](../README.md#run-the-depot)
+Before the train can leave, Bag 47 must reach Coach B and a robot must sign the delivery slip. The orchestrator needs to find a robot for each job. If the fork carriage breaks, it also needs to know which jobs can still run. Moonmail keeps robot capabilities, live facts and action dependencies in one embedded Relate file per execution. Each accepted plan revision links to the actions it uses, so a later revision can reuse the surviving work. [Film](../moonmail-demo.mp4) · [Run the station](../README.md#run-it)
 
 The picker’s arm reaches 125 cm. The shelf is 110 cm high. The courier can fit through the hatch while carrying the bag. These capabilities exist before any plan does. Compare them with a fact that changes during execution: at step 22, the bag’s holder becomes the courier. Those two kinds of information let the orchestrator answer both “who could do this?” and “who can do it now?” [Picker assignment](http://127.0.0.1:8041/?reel=post&at=4) · [Recorded handoff](http://127.0.0.1:8041/?reel=post&at=22)
 
@@ -34,7 +34,9 @@ sequenceDiagram
     A->>D: Read the changed state for the next revision
 ```
 
-The viewer follows the same sequence. **Facts available to the orchestrator** shows its input. **Proposed action plan** shows the submitted draft. **Approved action plan** shows the revision the executor can run. **Inspect graph data** runs a selected Cypher query against the saved database. The event evidence underneath records the query, returned rows and model payload at the selected simulation step.
+The viewer follows the same sequence. **Facts available to the orchestrator** shows its input. **Proposed action plan** shows the submitted draft. **Approved action plan** shows the revision the executor can run. **Query graph** pauses playback and runs a selected Cypher query as of the playhead. Facts and action statuses decode the latest committed event snapshot at that step. Eligibility comes from the last planning read. The event evidence underneath records the query, returned rows and model payload at the selected simulation step.
+
+**Robot bodies** traverses the actual robot, chassis, skill and mount relationships from the run’s Relate file. The selected step supplies the online state of Jack’s carriage. During live execution the inspector reads an atomically published checkpoint. Fault and revision queries apply the playhead tick before returning rows. The optional Cypher editor opens a read-only connection to a completed store. Its example uses the bound `$tick` to select historical events.
 
 The tool adapter assembles the model input with Cypher and passes a typed projection to the orchestrator. Its proposed DAG is an explicit list of operations with an `after` list and a nominated actor or `auto`. The validator checks the allowed operations, graph structure, body bindings, custody and the effects that support each precondition. Failed submissions remain visible as attempts. Only a successful plan is eligible for execution. [Model tool definitions and retry loop](../moonmail/mail_agent.py) · [Causal validation](../moonmail/mail_planning.py) · [Orchestration](../moonmail/mail_episode.py)
 
@@ -120,7 +122,7 @@ In both one-order recordings, the orchestrator receives the same goal. The parce
 
 ![Three stages of the driver run showing explicit action identities and the two affected nodes.](dispatch-trace.svg)
 
-The probe fits a test socket. The station lift accepts Skim’s tray and feeds Coach B. The graph therefore supplies a second feasible way to reach the goal. In the failed attempt, the interactive graph shows the submitted draft, highlights its unsupported repair and displays the returned feedback. **Inspect graph data** exposes the tool context and submitted JSON. [Rejected draft](http://127.0.0.1:8041/?reel=post-probe&at=rejected) · [Corrected proposal](http://127.0.0.1:8041/?reel=post-probe&at=retry) · [Driver database](../viewer/public/episodes/post.rl) · [Probe database](../viewer/public/episodes/post-probe.rl)
+The probe fits a test socket. The station lift accepts Skim’s tray and feeds Coach B. The graph therefore supplies a second feasible way to reach the goal. In the failed attempt, the interactive graph shows the submitted draft, highlights its unsupported repair and displays the returned feedback. **Query graph** exposes the tool context and submitted JSON. [Rejected draft](http://127.0.0.1:8041/?reel=post-probe&at=rejected) · [Corrected proposal](http://127.0.0.1:8041/?reel=post-probe&at=retry) · [Driver database](../viewer/public/episodes/post.rl) · [Probe database](../viewer/public/episodes/post-probe.rl)
 
 ## Read the evidence in Cypher
 
@@ -144,7 +146,9 @@ RETURN a.uid AS uid, a.op AS op
 
 ## The larger run
 
-The larger setup has a 26 × 14 grid, nine robots and three orders. The smaller setup has a 14 × 8 grid with a maintenance siding on its outer aisle. The same tool interface, validator and revision mechanism serve both layouts. The larger setup reserves disjoint resources for a group of concurrent jobs.
+The larger recording has a 26 × 14 grid, nine robots and three orders. In **Run options → Custom fleet**, the same yard accepts one to three orders and a roster of pickers, couriers, forklifts and mechanics. Its service links and carriage assignments enter Relate before the planner reads the graph. A missing bay courier removes the corresponding crossing candidate. [Fleet settings and two worked experiments](running.md#run-a-different-fleet)
+
+The three-order preset uses the full yard. The smaller setup has a 14 × 8 grid with a maintenance siding on its outer aisle. The same tool interface, validator and revision mechanism serve both layouts. The larger setup reserves disjoint resources for a group of concurrent jobs.
 
 - **Tick 4.** Three pickups and two scans start together. The orchestrator left all sixteen actor choices to the validator. The plan contains five parcel actions per order and one shared signal-box release.
 - **Tick 30.** The fork observation directly invalidates Bag 47’s load and transitively blocks the common departure. The other two loading branches survive.

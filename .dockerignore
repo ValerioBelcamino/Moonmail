@@ -1,0 +1,14 @@
+**
+!pyproject.toml
+!uv.lock
+!.python-version
+!moonmail/
+!moonmail/*.py
+!viewer/
+!viewer/dist/
+!viewer/dist/**
+!viewer/public/
+!viewer/public/**
+!docs/
+!docs/presentation.pdf
+!moonmail-demo.mp4

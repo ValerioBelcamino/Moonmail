@@ -285,13 +285,14 @@ function yardDrawing(graph: PlanGraph, ep: Episode, e: DepotEvent) {
   for (let i = 1; i < widths.length; i++) {
     positions.push(positions[i - 1] + widths[i - 1] + columnGap);
   }
-  const g = canvas(274, "Three order branches and a shared departure");
-  g.setAttribute("viewBox", `0 0 ${positions[4] + widths[4] + 8} 274`);
+  const height = 19 + orders.length * 85;
+  const g = canvas(height, "Order branches and a shared departure");
+  g.setAttribute("viewBox", `0 0 ${positions[4] + widths[4] + 8} ${height}`);
   for (const n of graph.nodes) {
     const [bag, action] = n.op.split("/");
     const op = action ?? bag, column = columns[op] ?? 2;
     const row = Math.max(0, orders.findIndex((order) => order.id === bag));
-    const y = op === "depart" ? 116 : 17 + row * 85 + (op === "manifest" || op === "repair" ? 36 : 0);
+    const y = op === "depart" ? height / 2 - 21 : 17 + row * 85 + (op === "manifest" || op === "repair" ? 36 : 0);
     xy.set(n.uid, [positions[column], y, widths[column]]);
   }
   const defs = node("defs");

@@ -1,9 +1,9 @@
-"""Three postal orders, two shared platform machines and one train in a single Relate store."""
+"""Concurrent postal orders and a configurable fleet sharing one train and one Relate store."""
 
 import random
 from dataclasses import dataclass, field
 
-from .depot import BODIES, describe_lifting_skill, fork_state, transaction
+from .depot import BODIES, YardFleet, describe_lifting_skill, fork_state, transaction
 from .mail_episode import MailRun, NoRoute
 from .mail_planning import OPS, Operator, World
 from .mail_store import ACTION_GUARDS, access_signature, materialize
@@ -37,13 +37,18 @@ LIFTS = """MATCH (l:LoadingLift)-[:FEEDS]->(c:Station)<-[:DELIVER_TO]-(o:Order),
 
 def yard_layout(scenario):
     rng = random.Random(scenario.seed)
+    fleet = scenario.fleet or YardFleet(mechanics=int(scenario.service_kit != "off"))
+    loaders = [("Jack", [17, 2]), ("Fern", [17, 7]), ("Ash", [17, 11])][
+        : fleet.forklifts
+    ]
+    mechanics = [("Patch", [20, 4]), ("Dot", [21, 9])][: fleet.mechanics]
     orders, starts, bodies = [], {}, {}
     for i, (bag, route, picker, courier) in enumerate(
         [
             ("47", "Northport", "Wick", "Skim"),
             ("52", "Eastbank", "Pip", "Dash"),
             ("68", "Westmere", "Rue", "Moss"),
-        ]
+        ][: fleet.orders]
     ):
         z = 2 + i * 4
         orders.append(
@@ -63,17 +68,17 @@ def yard_layout(scenario):
                 "lift": [22, z + 1],
                 "picker": picker,
                 "courier": courier,
+                "loader": loaders[min(i, len(loaders) - 1)][0] if loaders else None,
             }
         )
-        starts[picker] = [2, z + 1]
-        starts[courier] = [7, z + 1]
-        bodies.update({picker: "Wick", courier: "Skim"})
-    starts.update({"Jack": [17, 2], "Fern": [17, 7]})
-    starts[orders[-1]["courier"]] = [7, 13]
-    bodies.update({"Jack": "Jack", "Fern": "Jack"})
-    if scenario.service_kit != "off":
-        starts["Patch"] = [20, 4]
-        bodies["Patch"] = "Patch"
+        if i < fleet.pickers:
+            starts[picker], bodies[picker] = [2, z + 1], "Wick"
+        if i < fleet.couriers:
+            starts[courier], bodies[courier] = [7, 13 if i == 2 else z + 1], "Skim"
+    for name, cell in loaders:
+        starts[name], bodies[name] = cell, "Jack"
+    for name, cell in mechanics:
+        starts[name], bodies[name] = cell, "Patch"
     return {
         "width": 26,
         "depth": 14,
@@ -115,37 +120,41 @@ def seed_yard(db, scene, scenario):
                     "zone": "Sorting" if x < 12 else "Platform",
                 },
             )
-        for robot, tool in [("Jack", "Jack forks"), ("Fern", "Fern forks")]:
+        types = scene["yard"]["bodies"]
+        forklifts = [name for name, body in types.items() if body == "Jack"]
+        mechanics = [name for name, body in types.items() if body == "Patch"]
+        for robot in forklifts:
             db.execute(
                 """MATCH (r:Robot {id:$r}),(s:Skill {id:'Fork'}) MERGE (i:Interface {id:'Hex collar'})
                        CREATE (r)-[:MOUNTS]->(t:Tool {id:$t,online:true})-[:PROVIDES]->(s),(t)-[:USES_PORT]->(i)""",
-                {"r": robot, "t": tool},
+                {"r": robot, "t": robot + " forks"},
             )
-        if "Patch" in scene["starts"]:
+        for robot in mechanics if scenario.service_kit != "off" else []:
             driver = scenario.service_kit == "driver"
             db.execute(
-                """MATCH (r:Robot {id:'Patch'}) MERGE (p:Interface {id:$port})
+                """MATCH (r:Robot {id:$robot}) MERGE (p:Interface {id:$port})
                 CREATE (r)-[:MOUNTS]->(:Instrument {id:$tool})-[:FITS]->(p)""",
                 {
+                    "robot": robot,
                     "port": "Hex collar" if driver else "Test socket",
-                    "tool": "Hex driver" if driver else "Inspection probe",
+                    "tool": ("Hex driver" if driver else "Inspection probe")
+                    + ("" if robot == "Patch" else " (" + robot + ")"),
                 },
             )
         for o in scene["yard"]["orders"]:
             bag = o["id"]
-            loader = "Jack" if bag == "47" else "Fern"
+            loader = o["loader"]
             db.execute(
-                """MATCH (t:Train),(tray:Tray),(f:Tool {id:$tool})
+                """MATCH (t:Train),(tray:Tray)
                CREATE (o:Order {id:$id})-[:REQUESTS]->(p:Parcel {id:$bag,stage:'shelf',cm:$cm})-[:HELD_BY]->(s:Station {id:$shelf,cm:110}),
                (o)-[:ON_TRAIN]->(t),(o)-[:AT_SHELF]->(s),(o)-[:VIA]->(:Passage {id:$hatch,open:true,cm:36}),
-               (o)-[:LOADS_WITH]->(f),(p)-[:USES]->(tray),(t)-[:HAS_COACH]->(c:Station {id:$coach,cm:75}),
+               (p)-[:USES]->(tray),(t)-[:HAS_COACH]->(c:Station {id:$coach,cm:75}),
                (o)-[:DELIVER_TO]->(c),(c)-[:SERVES]->(d:Route {id:$route})<-[:ADDRESSED_TO]-(p),
                (:Waybill {id:$bill,status:'unsigned'})-[:COVERS]->(p)""",
                 {
                     "id": bag,
                     "bag": "Bag " + bag,
                     "cm": scenario.parcel_cm,
-                    "tool": loader + " forks",
                     "shelf": "Shelf " + bag,
                     "hatch": "Hatch " + bag,
                     "coach": o["coach"],
@@ -153,9 +162,14 @@ def seed_yard(db, scene, scenario):
                     "bill": "Waybill " + bag,
                 },
             )
-            for actor in [o["picker"], o["courier"], loader] + (
-                ["Patch"] if "Patch" in scene["starts"] else []
-            ):
+            if loader:
+                db.execute(
+                    """MATCH (o:Order {id:$bag}),(f:Tool {id:$tool})
+                    CREATE (o)-[:LOADS_WITH]->(f)""",
+                    {"bag": bag, "tool": loader + " forks"},
+                )
+            platform = forklifts if scenario.fleet else [loader]
+            for actor in [o["picker"], o["courier"], *platform, *mechanics]:
                 db.execute(
                     "MATCH (r:Robot {id:$actor}),(o:Order {id:$bag}) CREATE (r)-[:SERVICES]->(o)",
                     {"actor": actor, "bag": bag},
@@ -168,11 +182,11 @@ def seed_yard(db, scene, scenario):
                 )
 
 
-def fact_id(bag, key):
+def fact_id(bag, key, loader):
     if key == "signal" or key == "interface":
         return key
     if key == "forks":
-        return "forks" if bag == "47" else "Fern/forks"
+        return "forks" if loader in ("Jack", None) else loader + "/forks"
     return f"{bag}/{key}"
 
 
@@ -182,14 +196,25 @@ def contracts_for(orders):
     for bag in orders:
         for op, spec in OPS.items():
             if op == "depart":
-                join.update({fact_id(bag, k): v for k, v in spec.needs.items()})
+                join.update(
+                    {
+                        fact_id(bag, k, orders[bag]["loader"]): v
+                        for k, v in spec.needs.items()
+                    }
+                )
                 continue
             if op == "repair" and bag != "47":
                 continue
             result[f"{bag}/{op}"] = Operator(
                 spec.label,
-                {fact_id(bag, k): v for k, v in spec.needs.items()},
-                {fact_id(bag, k): v for k, v in spec.sets.items()},
+                {
+                    fact_id(bag, k, orders[bag]["loader"]): v
+                    for k, v in spec.needs.items()
+                },
+                {
+                    fact_id(bag, k, orders[bag]["loader"]): v
+                    for k, v in spec.sets.items()
+                },
                 spec.effort,
             )
     result["depart"] = Operator("Release train", join, {"signal": "green"}, 1)
@@ -272,7 +297,7 @@ class YardRun(MailRun):
                 if any(b == bag for b, _ in connected)
                 else "disconnected",
             }
-            facts.update({fact_id(bag, k): v for k, v in vals.items()})
+            facts.update({fact_id(bag, k, o["loader"]): v for k, v in vals.items()})
             for c in candidates:
                 if c["bag"] != bag:
                     continue
@@ -333,7 +358,9 @@ class YardRun(MailRun):
             interfaces,
             self.contracts,
             dict(self.custody),
-            "Load bags 47, 52 and 68 into their addressed coaches and sign all three waybills before releasing one train.",
+            "Deliver "
+            + ", ".join("Bag " + b for b in data)
+            + " to the addressed coaches and sign every waybill before releasing one train.",
             {
                 bag: {
                     "holder": row["holder"],

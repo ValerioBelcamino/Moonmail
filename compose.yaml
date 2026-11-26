@@ -1,0 +1,14 @@
+name: moonmail
+services:
+  station:
+    build: .
+    ports:
+      - "127.0.0.1:${MOONMAIL_PORT:-8041}:8041"
+    volumes:
+      - dispatches:/app/runs
+    env_file:
+      - path: .env.local
+        required: false
+
+volumes:
+  dispatches:
