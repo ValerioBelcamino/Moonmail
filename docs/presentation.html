@@ -3,18 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Moonmail · How the dispatch graph works</title>
+    <title>Moonmail · Dispatching a robot fleet with Relate</title>
     <style>
       :root {
         --ink: #172f32;
-        --muted: #496264;
-        --paper: #f7f3e8;
-        --pine: #205d53;
-        --jade: #b7e2c9;
-        --gold: #f0c27b;
-        --red: #a33f32;
-        --line: #a4b4a8;
-        --night: #112c30;
         --serif: Georgia, "Liberation Serif", serif;
         --sans: "Segoe UI", "Liberation Sans", Arial, sans-serif;
         --mono: "DejaVu Sans Mono", Consolas, monospace;
@@ -40,398 +32,58 @@
         width: 1280px;
         height: 720px;
         position: relative;
-        background: var(--paper);
-        padding: 44px 64px 48px;
         overflow: hidden;
         display: flex;
         flex-direction: column;
       }
-      .dark {
-        background: var(--night);
-        color: #fcf3de;
-        --muted: #bed4c9;
-        --line: #426261;
-        --pine: #b1e4c9;
-      }
-      .rail {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding-bottom: 12px;
-        border-bottom: 1px solid var(--line);
-        color: var(--muted);
-        font: 600 14px var(--sans);
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-      }
-      .brand {
-        font: 24px var(--serif);
-        text-transform: none;
-        letter-spacing: -0.025em;
-        color: var(--pine);
-      }
-      .brand::before {
-        content: "☾";
-        margin-right: 9px;
-        color: #a26b24;
-      }
-      .dark .brand::before {
-        color: var(--gold);
-      }
-      h1,
-      h2 {
-        margin: 22px 0 10px;
-        font: normal 56px/1.04 var(--serif);
-        letter-spacing: -0.035em;
-      }
-      h1 {
-        font-size: 65px;
-      }
-      .lead {
-        font: 24px/1.35 var(--sans);
-        max-width: 1080px;
-        color: var(--muted);
-      }
-      h3 {
-        font: normal 32px/1.13 var(--serif);
-        letter-spacing: -0.015em;
-      }
-      .foot {
-        margin-top: auto;
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        gap: 18px;
-        padding-top: 12px;
-        border-top: 1px solid var(--line);
-        font: 16px/1.35 var(--sans);
-        color: var(--muted);
-      }
-      .foot span:last-child {
-        font: 14px var(--mono);
-        white-space: nowrap;
-      }
-      b {
-        font-weight: 650;
-      }
-      code,
-      pre,
-      .mono {
-        font-family: var(--mono);
-      }
-      pre {
-        white-space: pre-wrap;
-        line-height: 1.53;
-      }
-      .flow {
-        width: 100%;
-        display: block;
-        flex: none;
-        margin: 24px 0 10px;
-      }
-      .flow text,
-      .schema text,
-      .ontology text,
-      .trace text,
-      .revision text {
-        font-family: var(--sans);
-      }
-      svg .edge {
-        fill: none;
-        stroke: #69837b;
-        stroke-width: 2.5;
-      }
-      svg .edge.strong {
-        stroke: #2b7865;
-      }
-      .dark svg .edge,
-      .preview svg .edge {
-        stroke: #84a89e;
-      }
-      svg .edge.fail {
-        stroke: #c96853;
-        stroke-dasharray: 6 4;
-      }
-      svg .n {
-        fill: #e8ece0;
-        stroke: #809789;
-        stroke-width: 1.6;
-      }
-      svg .n.jade {
-        fill: #d5e8d9;
-        stroke: #4c8978;
-      }
-      svg .n.gold {
-        fill: #f5e4c2;
-        stroke: #aa823f;
-      }
-      svg .n.red {
-        fill: #f5e2d9;
-        stroke: #b65f4d;
-      }
-      svg text {
-        fill: var(--ink);
-      }
-      svg .nt {
-        font-size: 21px;
-        font-weight: 650;
-      }
-      svg .ns {
-        font-size: 15px;
-        fill: #49605a;
-      }
-      svg .er {
-        font: 14px var(--mono);
-        fill: #466456;
-      }
-      .dark svg .n,
-      .preview svg .n {
-        fill: #1d3a3e;
-        stroke: #76978d;
-      }
-      .dark svg .n.jade,
-      .preview svg .n.jade {
-        fill: #254b46;
-        stroke: #8bcdb0;
-      }
-      .dark svg .n.gold,
-      .preview svg .n.gold {
-        fill: #484338;
-        stroke: #dfb774;
-      }
-      .dark svg .n.red {
-        fill: #4d3634;
-        stroke: #eb9d86;
-      }
-      .dark svg text,
-      .preview svg text {
-        fill: #fcf3de;
-      }
-      .dark svg .ns,
-      .preview svg .ns,
-      .dark svg .er,
-      .preview svg .er {
-        fill: #bdd3c7;
-      }
-      .grid2 {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 38px;
-        margin-top: 27px;
-      }
-      .grid2 article {
-        border-top: 2px solid var(--pine);
-        padding-top: 14px;
-      }
-      .grid2 h3 {
-        margin-bottom: 8px;
-      }
-      .grid2 p {
-        font-size: 21px;
-        color: var(--muted);
-      }
-      .caption {
-        font-size: 18px;
-        color: var(--muted);
-        line-height: 1.4;
-      }
-      .schema-list {
-        margin-top: 22px;
-        border-top: 1px solid var(--line);
-      }
-      .schema-row {
-        display: grid;
-        grid-template-columns: 255px 1fr;
-        gap: 14px;
-        align-items: center;
-        min-height: 106px;
-        border-bottom: 1px solid var(--line);
-      }
-      .schema-row h3 {
-        font-size: 25px;
-      }
-      .schema-row p {
-        font-size: 17px;
-        line-height: 1.28;
-        color: var(--muted);
-        margin-top: 6px;
-      }
-      .schema {
-        width: 100%;
-        display: block;
-      }
-      .ontology {
-        width: 100%;
-        margin-top: 21px;
-      }
-      .captionband {
-        padding: 12px 18px;
-        border-left: 4px solid var(--pine);
-        background: #e4eadf;
-        font-size: 20px;
-        line-height: 1.38;
-      }
-      .dark .captionband {
-        background: #1c3c3e;
-      }
-      .subhead {
-        font: 650 15px var(--sans);
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: var(--pine);
-        margin-bottom: 10px;
-      }
-      .codebox {
-        background: #163338;
-        color: #e4f3e5;
-        border-radius: 7px;
-        font: 18px var(--mono);
-        padding: 18px 20px;
-      }
-      .codebox .accent {
-        color: #f2c984;
-      }
-      .checks {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-      }
-      .checks li {
-        border-bottom: 1px solid var(--line);
-        padding: 8px 0;
-        font-size: 20px;
-      }
-      .checks li b {
-        color: var(--pine);
-      }
-      .trace,
-      .revision {
-        width: 100%;
-        margin: 22px 0 6px;
-      }
-      .compare {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 24px;
-        margin: 30px 0 22px;
-      }
-      .compare article {
-        padding: 20px 24px 22px;
-        border: 1px solid var(--line);
-        border-top: 4px solid #65a28a;
-        border-radius: 3px;
-      }
-      .compare article:last-child {
-        border-top-color: #e1ad69;
-      }
-      .compare h3 {
-        margin-bottom: 13px;
-      }
-      .compare p {
-        font-size: 20px;
-        color: var(--muted);
-        margin: 8px 0;
-      }
-      .compare .result {
-        color: inherit;
-        font-weight: 600;
-      }
-      .lab {
-        display: grid;
-        grid-template-columns: 1.06fr 1fr;
-        gap: 45px;
-        margin-top: 28px;
-      }
-      .lab ol {
-        padding-left: 25px;
-        margin: 0;
-      }
-      .lab li {
-        margin: 0 0 13px;
-        padding-left: 6px;
-        font-size: 20px;
-      }
-      .lab li strong {
-        color: var(--pine);
-      }
-      .lab .codebox {
-        margin-bottom: 10px;
-        font-size: 18px;
-      }
-      .lab a,
-      .foot a {
-        color: var(--pine);
-        text-underline-offset: 3px;
-      }
-      .lab p {
-        font-size: 18px;
-        color: var(--muted);
-      }
-      .robots-crop {
-        background: #253c3d url(embodiment-frame.webp) -6px -117px / 520px auto
-          no-repeat;
-        width: 220px;
-        height: 103px;
-        border-radius: 4px;
-        flex: none;
-      }
-      .worked {
-        display: flex;
-        align-items: center;
-        gap: 22px;
-      }
-      .worked p {
-        margin: 0;
-      }
-      .body-slide .ontology {
-        height: 248px;
-        margin-top: 11px;
-      }
-      .body-slide .worked {
-        margin-top: 4px;
-      }
-      .body-slide .worked p {
-        flex: 1;
-      }
-      .preview .worked {
-        border-top: 1px solid #426261;
-        padding-top: 13px;
-      }
+      /* The same editable file also produces the five-panel README animation. */
       .preview {
         display: none;
         width: 1100px;
         height: 426px;
+        padding: 24px 36px;
         background: #112c30;
         color: #fcf3de;
-        padding: 24px 36px;
-        --muted: #bdd3c7;
-        --pine: #b1e4c9;
-        --line: #426261;
       }
       .preview .rail {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #426261;
         padding-bottom: 8px;
+        color: #bdd3c7;
+        font: 600 14px var(--sans);
+        letter-spacing: .14em;
+        text-transform: uppercase;
       }
-      .preview h2 {
-        font-size: 38px;
-        margin: 12px 0 0;
+      .preview .rail span:last-child { letter-spacing: .06em; }
+      .preview .brand {
+        color: #b1e4c9;
+        font: 24px var(--serif);
+        letter-spacing: -.025em;
+        text-transform: none;
       }
-      .preview .flow {
-        margin: 6px 0 0;
-        height: 172px;
+      .preview .brand::before { content: "☾"; margin-right: 9px; color: #a26b24; }
+      .preview h2 { margin: 12px 0 0; font: normal 38px/1.04 var(--serif); letter-spacing: -.035em; }
+      .preview .flow { display: block; width: 100%; height: 172px; margin: 6px 0 0; }
+      .preview .flow text { font-family: var(--sans); fill: #fcf3de; }
+      .preview .edge { fill: none; stroke: #84a89e; stroke-width: 2.5; }
+      .preview .n { fill: #1d3a3e; stroke: #76978d; stroke-width: 1.6; }
+      .preview .n.jade { fill: #254b46; stroke: #8bcdb0; }
+      .preview .n.gold { fill: #484338; stroke: #dfb774; }
+      .preview .flow .nt { font-size: 21px; font-weight: 650; }
+      .preview .flow .ns { font-size: 15px; fill: #bdd3c7; }
+      .preview .flow .er { font: 14px var(--mono); fill: #bdd3c7; }
+      .preview .role.active .n { stroke: #ffcb79; stroke-width: 3.6; fill: #414837; }
+      .preview .worked { display: flex; align-items: center; gap: 22px; border-top: 1px solid #426261; padding-top: 13px; }
+      .preview .robots-crop {
+        width: 220px;
+        height: 103px;
+        flex: none;
+        border-radius: 4px;
+        background: #253c3d url(embodiment-frame.webp) -6px -117px / 520px auto no-repeat;
       }
-      .preview p {
-        font-size: 22px;
-        line-height: 1.22;
-        color: #d5e6db;
-      }
-      .preview .role.active .n {
-        stroke: #ffcb79;
-        stroke-width: 3.6;
-        fill: #414837;
-      }
-      .preview .rail span:last-child {
-        letter-spacing: 0.06em;
-      }
+      .preview p { font-size: 22px; line-height: 1.22; color: #d5e6db; }
       @media screen {
         body:not(.preview-mode) {
           height: 100vh;
@@ -479,335 +131,438 @@
           print-color-adjust: exact;
         }
       }
+      /* Presentation pages use a fixed 16:9 canvas for both projection and PDF. */
+      .deck {
+        --text: #193640;
+        --subtle: #415f62;
+        --accent: #166657;
+        --rule: #b8c9ba;
+        --surface: #f7f4e9;
+        --node: #fbf9f0;
+        --mint: #daeadb;
+        --honey: #f6e5bc;
+        --alert: #984b39;
+        background: var(--surface);
+        color: var(--text);
+        padding: 36px 62px 26px;
+      }
+      .deck.night {
+        --text: #fcf3dc;
+        --subtle: #bfd4c9;
+        --accent: #9dd9b7;
+        --rule: #476764;
+        --surface: #112d32;
+        --node: #1b393e;
+        --mint: #234d49;
+        --honey: #444338;
+        --alert: #f0aa90;
+      }
+      .mast, .folio {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex: none;
+        position: relative;
+        z-index: 1;
+      }
+      .mast {
+        border-bottom: 1px solid var(--rule);
+        padding-bottom: 12px;
+      }
+      .wordmark {
+        color: var(--text);
+        font: 27px/1 var(--serif);
+        letter-spacing: -.03em;
+      }
+      .wordmark::before {
+        content: "☾";
+        margin-right: 9px;
+        color: var(--accent);
+      }
+      .chapter {
+        color: var(--subtle);
+        font: 600 15px/1.2 var(--sans);
+        letter-spacing: .085em;
+        text-transform: uppercase;
+      }
+      .deck h1, .deck h2, .deck h3, .deck p, .deck figure { margin: 0; }
+      .deck h1, .deck h2, .deck h3 { color: var(--text); font-family: var(--serif); font-weight: 400; }
+      .deck h1 { font-size: 78px; letter-spacing: -.046em; line-height: 1.01; }
+      .deck h2 { margin-top: 28px; font-size: 54px; letter-spacing: -.038em; line-height: 1.06; }
+      .deck h3 { font-size: 33px; letter-spacing: -.025em; line-height: 1.14; }
+      .deck .intro { margin-top: 12px; max-width: 1060px; color: var(--subtle); font: 24px/1.38 var(--sans); }
+      .deck .content {
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .folio {
+        min-height: 36px;
+        border-top: 1px solid var(--rule);
+        padding-top: 10px;
+        color: var(--subtle);
+        font: 17px/1.3 var(--sans);
+      }
+      .folio .page { margin-left: auto; white-space: nowrap; font-variant-numeric: tabular-nums; }
+      .deck a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 4px; }
+      .deck .chart, .deck .scene-crop { display: block; width: 100%; height: auto; }
+      .chart .box { stroke: var(--rule); fill: var(--node); stroke-width: 1.7; }
+      .chart .box.main { fill: var(--mint); stroke: var(--accent); }
+      .chart .box.key { fill: var(--honey); stroke: #ad9158; }
+      .chart .wire { fill: none; stroke: var(--subtle); stroke-width: 2.2; stroke-linejoin: round; }
+      .chart .wire.retry { stroke: var(--alert); stroke-dasharray: 7 5; }
+      .chart text { fill: var(--text); font-family: var(--sans); }
+      .chart .node-name { font-size: 25px; font-weight: 600; }
+      .chart .node-note { fill: var(--subtle); font-size: 18px; }
+      .chart .wire-label {
+        font: 19px var(--sans);
+        fill: var(--subtle);
+        paint-order: stroke;
+        stroke: var(--surface);
+        stroke-width: 8px;
+        stroke-linejoin: round;
+      }
+      .chart .wire-label.relation { font: 17px var(--mono); }
+      .chart .schema-topic { font: 28px var(--serif); }
+      .chart .type-name { font-size: 22px; font-weight: 600; }
+      .deck p code { font: .88em var(--mono); color: var(--text); }
+      .deck .note {
+        align-self: flex-start;
+        border-left: 3px solid var(--accent);
+        padding: 3px 0 3px 18px;
+        font: 22px/1.4 var(--sans);
+        color: var(--subtle);
+      }
+      .deck .photo-spread {
+        display: grid;
+        flex: 1;
+        min-height: 0;
+        grid-template-columns: 1fr 1fr;
+        gap: 52px;
+        padding: 22px 0;
+        align-items: stretch;
+      }
+      .photo-spread .copy { align-self: center; }
+      .photo-spread .copy p { margin-top: 22px; max-width: 520px; color: var(--subtle); font: 25px/1.4 var(--sans); }
+      .photo-spread .portrait { min-height: 0; overflow: hidden; border-radius: 4px; background: #375553; }
+      .photo-spread .portrait img, .photo-spread .portrait svg { display: block; width: 100%; height: 100%; object-fit: cover; }
+      .cover .portrait img { object-position: 50% 57%; }
+      .cover .copy { padding-bottom: 20px; }
+      .deck .checks-table { border-collapse: collapse; width: 100%; font-size: 23px; }
+      .checks-table tr { border-top: 1px solid var(--rule); }
+      .checks-table tr:last-child { border-bottom: 1px solid var(--rule); }
+      .checks-table th, .checks-table td { text-align: left; padding: 18px 12px 18px 0; vertical-align: baseline; }
+      .checks-table th { width: 28%; color: var(--text); font: 31px/1.15 var(--serif); }
+      .checks-table td { color: var(--subtle); }
+      .admission .note { margin-top: 28px; }
+      .depot-setup {
+        display: grid;
+        grid-template-columns: 1.38fr 1fr;
+        gap: 46px;
+        align-items: center;
+      }
+      .floor { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 5px; background: #e4ebde; }
+      .floor text { font-family: var(--sans); fill: var(--text); }
+      .floor .zone-name { font-size: 18px; font-weight: 600; fill: #52776c; letter-spacing: .07em; }
+      .floor .place { font-size: 22px; font-weight: 600; }
+      .floor .place-label { fill: #f7f4e9; stroke: #a5bbad; }
+      .paired-explanation { margin: 0; }
+      .paired-explanation > div + div { margin-top: 26px; }
+      .paired-explanation dt { color: var(--accent); font: 31px/1.15 var(--serif); }
+      .paired-explanation dd { margin: 6px 0 0; color: var(--subtle); font: 23px/1.4 var(--sans); }
+      .assignments {
+        display: grid;
+        grid-template-columns: 1fr 1.16fr;
+        gap: 52px;
+        align-items: center;
+      }
+      .pair-portrait { overflow: hidden; border-radius: 4px; }
+      .pair-names { display: grid; grid-template-columns: 1fr 1fr; }
+      .pair-names p { padding-top: 12px; color: var(--subtle); font: 19px/1.3 var(--sans); }
+      .pair-names b { display: block; color: var(--text); font: 30px var(--serif); }
+      .pair-names p:last-child { text-align: right; }
+      .choices { width: 100%; border-collapse: collapse; font: 23px/1.3 var(--sans); color: var(--text); }
+      .choices th, .choices td { padding: 18px 10px 18px 0; text-align: left; }
+      .choices thead th { font: 600 17px/1.25 var(--sans); color: var(--subtle); }
+      .choices tbody tr { border-top: 1px solid var(--rule); }
+      .choices tbody tr:last-child { border-bottom: 1px solid var(--rule); }
+      .choices tbody th { font: 28px/1.2 var(--serif); width: 30%; }
+      .choices .choice { color: var(--accent); font-weight: 650; }
+      .deck .explain { margin-top: 20px; color: var(--subtle); font: 21px/1.4 var(--sans); }
+      .dag .note { margin-bottom: 16px; }
+      .incident {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 52px;
+        align-items: center;
+      }
+      .incident .scene-crop { border-radius: 4px; }
+      .incident .paired-explanation > div + div { margin-top: 17px; }
+      .incident .paired-explanation dt { font-size: 29px; }
+      .incident .paired-explanation dd { margin-top: 2px; font-size: 21px; }
+      .recovery-row {
+        display: grid;
+        grid-template-columns: .87fr 1.28fr;
+        gap: 30px;
+        align-items: center;
+        padding: 24px 0;
+        border-top: 1px solid var(--rule);
+      }
+      .recovery-row:last-child { border-bottom: 1px solid var(--rule); }
+      .recovery-row p { color: var(--subtle); font: 21px/1.38 var(--sans); margin-top: 6px; }
+      .recovery-row .steps { color: var(--text); font: 600 26px/1.35 var(--sans); margin: 0; }
+      .steps .step-arrow { display: inline-block; padding: 0 5px; color: var(--accent); }
+      .preserved .note { margin-top: 14px; }
+      .larger .photo-spread { grid-template-columns: .9fr 1.1fr; }
+      .larger h2 { margin-top: 0; font-size: 64px; }
+      .larger .copy p { font-size: 23px; margin-top: 20px; }
+      .larger .copy p:last-child { border-left: 3px solid var(--accent); padding-left: 17px; }
+      .viewer-nav {
+        position: fixed;
+        left: 50%;
+        bottom: 3px;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 4px;
+        z-index: 2;
+      }
+      .viewer-nav button {
+        border-radius: 3px;
+        border: 1px solid #6a8680;
+        background: #163037;
+        color: #fff8de;
+        font: 16px var(--sans);
+        cursor: pointer;
+        padding: 2px 12px;
+      }
+      .viewer-nav button:disabled { opacity: .45; cursor: default; }
+      .viewer-nav button:focus-visible { outline: 3px solid #e9bf76; outline-offset: 2px; }
+      body.preview-mode .viewer-nav { display: none; }
+      @media print { .viewer-nav { display: none; } }
     </style>
   </head>
   <body>
-    <section class="slide dark active">
-      <div class="rail">
-        <span class="brand">Moonmail</span><span>System architecture</span>
-      </div>
-      <h1>How a robot fleet shares a plan</h1>
-      <p class="lead">
-        A dispatcher must choose a robot for each job and know which work can
-        continue after a breakdown. Moonmail gives the orchestrator and executor
-        a shared, queryable memory.
-      </p>
-      <svg
-        class="flow"
-        data-flow
-        viewBox="0 0 1152 228"
-        aria-label="Relate, LLM orchestrator, validator and executor with a return path to the graph"
-      ></svg>
-      <p class="captionband">
-        <b>One embedded Relate file per dispatch.</b> The same action can be
-        linked to two revisions. Its identity and execution history survive a
-        replan.
-      </p>
-      <div class="foot">
-        <span>A symbolic railway depot makes the decisions observable.</span
-        ><span>1 / 8</span>
-      </div>
-    </section>
-    <section class="slide">
-      <div class="rail">
-        <span class="brand">Moonmail</span><span>Inside the Relate file</span>
-      </div>
-      <h2>What the graph remembers</h2>
-      <p class="lead">
-        The seed establishes the depot and its fleet. Execution changes custody,
-        equipment state and action status. Earlier observations and accepted
-        revisions remain inspectable.
-      </p>
-      <div class="schema-list">
-        <div class="schema-row">
-          <div>
-            <h3>Fleet ontology</h3>
-            <p>Which bodies and skills exist?</p>
-          </div>
-          <svg
-            class="schema"
-            data-row="Robot|INSTANCE_OF|Embodiment|HAS_SKILL|Skill"
-          ></svg>
+    <section class="slide deck night cover active" aria-labelledby="problem">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">The problem</span></header>
+      <div class="photo-spread">
+        <div class="copy">
+          <h1 id="problem">Which robot can do the job?</h1>
+          <p>A fleet shares a delivery goal. The robots differ in height, reach and the tools they carry.</p>
+          <p>When a tool fails mid-delivery, the dispatcher must work out which jobs can still run.</p>
         </div>
-        <div class="schema-row">
-          <div>
-            <h3>Operational state</h3>
-            <p>Who holds this order’s parcel?</p>
-          </div>
-          <svg
-            class="schema"
-            data-row="Order|REQUESTS|Parcel|HELD_BY|Robot or station"
-          ></svg>
-        </div>
-        <div class="schema-row">
-          <div>
-            <h3>Planning history</h3>
-            <p>Who owns this job in this revision?</p>
-          </div>
-          <svg
-            class="schema"
-            data-row="Plan revision|INCLUDES|Action|ASSIGNED_TO|Robot"
-          ></svg>
-        </div>
+        <figure class="portrait"><img src="depot.webp" alt="The simulated railway depot with four different robots on opposite sides of a partition." /></figure>
       </div>
-      <div class="foot">
-        <span
-          >Other relationships connect actions to prerequisites, faults to
-          affected actions and revisions to their predecessors.</span
-        ><span>2 / 8</span>
-      </div>
+      <footer class="folio"><span>A multi-robot dispatch simulator built on Relate</span><span class="page"></span></footer>
     </section>
-    <section class="slide body-slide">
-      <div class="rail">
-        <span class="brand">Moonmail</span><span>Embodiment → eligibility</span>
-      </div>
-      <h2>Only Jack can lift. Either robot can sign.</h2>
-      <p class="lead">
-        In the filmed depot, the carriage and chassis must support the same
-        lifting skill on the same robot. Signing uses a different path to the
-        platform desk.
-      </p>
-      <svg
-        class="ontology"
-        id="ontology"
-        viewBox="0 0 1152 288"
-        aria-label="Jack, Patch and the paths from their chassis and mounted tool to their shared or distinct skills"
-      ></svg>
-      <div class="worked">
-        <div
-          class="robots-crop"
-          role="img"
-          aria-label="Jack and Patch beside the train in the film"
-        ></div>
-        <p class="captionband">
-          When Jack’s carriage goes offline, the load guard fails. His route to
-          <b>Scan</b> stays intact. Open <b>Robot bodies</b> in the station to
-          follow either robot’s paths.
-        </p>
-      </div>
-      <div class="foot">
-        <span
-          >“Lift a tray” is the display label for the stored skill with ID
-          <code>Fork</code>.</span
-        ><span>3 / 8</span>
-      </div>
-    </section>
-    <section class="slide">
-      <div class="rail">
-        <span class="brand">Moonmail</span><span>Orchestrator → validator</span>
-      </div>
-      <h2>A proposal becomes an executable plan</h2>
-      <p class="lead">
-        <code>read_dispatch_graph</code> returns the goal, facts, eligible
-        actors and any surviving assignments. The LLM calls
-        <code>propose_dag</code> with jobs, actors and predecessors.
-      </p>
-      <div class="grid2">
-        <article>
-          <p class="subhead">Two entries from the first draft</p>
-          <pre class="codebox"><span class="accent">manifest</span>
-  actor   Jack
-  after   []
 
-<span class="accent">depart</span>
-  actor   Signal box
-  after   [load, manifest]</pre>
-          <p class="caption" style="margin-top: 10px">
-            The model could also choose Patch to sign.
-          </p>
-        </article>
-        <article>
-          <p class="subhead">What admission checks</p>
-          <ul class="checks">
-            <li>
-              <b>Structure.</b> Known jobs form an acyclic graph leading to the
-              goal.
-            </li>
-            <li>
-              <b>Assignment.</b> Z3 checks robot eligibility, custody and
-              nominated actors. It can bind open choices.
-            </li>
-            <li>
-              <b>Causality.</b> A required fact must hold already or follow from
-              a predecessor.
-            </li>
-          </ul>
-        </article>
+    <section class="slide deck" aria-labelledby="solution">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">The solution</span></header>
+      <h2 id="solution">Keep the plan and the fleet in one graph</h2>
+      <p class="intro">The planner and executor share one embedded Relate file per dispatch. An action links to its assigned robot, the facts it needs and the work it depends on.</p>
+      <div class="content">
+        <svg id="shared-graph" class="chart" viewBox="0 0 1156 285" role="img" aria-label="A plan revision includes an action. It is assigned to a robot, requires a world fact and depends on an earlier action."></svg>
+        <p class="note">The executor updates facts as jobs run. Those links let the dispatcher trace what a change affects.</p>
       </div>
-      <div class="foot">
-        <span
-          >An accepted draft becomes a <code>PlanRevision</code>. A rejected
-          attempt stays in Relate and its feedback returns to the model.</span
-        ><span>4 / 8</span>
-      </div>
+      <footer class="folio"><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/graph-schema.md">Full graph schema</a><span class="page"></span></footer>
     </section>
-    <section class="slide">
-      <div class="rail">
-        <span class="brand">Moonmail</span><span>Executor → Relate</span>
+
+    <section class="slide deck night" aria-labelledby="components">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Architecture</span></header>
+      <h2 id="components">How a dispatch runs</h2>
+      <p class="intro">One language model (LLM) reads the goal and eligible robots with <code>read_dispatch_graph</code>. It uses <code>propose_dag</code> to submit a directed acyclic graph (DAG) of actions.</p>
+      <div class="content">
+        <svg id="dispatch-loop" class="chart" viewBox="0 0 1156 300" role="img" aria-label="Relate supplies facts to the LLM. The validator returns failed checks or commits an accepted plan. The executor reads ready jobs and writes their effects to Relate."></svg>
       </div>
-      <h2>Readiness is a graph query</h2>
-      <p class="lead">
-        At each dispatch, the executor reads pending actions from the accepted
-        revision. It checks current guards before running them and commits their
-        effects back to Relate.
-      </p>
-      <div class="grid2" style="grid-template-columns: 1.13fr 1fr">
-        <article>
-          <p class="subhead">Which jobs have finished predecessors?</p>
-          <pre class="codebox">
-MATCH (:PlanRevision {rev: $rev})
-      -[:INCLUDES]-&gt;(a:Action)
-WHERE a.status = 'pending'
-  AND NOT EXISTS {
-    MATCH (a)-[:DEPENDS_ON]-&gt;(p)
-    WHERE p.status &lt;&gt; 'done'
-  }
-RETURN a.uid</pre>
-        </article>
-        <article>
-          <p class="subhead">One delivery in the film</p>
-          <ul class="checks">
-            <li><b>Step 22.</b> Bag 47 changes hands. Skim now holds it.</li>
-            <li>
-              <b>Step 25.</b> Skim completes the hatch crossing. The cargo is on
-              the platform.
-            </li>
-            <li>
-              <b>Step 26.</b> Jack’s carriage slips. Its online state changes
-              before loading begins.
-            </li>
-          </ul>
-        </article>
-      </div>
-      <div class="foot">
-        <span
-          >The viewer pairs motion with committed graph events. Pausing lets you
-          query the last graph commit at or before the playhead.</span
-        ><span>5 / 8</span>
-      </div>
+      <footer class="folio"><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/architecture.md#one-dispatch-cycle">Dispatch sequence and tool calls</a><span class="page"></span></footer>
     </section>
-    <section class="slide dark">
-      <div class="rail">
-        <span class="brand">Moonmail</span
-        ><span>Fault → revised action graph</span>
+
+    <section class="slide deck" aria-labelledby="coverage">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Graph model</span></header>
+      <h2 id="coverage">What lives in the dispatch graph?</h2>
+      <p class="intro">The fleet and depot exist before planning. The dispatch then adds proposals, plan revisions and a record of each handoff.</p>
+      <div class="content">
+        <svg id="schema-paths" class="chart" viewBox="0 0 1156 326" role="img" aria-label="Four stored paths through the schema cover mounted equipment, the parcel’s destination, changes of custody and a revision’s response to an event."></svg>
       </div>
-      <h2>Repair the affected branch</h2>
-      <p class="lead">
-        Relate follows the faulty precondition to the load and its dependent
-        departure. The next graph read includes the changed facts and the
-        assignments that still hold.
-      </p>
-      <svg
-        class="revision"
-        id="revision-diagram"
-        viewBox="0 0 1152 282"
-        aria-label="The fault invalidates the load and blocks departure. Two revisions both include the same manifest action."
-      ></svg>
-      <p class="captionband">
-        Revision 2 keeps <b>four original action nodes</b> in the driver
-        recording, including the pending signature. A repair becomes a
-        prerequisite for the replacement load.
-      </p>
-      <div class="foot">
-        <span
-          >Identifiers such as <code>1/manifest</code> are stored action
-          identities. They can be compared directly in Cypher.</span
-        ><span>6 / 8</span>
-      </div>
+      <footer class="folio"><span>Selected paths · <a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/graph-schema.md">Full schema for both depot layouts</a></span><span class="page"></span></footer>
     </section>
-    <section class="slide">
-      <div class="rail">
-        <span class="brand">Moonmail</span><span>Controlled experiment</span>
+
+    <section class="slide deck admission" aria-labelledby="admission">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Plan validation</span></header>
+      <h2 id="admission">What makes a proposed plan executable?</h2>
+      <p class="intro">A draft specifies a job, an actor (or an open choice) and prerequisites for each action.</p>
+      <div class="content">
+        <table class="checks-table" aria-label="Three checks on a draft">
+          <tbody>
+            <tr><th scope="row">Dependencies</th><td>The actions form an acyclic graph and each contributes to the goal.</td></tr>
+            <tr><th scope="row">Assignments</th><td>Z3 checks each chosen actor or picks one from the eligible set.</td></tr>
+            <tr><th scope="row">Preconditions</th><td>Each required fact already holds or follows from a declared predecessor.</td></tr>
+          </tbody>
+        </table>
+        <p class="note">The service records each attempt. A failed check goes back to the LLM with a reason.</p>
       </div>
-      <h2>Change one tool. Get a different plan.</h2>
-      <p class="lead">
-        Hold the order, fleet, layout and failure constant. Both recorded LLM
-        runs reach the same departure goal. The graph makes the different
-        recovery decisions explainable.
-      </p>
-      <div class="compare">
-        <article>
-          <p class="subhead">Driver recording · post.rl</p>
-          <h3>Hex driver fits the collar</h3>
-          <p>
-            Patch has a service wrist and a mounted driver that fits the
-            required interface.
-          </p>
-          <p class="result">
-            Patch repairs the carriage. Jack loads the coach.
-          </p>
-        </article>
-        <article>
-          <p class="subhead">Probe recording · post-probe.rl</p>
-          <h3>Probe fits a test socket</h3>
-          <p>
-            The model first proposes a repair. The validator reports “repair has
-            no eligible body in the graph.”
-          </p>
-          <p class="result">
-            On its next attempt the LLM sends Skim to the station lift connected
-            to the coach.
-          </p>
-        </article>
-      </div>
-      <p class="captionband">
-        The larger recording uses the same loop for nine robots and three
-        orders. The revised plan reuses <b>14 action nodes</b>. Six load and
-        signature prerequisites converge on one release.
-      </p>
-      <div class="foot">
-        <span
-          >The embedded stores preserve each proposal as well as the validator’s
-          verdict.</span
-        ><span>7 / 8</span>
-      </div>
+      <footer class="folio"><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/moonmail/mail_planning.py">Validation logic</a><span class="page"></span></footer>
     </section>
-    <section class="slide dark">
-      <div class="rail">
-        <span class="brand">Moonmail</span><span>Judge walkthrough</span>
-      </div>
-      <h2>Try a decision the film never shows</h2>
-      <p class="lead">
-        Give two bays one shared forklift. Slip its collar and inspect how many
-        loads depend on the same piece of equipment.
-      </p>
-      <div class="lab">
-        <div>
-          <p class="subhead">Start the station</p>
-          <pre class="codebox">docker compose up --build</pre>
-          <p>or</p>
-          <pre class="codebox">uv run --locked -m moonmail</pre>
-          <p>
-            Open <b>127.0.0.1:8041</b> and select <b>Quick guide</b>. Recorded
-            LLM runs and fresh local runs work without credentials.
-          </p>
+
+    <section class="slide deck" aria-labelledby="order">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">The railway depot</span></header>
+      <h2 id="order">Bag 47 needs a delivery and a signature</h2>
+      <p class="intro">The goal is to release the train. The bag starts on the sorting shelf, and Coach B serves its destination.</p>
+      <div class="content">
+        <div class="depot-setup">
+          <svg class="floor" viewBox="0 0 700 400" role="img" aria-label="Selected locations on the recorded fourteen-by-eight grid. The shelf is on the sorting side. A low hatch leads to the platform with the desk and Coach B.">
+            <defs>
+              <pattern id="tiles" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
+                <path d="M50 0H0V50" fill="none" stroke="#b4c8b8" stroke-width="1"/>
+              </pattern>
+            </defs>
+            <rect width="700" height="400" fill="#e6eddf"/>
+            <rect x="350" width="350" height="400" fill="#d9e6dd"/>
+            <rect width="700" height="400" fill="url(#tiles)"/>
+            <path d="M325 0V252 M325 298V400" fill="none" stroke="#57756d" stroke-width="11"/>
+            <path d="M325 251V299" fill="none" stroke="#bc8b45" stroke-width="7" stroke-dasharray="7 5"/>
+            <text x="18" y="35" class="zone-name">SORTING</text>
+            <text x="368" y="35" class="zone-name">PLATFORM</text>
+            <circle cx="125" cy="75" r="10" fill="#b67b34" stroke="#77501f" stroke-width="2"/>
+            <rect x="83" y="91" width="84" height="35" rx="4" class="place-label"/><text x="125" y="116" text-anchor="middle" class="place">Shelf</text>
+            <rect x="252" y="318" width="146" height="34" rx="4" class="place-label"/><text x="325" y="342" text-anchor="middle" class="place">Low hatch</text>
+            <path d="M325 306V317" stroke="#496660" stroke-width="2"/>
+            <circle cx="475" cy="175" r="10" fill="#297260" stroke="#174b43" stroke-width="2"/>
+            <rect x="417" y="191" width="116" height="35" rx="4" class="place-label"/><text x="475" y="216" text-anchor="middle" class="place">Post desk</text>
+            <circle cx="575" cy="125" r="10" fill="#b67b34" stroke="#77501f" stroke-width="2"/>
+            <rect x="518" y="65" width="114" height="35" rx="4" class="place-label"/><text x="575" y="90" text-anchor="middle" class="place">Coach B</text>
+            <path d="M575 101V112" stroke="#496660" stroke-width="2"/>
+          </svg>
+          <dl class="paired-explanation">
+            <div><dt>Deliver the bag</dt><dd>Move it through the low hatch and load it into its addressed coach.</dd></div>
+            <div><dt>Sign the waybill</dt><dd>A robot on the platform can scan the slip while the bag is in transit.</dd></div>
+          </dl>
         </div>
-        <ol>
-          <li>
-            Under <strong>Run options → Custom fleet</strong>, set two orders,
-            two pickers, two couriers, one forklift and one mechanic. Choose the
-            hex driver and collar slip.
-          </li>
-          <li>
-            Open <strong>Robot bodies</strong> to inspect Jack. At the fault,
-            select <strong>Query graph → Actions affected by a fault</strong>.
-          </li>
-          <li>
-            Try one courier with a clear run. Inspect the candidates for Bag 52.
-            To generate fresh LLM proposals, connect your deployment in Run
-            options.
-          </li>
-        </ol>
       </div>
-      <div class="foot">
-        <span
-          ><a href="https://github.com/ValerioBelcamino/Moonmail"
-            >github.com/ValerioBelcamino/Moonmail</a
-          >
-          · Each fresh dispatch saves a portable <code>episode.rl</code>.</span
-        ><span>8 / 8</span>
-      </div>
+      <footer class="folio"><span>Selected locations in the recorded 14 × 8 grid</span><span class="page"></span></footer>
     </section>
+
+    <section class="slide deck" aria-labelledby="capabilities">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Fleet ontology · Lifting</span></header>
+      <h2 id="capabilities">Lifting requires a chassis and a tool</h2>
+      <p class="intro">An embodiment describes a robot’s body. For lifting, the chassis and a carriage mounted on that robot must support the same skill.</p>
+      <div class="content">
+        <svg id="body-graph" class="chart" viewBox="0 0 1156 270" role="img" aria-label="A robot is an instance of an embodiment and mounts a tool. The embodiment has the lifting skill and the tool provides that same skill."></svg>
+        <p class="note">The load also checks reach, location and tray compatibility. The carriage must be online to execute it.</p>
+      </div>
+      <footer class="folio"><span>Capability relationships · <a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/graph-schema.md">All node labels and relationships</a></span><span class="page"></span></footer>
+    </section>
+
+    <section class="slide deck night" aria-labelledby="candidates">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Example · Assignment</span></header>
+      <h2 id="candidates">Only Jack can load. Jack or Patch can sign.</h2>
+      <p class="intro">The first graph read returns the eligible robots for each job. The LLM chooses from those candidates.</p>
+      <div class="content">
+        <div class="assignments">
+          <figure>
+            <svg class="scene-crop pair-portrait" viewBox="8 297 653 210" role="img" aria-label="Jack, the forklift, and Patch, the service robot, side by side on the platform.">
+              <image href="embodiment-frame.webp" width="1440" height="810"/>
+            </svg>
+            <figcaption class="pair-names"><p><b>Jack</b>Forklift</p><p><b>Patch</b>Service crawler</p></figcaption>
+          </figure>
+          <div>
+            <table class="choices" aria-label="Eligible robots and the model’s actual nominations">
+              <thead><tr><th scope="col">Job</th><th scope="col">Eligible in Relate</th><th scope="col">LLM choice</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Load coach</th><td>Jack</td><td class="choice">Jack</td></tr>
+                <tr><th scope="row">Sign waybill</th><td>Jack or Patch</td><td class="choice">Jack</td></tr>
+              </tbody>
+            </table>
+            <p class="explain">Only Jack mounts a fork carriage. Both chassis support the scanning skill that the post desk accepts.</p>
+          </div>
+        </div>
+      </div>
+      <footer class="folio"><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/architecture.md#how-a-body-becomes-a-planning-choice">Queries behind the two choices</a><span class="page"></span></footer>
+    </section>
+
+    <section class="slide deck dag" aria-labelledby="first-plan">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Example · Accepted plan</span></header>
+      <h2 id="first-plan">Loading and signing meet at departure</h2>
+      <p class="intro">The first accepted plan has six actions. Each arrow runs from a prerequisite to the job it enables.</p>
+      <div class="content">
+        <svg id="initial-dag" class="chart" viewBox="0 0 1156 275" role="img" aria-label="Wick picks up the bag and passes it to Skim. Skim crosses the hatch. Jack loads the coach and independently signs the waybill. The signal box can release the train after both finish."></svg>
+        <p class="note">At each handoff the executor changes who holds the parcel in Relate. Departure waits for both branches.</p>
+      </div>
+      <footer class="folio"><span>Bag 47 · Revision 1</span><span class="page"></span></footer>
+    </section>
+
+    <section class="slide deck" aria-labelledby="failure">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Example · Fault</span></header>
+      <h2 id="failure">What stops when Jack’s carriage fails?</h2>
+      <p class="intro">At step 26 the executor marks the carriage offline. The dispatcher follows the precondition and dependency edges in Relate.</p>
+      <div class="content">
+        <div class="incident">
+          <figure>
+            <svg class="scene-crop" viewBox="24 176 632 351" role="img" aria-label="Jack’s tilted mast and exposed collar after the fork carriage slips at the platform.">
+              <image href="fork-fault.webp" width="1440" height="810"/>
+            </svg>
+          </figure>
+          <dl class="paired-explanation">
+            <div><dt>Load coach</dt><dd>Invalidated. Loading requires a working carriage.</dd></div>
+            <div><dt>Release train</dt><dd>Blocked. Departure depends on the load.</dd></div>
+            <div><dt>Sign waybill</dt><dd>Still assigned to Jack. His scanner works.</dd></div>
+          </dl>
+        </div>
+      </div>
+      <footer class="folio"><a href="http://127.0.0.1:8041/?reel=post&amp;at=fault">Inspect step 26 in the running station</a><span class="page"></span></footer>
+    </section>
+
+    <section class="slide deck night" aria-labelledby="recoveries">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Example · Replanning</span></header>
+      <h2 id="recoveries">Changing one instrument changes the plan</h2>
+      <p class="intro">Two recordings start with the same order, fleet and carriage failure. Only the instrument mounted on Patch changes.</p>
+      <div class="content">
+        <div class="recovery-row">
+          <div><h3>Hex driver</h3><p>Fits the carriage’s hex collar.</p></div>
+          <div><p class="steps">Patch repairs <span class="step-arrow">→</span> Jack loads</p><p>The validator accepts the proposed repair.</p></div>
+        </div>
+        <div class="recovery-row">
+          <div><h3>Inspection probe</h3><p>Fits a test socket.</p></div>
+          <div><p class="steps">Repair rejected <span class="step-arrow">→</span> Skim uses the station lift</p><p>The LLM receives the failed check and proposes the lift.</p></div>
+        </div>
+      </div>
+      <footer class="folio"><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/architecture.md#a-decision-you-can-reproduce">Compare the two recorded runs</a><span class="page"></span></footer>
+    </section>
+
+    <section class="slide deck preserved" aria-labelledby="identity">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Example · Plan history</span></header>
+      <h2 id="identity">Both revisions keep the same signing action</h2>
+      <p class="intro">When the carriage fails, signing is still pending. In both recordings the revised plan points to the original action and its assignment to Jack.</p>
+      <div class="content">
+        <svg id="shared-action" class="chart" viewBox="0 0 1156 245" role="img" aria-label="Revision 1 and revision 2 each include action 1/manifest. That one signing action is assigned to Jack."></svg>
+        <p class="note">The three completed cargo actions also keep their identities. Four original actions survive in each run.</p>
+      </div>
+      <footer class="folio"><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/architecture.md#a-decision-you-can-reproduce">Run the Cypher query for shared action IDs</a><span class="page"></span></footer>
+    </section>
+
+    <section class="slide deck night larger" aria-labelledby="fleet">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Example · Larger fleet</span></header>
+      <div class="photo-spread">
+        <div class="copy">
+          <h2 id="fleet">Three orders share one departure</h2>
+          <p>Nine robots work across three bays. The train release depends on three loads and three signatures.</p>
+          <p>When one fork carriage fails, the revised plan keeps <strong>14 of the original 16 actions</strong>.</p>
+        </div>
+        <figure class="portrait">
+          <svg viewBox="732 62 819 942" preserveAspectRatio="xMidYMid slice" role="img" aria-label="The three-bay railway depot with five robots marked as they begin work in parallel.">
+            <image href="fleet-action-graph.webp" width="1920" height="1080"/>
+          </svg>
+        </figure>
+      </div>
+      <footer class="folio"><span><a href="https://github.com/ValerioBelcamino/Moonmail#run-it">Start the station</a> · <a href="http://127.0.0.1:8041/?reel=yard">Replay the three-order dispatch</a></span><span class="page"></span></footer>
+    </section>
+    <nav class="viewer-nav" aria-label="Slide navigation">
+      <button type="button" id="previous" aria-label="Previous slide">←</button>
+      <button type="button" id="next" aria-label="Next slide">→</button>
+    </nav>
     <aside class="preview" id="preview">
       <div class="rail">
         <span class="brand">Moonmail</span><span id="preview-phase"></span>
@@ -902,72 +657,146 @@ RETURN a.uid</pre>
         );
       }
       document.querySelectorAll("[data-flow]").forEach(flow);
-      document.querySelectorAll("[data-row]").forEach((svg) => {
-        svg.setAttribute("viewBox", "0 0 858 82");
-        const [a, ab, b, bc, c] = svg.dataset.row.split("|"),
-          id = prepare(svg);
-        edge(svg, id, "M156 43 H331");
-        edge(svg, id, "M499 43 H684");
-        txt(svg, 244, 33, ab, "er");
-        txt(svg, 591, 33, bc, "er");
-        node(svg, 1, 23, 155, 40, a, "", "jade");
-        node(svg, 332, 23, 166, 40, b);
-        node(svg, 685, 23, 171, 40, c, "", "gold");
-      });
-      {
-        const s = document.querySelector("#ontology"),
-          id = prepare(s);
-        edge(s, id, "M141 69 H320");
-        txt(s, 223, 58, "INSTANCE_OF", "er");
-        edge(s, id, "M95 93 V150 H320");
-        txt(s, 222, 141, "MOUNTS", "er");
-        edge(s, id, "M141 240 H320");
-        txt(s, 223, 230, "INSTANCE_OF", "er");
-        edge(s, id, "M525 69 H830");
-        txt(s, 674, 57, "HAS_SKILL", "er");
-        edge(s, id, "M525 150 H718 V83 H830", "strong");
-        txt(s, 615, 140, "PROVIDES", "er");
-        edge(s, id, "M525 82 H568 V202 H830");
-        txt(s, 669, 194, "HAS_SKILL", "er");
-        edge(s, id, "M525 240 H785 V218 H830");
-        txt(s, 639, 231, "HAS_SKILL", "er");
-        node(s, 7, 47, 134, 47, "Jack", "", "gold");
-        node(s, 7, 217, 134, 47, "Patch", "", "gold");
-        node(s, 322, 45, 201, 50, "Forklift chassis");
-        node(s, 322, 125, 201, 50, "Fork carriage", "mounted tool", "jade");
-        node(s, 322, 215, 201, 50, "Service crawler");
-        node(
-          s,
-          832,
-          45,
-          230,
-          55,
-          "Lift a tray",
-          "needs working carriage",
-          "jade",
-        );
-        node(s, 832, 185, 230, 55, "Scan", "shared chassis skill", "jade");
+
+      // The ontology diagrams use stored edge directions. The execution DAG uses prerequisite-first arrows.
+      function diagram(id) {
+        const svg = document.getElementById(id);
+        const defs = svgElement(svg, "defs", {});
+        for (const [kind, color] of [["normal", "var(--subtle)"], ["retry", "var(--alert)"]]) {
+          const marker = svgElement(defs, "marker", {
+            id: id + "-" + kind, viewBox: "0 0 10 8", refX: 9, refY: 4,
+            markerWidth: 6, markerHeight: 5, orient: "auto",
+          });
+          svgElement(marker, "path", { d: "M0 0L10 4L0 8Z", fill: color });
+        }
+        return svg;
       }
-      {
-        const s = document.querySelector("#revision-diagram"),
-          id = prepare(s);
-        edge(s, id, "M199 56 H771", "fail");
-        txt(s, 480, 45, "INVALIDATES", "er");
-        edge(s, id, "M104 87 V133 H438", "fail");
-        txt(s, 290, 123, "BLOCKS", "er");
-        edge(s, id, "M619 133 H697 V76 H772");
-        txt(s, 687, 156, "DEPENDS_ON", "er");
-        node(s, 8, 31, 191, 55, "Collar slip", "event · step 26", "red");
-        node(s, 775, 31, 220, 55, "1/load", "invalidated", "red");
-        node(s, 439, 105, 180, 55, "1/depart", "blocked", "red");
-        edge(s, id, "M194 226 H440", "strong");
-        txt(s, 315, 215, "INCLUDES", "er");
-        edge(s, id, "M772 226 H623", "strong");
-        txt(s, 699, 215, "INCLUDES", "er");
-        node(s, 8, 204, 186, 47, "Revision 1");
-        node(s, 442, 197, 179, 58, "1/manifest", "same action · Jack", "jade");
-        node(s, 775, 204, 205, 47, "Revision 2");
+
+      function block(svg, x, y, width, title, detail, tone = "") {
+        const height = 76;
+        svgElement(svg, "rect", { x, y, width, height, rx: 7, class: "box " + tone });
+        const center = x + width / 2;
+        svgElement(svg, "text", { x: center, y: y + 34, "text-anchor": "middle", class: "node-name" }, title);
+        svgElement(svg, "text", { x: center, y: y + 59, "text-anchor": "middle", class: "node-note" }, detail);
       }
+
+      function wire(svg, path, kind = "normal") {
+        svgElement(svg, "path", {
+          d: path, class: "wire " + kind, "marker-end": "url(#" + svg.id + "-" + kind + ")",
+        });
+      }
+
+      function wireLabel(svg, x, y, label, relation = false) {
+        svgElement(svg, "text", {
+          x, y, "text-anchor": "middle", class: relation ? "wire-label relation" : "wire-label",
+        }, label);
+      }
+
+      {
+        const svg = diagram("shared-graph");
+        wire(svg, "M236 143H422");
+        wire(svg, "M646 143H696V46H923");
+        wire(svg, "M646 143H923");
+        wire(svg, "M646 143H696V240H923");
+        wireLabel(svg, 329, 130, "INCLUDES", true);
+        wireLabel(svg, 809, 34, "ASSIGNED_TO", true);
+        wireLabel(svg, 809, 131, "REQUIRES", true);
+        wireLabel(svg, 809, 228, "DEPENDS_ON", true);
+        block(svg, 12, 105, 224, "Plan revision", "accepted plan");
+        block(svg, 427, 105, 219, "Action", "job to execute", "main");
+        block(svg, 928, 8, 210, "Robot", "assigned actor");
+        block(svg, 928, 105, 210, "World fact", "current value");
+        block(svg, 928, 202, 210, "Earlier action", "prerequisite");
+      }
+
+      {
+        const svg = diagram("dispatch-loop");
+        wire(svg, "M233 148H336");
+        wire(svg, "M563 148H688");
+        wire(svg, "M863 148H994");
+        wire(svg, "M776 109V45H106V105");
+        wire(svg, "M450 187V253H106V191", "retry");
+        wire(svg, "M1074 187V253H776V191");
+        wireLabel(svg, 284, 135, "Draft DAG");
+        wireLabel(svg, 627, 135, "Accepted plan");
+        wireLabel(svg, 929, 135, "Ready jobs");
+        wireLabel(svg, 441, 33, "Facts and eligible robots");
+        wireLabel(svg, 278, 241, "Reason for rejection");
+        wireLabel(svg, 925, 241, "Observed effects and faults");
+        block(svg, 3, 110, 230, "LLM orchestrator", "proposes a plan");
+        block(svg, 341, 110, 222, "Validator + Z3", "checks the draft");
+        block(svg, 693, 110, 170, "Relate", "embedded graph", "main");
+        block(svg, 999, 110, 152, "Executor", "runs jobs");
+      }
+
+      {
+        const svg = diagram("schema-paths");
+        const rows = [
+          ["Equipment", "Robot", "MOUNTS", "Tool", "PROVIDES", "Skill"],
+          ["Delivery route", "Parcel", "ADDRESSED_TO", "Route", "SERVES", "Station"],
+          ["Custody record", "Action", "TRANSFERRED", "Custody change", "TO", "Robot"],
+          ["Plan history", "Proposal attempt", "CONSIDERED_FOR", "Plan revision", "RESPONDS_TO", "Event"],
+        ];
+        rows.forEach(([topic, first, leftEdge, middle, rightEdge, last], index) => {
+          const y = 40 + index * 82;
+          svgElement(svg, "text", { x: 2, y: y + 8, class: "schema-topic" }, topic);
+          wire(svg, "M438 " + y + "H626");
+          // A coach serves a route. In this row the rightmost station points back to Route.
+          wire(svg, rightEdge === "SERVES" ? "M1010 " + y + "H839" : "M835 " + y + "H1006");
+          wireLabel(svg, 531, y - 10, leftEdge, true);
+          wireLabel(svg, 922, y - 10, rightEdge, true);
+          for (const [x, width, name] of [[231, 207, first], [631, 204, middle], [1011, 139, last]]) {
+            svgElement(svg, "rect", { x, y: y - 24, width, height: 48, rx: 5, class: name === middle ? "box main" : "box" });
+            svgElement(svg, "text", { x: x + width / 2, y: y + 7, "text-anchor": "middle", class: "type-name" }, name);
+          }
+        });
+      }
+
+      {
+        const svg = diagram("body-graph");
+        wire(svg, "M211 133H249V58H435");
+        wire(svg, "M211 133H249V211H435");
+        wire(svg, "M693 58H877V121H927");
+        wire(svg, "M693 211H877V148H927");
+        wireLabel(svg, 343, 46, "INSTANCE_OF", true);
+        wireLabel(svg, 343, 199, "MOUNTS", true);
+        wireLabel(svg, 788, 46, "HAS_SKILL", true);
+        wireLabel(svg, 788, 199, "PROVIDES", true);
+        block(svg, 16, 96, 195, "Robot", "individual actor");
+        block(svg, 440, 20, 253, "Embodiment", "chassis type");
+        block(svg, 440, 173, 253, "Tool", "fork carriage");
+        block(svg, 932, 96, 207, "Skill", "lift a tray", "main");
+      }
+
+      {
+        const svg = diagram("initial-dag");
+        wire(svg, "M189 86H238");
+        wire(svg, "M422 86H471");
+        wire(svg, "M655 86H704");
+        wire(svg, "M888 86H926V132H966");
+        wire(svg, "M888 203H926V157H966");
+        block(svg, 8, 48, 181, "Pick up bag", "Wick");
+        block(svg, 243, 48, 179, "Hand off bag", "Wick");
+        block(svg, 476, 48, 179, "Cross hatch", "Skim");
+        block(svg, 709, 48, 179, "Load coach", "Jack", "key");
+        block(svg, 709, 165, 179, "Sign waybill", "Jack", "main");
+        block(svg, 971, 107, 180, "Release train", "Signal box");
+      }
+
+      {
+        const svg = diagram("shared-action");
+        wire(svg, "M281 55H399V101H460");
+        wire(svg, "M281 191H399V141H460");
+        wire(svg, "M716 121H909");
+        wireLabel(svg, 339, 42, "INCLUDES", true);
+        wireLabel(svg, 339, 178, "INCLUDES", true);
+        wireLabel(svg, 815, 108, "ASSIGNED_TO", true);
+        block(svg, 44, 17, 237, "Revision 1", "original dispatch");
+        block(svg, 44, 153, 237, "Revision 2", "revised dispatch");
+        block(svg, 465, 83, 251, "Sign the waybill", "Action 1/manifest", "main");
+        block(svg, 914, 83, 206, "Jack", "assigned robot");
+      }
+
       const phases = [
         [
           "Pipeline overview",
@@ -1009,32 +838,39 @@ RETURN a.uid</pre>
             .classList.add("active");
       }
       const slides = [...document.querySelectorAll(".slide")];
+      const previous = document.getElementById("previous");
+      const next = document.getElementById("next");
+      slides.forEach((slide, i) => {
+        slide.querySelector(".page").textContent = (i + 1) + " / " + slides.length;
+      });
+      function slideNumber() {
+        const n = parseInt(location.hash.slice(1), 10) || 1;
+        return Math.min(slides.length, Math.max(1, n));
+      }
       function show() {
-        const ix =
-          Math.min(
-            slides.length,
-            Math.max(1, Number(location.hash.slice(1)) || 1),
-          ) - 1;
-        slides.forEach((s, i) => s.classList.toggle("active", ix === i));
+        const n = slideNumber();
+        slides.forEach((slide, i) => slide.classList.toggle("active", i + 1 === n));
+        previous.disabled = n === 1;
+        next.disabled = n === slides.length;
+      }
+      function go(n) {
+        location.hash = Math.min(slides.length, Math.max(1, n));
       }
       function resize() {
-        document.documentElement.style.setProperty(
-          "--zoom",
-          String(Math.min(innerWidth / 1280, innerHeight / 720)),
-        );
+        document.documentElement.style.setProperty("--zoom", String(Math.min(innerWidth / 1280, innerHeight / 720)));
       }
+      previous.addEventListener("click", () => go(slideNumber() - 1));
+      next.addEventListener("click", () => go(slideNumber() + 1));
       addEventListener("hashchange", show);
       addEventListener("resize", resize);
-      addEventListener("keydown", (e) => {
-        const i = slides.findIndex((s) => s.classList.contains("active"));
-        if (
-          ["ArrowRight", "PageDown", " ", "ArrowLeft", "PageUp"].includes(e.key)
-        ) {
-          e.preventDefault();
-          location.hash = Math.min(
-            slides.length,
-            Math.max(1, i + (["ArrowLeft", "PageUp"].includes(e.key) ? 0 : 2)),
-          );
+      addEventListener("keydown", (event) => {
+        if (event.altKey || event.ctrlKey || event.metaKey) return;
+        if (event.key === " " && event.target.closest("a,button")) return;
+        const n = slideNumber();
+        const destination = { ArrowRight: n + 1, PageDown: n + 1, " ": n + 1, ArrowLeft: n - 1, PageUp: n - 1, Home: 1, End: slides.length }[event.key];
+        if (destination !== undefined) {
+          event.preventDefault();
+          go(destination);
         }
       });
       show();

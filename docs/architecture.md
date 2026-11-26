@@ -98,6 +98,8 @@ Jack keeps his chassis type and scanning skill in all three cases. At tick 26 th
 
 ## What persists
 
+The table summarizes the data used in one dispatch. The schema reference lists every node label and directed relationship across both layouts, including those created only during execution. [Full graph schema](graph-schema.md)
+
 | Information | Example relationships or records | When it changes |
 | --- | --- | --- |
 | Station and fleet | A robot `INSTANCE_OF` an embodiment with a `HAS_SKILL` edge. A robot `MOUNTS` an instrument that `FITS` an interface. A parcel is `ADDRESSED_TO` a route, and a coach `SERVES` that route. | Seeded per run. A failed tool changes availability and therefore eligibility. |

@@ -44,7 +44,7 @@ The executor queries the accepted revision for ready jobs and records their effe
 
 ## What makes a robot eligible?
 
-The fleet graph exists before the first plan. An **embodiment** records a robot body’s height, reach and supported skills. For a lift, the query matches the chassis and a mounted carriage to the same skill on the same robot. The accepted load action links to that robot and requires the carriage to be online when it runs. [Embodiment queries](docs/architecture.md#how-a-body-becomes-a-planning-choice)
+The fleet graph exists before the first plan. An **embodiment** records a robot body’s height, reach and supported skills. For a lift, the query matches the chassis and a mounted carriage to the same skill on the same robot. The accepted load action links to that robot and requires the carriage to be online when it runs. [Embodiment queries](docs/architecture.md#how-a-body-becomes-a-planning-choice) · [Full graph schema](docs/graph-schema.md)
 
 ```mermaid
 ---
