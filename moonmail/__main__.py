@@ -68,7 +68,9 @@ def main():
     if args.command == "serve":
         import uvicorn
 
-        print(f"Open Moonmail at http://{args.host}:{args.port}/", flush=True)
+        host = {"0.0.0.0": "127.0.0.1", "::": "::1"}.get(args.host, args.host)
+        url_host = f"[{host}]" if ":" in host else host
+        print(f"Open Moonmail at http://{url_host}:{args.port}/", flush=True)
         uvicorn.run("moonmail.server:app", host=args.host, port=args.port)
         return
     fleet = None

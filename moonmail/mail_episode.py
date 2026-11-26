@@ -648,7 +648,9 @@ def mail_steps(scenario, root: Path, controller, env_file, *, live_inspection=Fa
                 scene["starts"]["Patch"] = [10, 7]
         scene["desk"] = [9, 3]
         scene["destination"] = "Coach B"
-        with relate.connect(str(folder / "episode.rl")) as db:
+        database = folder / "episode.rl"
+        db = relate.connect(str(database))
+        try:
             if yard:
                 seed_yard(db, scene, scenario)
                 run = YardRun(db, scene, controller, env_file)
@@ -669,16 +671,17 @@ def mail_steps(scenario, root: Path, controller, env_file, *, live_inspection=Fa
             )
             sent_e = sent_f = 0
 
-            def delta():
-                nonlocal sent_e, sent_f
+            def delta(*, publish=True):
+                nonlocal sent_e, sent_f, db
                 data = {"events": run.events[sent_e:], "frames": run.frames[sent_f:]}
-                if live_inspection and data["events"]:
-                    # Readers open a complete checkpoint. The writer keeps its own connection.
-                    db.flush()
+                if live_inspection and publish and data["events"]:
+                    # Packets end at committed events. Closing releases the native file lock before copying.
+                    db.close()
                     snapshot_file = folder / "inspection.tmp"
-                    shutil.copyfile(folder / "episode.rl", snapshot_file)
+                    shutil.copyfile(database, snapshot_file)
                     with live_checkpoint_lock:
                         os.replace(snapshot_file, published)
+                    run.db = db = relate.connect(str(database))
                 sent_e = len(run.events)
                 sent_f = len(run.frames)
                 return data
@@ -758,8 +761,10 @@ def mail_steps(scenario, root: Path, controller, env_file, *, live_inspection=Fa
                 "frames": run.frames,
                 "events": run.events,
             }
-            last = delta()
+            last = delta(publish=False)
             db.flush()
+        finally:
+            db.close()
         (folder / "episode.json").write_text(
             json.dumps(episode, separators=(",", ":")) + "\n"
         )
