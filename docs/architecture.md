@@ -109,6 +109,12 @@ The table summarizes the data used in one dispatch. The schema reference lists e
 
 The application finds grid paths and reserves bodies and cells for concurrent jobs. The database holds the durable operational state and task dependencies. The renderer interpolates between recorded positions and animates handling. Scrubbing the viewer reads the event snapshot for that tick. Running a new episode executes the graph queries again. [Storage and readiness](../moonmail/mail_store.py) · [Station execution](../moonmail/mail_episode.py) · [Concurrent execution](../moonmail/yard.py)
 
+## How a dispatch recovers
+
+The executor records the observation and updates the current facts. The dispatcher checks the pending actions in the accepted revision. If a required value no longer holds and no pending predecessor will establish it, the observation invalidates that action. Following `DEPENDS_ON` finds downstream jobs that must also be reconsidered. Completed actions and unaffected pending assignments keep their identities. [Precondition checks and dependency traversal](../moonmail/mail_store.py)
+
+The LLM receives the new facts, eligible actors and surviving assignments. It proposes a continuation and the validator checks it against that state. A rejected proposal returns a reason the LLM can use for a retry. Execution resumes from an accepted revision. If the dispatcher cannot find a verified path to the goal, it records a hold. [Revision and hold logic](../moonmail/mail_episode.py)
+
 ## A decision you can reproduce
 
 **Change only the mechanic’s tool. Does the recovery change, and does independent work keep its assignment?** The two one-order recordings use the same four robots, layout seed, delivery goal and fork failure. In both, Bag 47 needs to reach Coach B and its waybill needs a signature. Wick can reach the shelf, Skim fits the hatch and the orchestrator nominates Jack to load and sign. [Initial facts](http://127.0.0.1:8041/?reel=post) · [Model input](http://127.0.0.1:8041/?reel=post&at=read)
@@ -155,6 +161,48 @@ WHERE NOT EXISTS {
 RETURN a.uid AS uid, a.op AS op
 ```
 
+## Extending the scenario
+
+The planning tool and validator use the same interface in both depots. Three parts of the scenario determine how much work that interface describes.
+
+| What grows | How it is represented |
+| --- | --- |
+| Map and routes | A layout supplies grid dimensions, obstacles, entrances and station coordinates to the executor. The graph connects orders, stations, passages and coach routes for the planner. |
+| Robots and body types | Each robot links to its chassis, skills through that chassis, and any mounted tools. A new chassis can reuse an existing skill and action. Adding it to the interactive fleet also needs a roster entry and a visual representation. |
+| Orders and plans | Each order gets actions with its own facts and prerequisites. Multiple branches can feed a shared action. A new kind of job needs an operator with preconditions and effects, and an executor implementation. |
+
+The station offers two layouts and four built-in chassis. The yard controls let you vary the count of each type across one to three orders. [Layout and roster](../moonmail/yard.py) · [Operator definitions](../moonmail/mail_planning.py) · [Experiment controls](running.md#run-a-different-fleet)
+
+### A fifth chassis in the planner
+
+This symbolic planning example adds a scanner cart named Ink at the platform desk. The same signing query now returns Ink alongside Jack and Patch. The local planner leaves the actor choice open and Z3 assigns Ink, which is already at the desk. Jack remains the only robot qualified to load. The example uses a fresh in-memory graph and the existing signing and loading rules.
+
+From the repository root, run this command.
+
+```bash
+uv run --locked python - <<'PY'
+import relate
+from moonmail.depot import layout
+from moonmail.mail_planning import local_plan, verify
+from moonmail.mail_store import seed_mail, world_state
+
+scene = layout(7, "driver")
+with relate.connect(":memory:") as db:
+    seed_mail(db, scene, 18, True)
+    db.execute("""
+        MATCH (zone:Zone {id:'Platform'}), (scan:Skill {id:'Scan'})
+        CREATE (r:Robot {id:'Ink', x:9, z:3})-[:IN_ZONE]->(zone),
+               (r)-[:INSTANCE_OF]->(b:Embodiment {id:'Scanner cart', cm:28, deck:0, reach:35}),
+               (b)-[:HAS_SKILL]->(scan)
+    """)
+    world = world_state(db, scene)
+    plan = verify(local_plan(world, {}), world)
+    print("Eligible to sign", sorted(world.options["manifest"]))
+    print("Assigned to sign", plan.actors["manifest"])
+    print("Eligible to load", sorted(world.options["load"]))
+PY
+```
+
 ## The larger run
 
 The larger recording has a 26 × 14 grid, nine robots and three orders. In **Run options → Custom fleet**, the same yard accepts one to three orders and a roster of pickers, couriers, forklifts and mechanics. Its service links and carriage assignments enter Relate before the planner reads the graph. A missing bay courier removes the corresponding crossing candidate. [Fleet settings and two worked experiments](running.md#run-a-different-fleet)
@@ -163,7 +211,7 @@ The three-order preset uses the full yard. The smaller setup has a 14 × 8 grid 
 
 - **Tick 4.** Three pickups and two scans start together. The orchestrator left all sixteen actor choices to the validator. The plan contains five parcel actions per order and one shared signal-box release.
 - **Tick 30.** The fork observation directly invalidates Bag 47’s load and transitively blocks the common departure. The other two loading branches survive.
-- **Ticks 33–34.** Revision 2 includes fourteen original actions. Fern loads a different order while Patch repairs Jack.
+- **Ticks 33–34.** Revision 2 includes fourteen original actions. Fern starts loading Bag 52 at the same step that Patch starts repairing Jack.
 - **Tick 78.** All three loads and all three waybills satisfy the shared departure. The train clears the signal.
 
 The film places the final 17-action plan beside the fleet as its first five jobs start. Gold marks the three pickups and green marks the two signatures. The robot names in those nodes come from the same assignments as the markers on the depot floor. Follow each bag’s load and signature to see why the train has six prerequisites. [Watch the fleet arrive](http://127.0.0.1:8041/review/film.html#t=102.8)

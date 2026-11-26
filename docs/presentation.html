@@ -213,6 +213,7 @@
       .chart .box { stroke: var(--rule); fill: var(--node); stroke-width: 1.7; }
       .chart .box.main { fill: var(--mint); stroke: var(--accent); }
       .chart .box.key { fill: var(--honey); stroke: #ad9158; }
+      .chart .box.affected { fill: var(--node); stroke: var(--alert); stroke-width: 2.5; stroke-dasharray: 7 4; }
       .chart .wire { fill: none; stroke: var(--subtle); stroke-width: 2.2; stroke-linejoin: round; }
       .chart .wire.retry { stroke: var(--alert); stroke-dasharray: 7 5; }
       .chart text { fill: var(--text); font-family: var(--sans); }
@@ -301,9 +302,7 @@
         align-items: center;
       }
       .incident .scene-crop { border-radius: 4px; }
-      .incident .paired-explanation > div + div { margin-top: 17px; }
-      .incident .paired-explanation dt { font-size: 29px; }
-      .incident .paired-explanation dd { margin-top: 2px; font-size: 21px; }
+      .fault-example .note, .recovery-comparison + .note { margin-top: 25px; }
       .recovery-row {
         display: grid;
         grid-template-columns: .87fr 1.28fr;
@@ -316,11 +315,18 @@
       .recovery-row p { color: var(--subtle); font: 21px/1.38 var(--sans); margin-top: 6px; }
       .recovery-row .steps { color: var(--text); font: 600 26px/1.35 var(--sans); margin: 0; }
       .steps .step-arrow { display: inline-block; padding: 0 5px; color: var(--accent); }
-      .preserved .note { margin-top: 14px; }
-      .larger .photo-spread { grid-template-columns: .9fr 1.1fr; }
-      .larger h2 { margin-top: 0; font-size: 64px; }
-      .larger .copy p { font-size: 23px; margin-top: 20px; }
-      .larger .copy p:last-child { border-left: 3px solid var(--accent); padding-left: 17px; }
+      .extensions .checks-table th { width: 25%; }
+      .fleet-size .photo-spread { grid-template-columns: 1.12fr 1fr; gap: 58px; }
+      .fleet-size h2 { margin-top: 0; font-size: 55px; }
+      .fleet-size .copy p { margin-top: 18px; font-size: 21px; }
+      .size-table { width: 100%; margin-top: 20px; border-collapse: collapse; line-height: 1.25; }
+      .size-table th, .size-table td { padding: 8px 10px 8px 0; text-align: left; }
+      .size-table thead th { color: var(--subtle); font-size: 16px; font-weight: 600; }
+      .size-table tbody tr { border-top: 1px solid var(--rule); }
+      .size-table tbody tr:last-child { border-bottom: 1px solid var(--rule); }
+      .size-table tbody th { font-size: 21px; font-weight: 400; }
+      .size-table td { font-size: 22px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .size-table td:last-child { color: var(--accent); font-weight: 650; }
       .viewer-nav {
         position: fixed;
         left: 50%;
@@ -486,18 +492,29 @@
     <section class="slide deck dag" aria-labelledby="first-plan">
       <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Example · Accepted plan</span></header>
       <h2 id="first-plan">Loading and signing meet at departure</h2>
-      <p class="intro">The first accepted plan has six actions. Each arrow runs from a prerequisite to the job it enables.</p>
+      <p class="intro">The LLM proposes these six actions and the validator accepts them. Each arrow runs from a prerequisite to the job it enables.</p>
       <div class="content">
         <svg id="initial-dag" class="chart" viewBox="0 0 1156 275" role="img" aria-label="Wick picks up the bag and passes it to Skim. Skim crosses the hatch. Jack loads the coach and independently signs the waybill. The signal box can release the train after both finish."></svg>
-        <p class="note">At each handoff the executor changes who holds the parcel in Relate. Departure waits for both branches.</p>
+        <p class="note">The executor checks each job before it starts. Loading needs Jack’s carriage. Signing needs his scanner.</p>
       </div>
       <footer class="folio"><span>Bag 47 · Revision 1</span><span class="page"></span></footer>
     </section>
 
-    <section class="slide deck" aria-labelledby="failure">
-      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Example · Fault</span></header>
-      <h2 id="failure">What stops when Jack’s carriage fails?</h2>
-      <p class="intro">At step 26 the executor marks the carriage offline. The dispatcher follows the precondition and dependency edges in Relate.</p>
+    <section class="slide deck night" aria-labelledby="replanning">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Fault tolerance</span></header>
+      <h2 id="replanning">How the dispatcher replans after a fault</h2>
+      <p class="intro">The executor records the changed fact in Relate. The dispatcher identifies jobs that lose a required condition and the pending jobs that depend on them.</p>
+      <div class="content">
+        <svg id="fault-loop" class="chart" viewBox="0 0 1156 244" role="img" aria-label="The LLM reads updated facts and retained assignments. The validator checks its new proposal. An accepted revision is stored in Relate. A failed check goes back to the LLM."></svg>
+        <p class="note">The executor resumes from the accepted revision. Completed jobs keep their history. If no valid plan reaches the goal, the dispatcher holds the mission.</p>
+      </div>
+      <footer class="folio"><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/architecture.md#how-a-dispatch-recovers">How fault detection and replanning work</a><span class="page"></span></footer>
+    </section>
+
+    <section class="slide deck fault-example" aria-labelledby="failure">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Fault example · Detection</span></header>
+      <h2 id="failure">Jack’s carriage slips before loading</h2>
+      <p class="intro">At step 26 Bag 47 is on the platform. The executor records Jack’s carriage as offline. Loading needs that carriage, and departure needs the load.</p>
       <div class="content">
         <div class="incident">
           <figure>
@@ -505,51 +522,65 @@
               <image href="fork-fault.webp" width="1440" height="810"/>
             </svg>
           </figure>
-          <dl class="paired-explanation">
-            <div><dt>Load coach</dt><dd>Invalidated. Loading requires a working carriage.</dd></div>
-            <div><dt>Release train</dt><dd>Blocked. Departure depends on the load.</dd></div>
-            <div><dt>Sign waybill</dt><dd>Still assigned to Jack. His scanner works.</dd></div>
-          </dl>
+          <svg id="fault-impact" class="chart" viewBox="0 0 575 240" role="img" aria-label="The load is invalidated by the offline carriage. The dependent departure is blocked. The independent signing action is still assigned to Jack."></svg>
         </div>
+        <p class="note">Jack can still scan. The LLM receives his signing assignment along with the failed load condition.</p>
       </div>
-      <footer class="folio"><a href="http://127.0.0.1:8041/?reel=post&amp;at=fault">Inspect step 26 in the running station</a><span class="page"></span></footer>
+      <footer class="folio"><span>Bag 47 · Three cargo actions are already complete</span><span class="page"></span></footer>
     </section>
 
-    <section class="slide deck night" aria-labelledby="recoveries">
-      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Example · Replanning</span></header>
-      <h2 id="recoveries">Changing one instrument changes the plan</h2>
-      <p class="intro">Two recordings start with the same order, fleet and carriage failure. Only the instrument mounted on Patch changes.</p>
+    <section class="slide deck" aria-labelledby="recoveries">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Fault example · Recovery</span></header>
+      <h2 id="recoveries">The same fault has two verified recoveries</h2>
+      <p class="intro">The LLM reads the updated graph. The two recordings have the same order and fault. Only Patch’s mounted instrument differs.</p>
       <div class="content">
-        <div class="recovery-row">
-          <div><h3>Hex driver</h3><p>Fits the carriage’s hex collar.</p></div>
-          <div><p class="steps">Patch repairs <span class="step-arrow">→</span> Jack loads</p><p>The validator accepts the proposed repair.</p></div>
+        <div class="recovery-comparison">
+          <div class="recovery-row">
+            <div><h3>Hex driver</h3><p>Fits the broken collar.</p></div>
+            <div><p class="steps">Patch repairs <span class="step-arrow">→</span> Jack loads</p><p>The first revised proposal passes validation.</p></div>
+          </div>
+          <div class="recovery-row">
+            <div><h3>Inspection probe</h3><p>Fits a test socket.</p></div>
+            <div><p class="steps">Skim uses the station lift</p><p>The validator rejects the repair. The LLM proposes the lift and the revised plan passes.</p></div>
+          </div>
         </div>
-        <div class="recovery-row">
-          <div><h3>Inspection probe</h3><p>Fits a test socket.</p></div>
-          <div><p class="steps">Repair rejected <span class="step-arrow">→</span> Skim uses the station lift</p><p>The LLM receives the failed check and proposes the lift.</p></div>
-        </div>
+        <p class="note">In both runs the train leaves. Four actions carry over, including Jack’s signing job (<code>1/manifest</code>).</p>
       </div>
-      <footer class="folio"><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/architecture.md#a-decision-you-can-reproduce">Compare the two recorded runs</a><span class="page"></span></footer>
+      <footer class="folio"><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/architecture.md#a-decision-you-can-reproduce">Compare the recordings and query the shared action IDs</a><span class="page"></span></footer>
     </section>
 
-    <section class="slide deck preserved" aria-labelledby="identity">
-      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Example · Plan history</span></header>
-      <h2 id="identity">Both revisions keep the same signing action</h2>
-      <p class="intro">When the carriage fails, signing is still pending. In both recordings the revised plan points to the original action and its assignment to Jack.</p>
+    <section class="slide deck night extensions" aria-labelledby="extension">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Extending the scenario</span></header>
+      <h2 id="extension">How to extend the map, fleet and plan</h2>
+      <p class="intro">Each scenario supplies a grid, a fleet and a goal. The orchestrator reads the graph and submits its plan to the same validator.</p>
       <div class="content">
-        <svg id="shared-action" class="chart" viewBox="0 0 1156 245" role="img" aria-label="Revision 1 and revision 2 each include action 1/manifest. That one signing action is assigned to Jack."></svg>
-        <p class="note">The three completed cargo actions also keep their identities. Four original actions survive in each run.</p>
+        <table class="checks-table" aria-label="Three ways to extend a scenario">
+          <tbody>
+            <tr><th scope="row">Map and routes</th><td>Extend the routing grid and connect more stations, passages and destinations in Relate.</td></tr>
+            <tr><th scope="row">Robots and bodies</th><td>Define a chassis by its height, reach and skills. Multiple robots can share that type and mount different tools.</td></tr>
+            <tr><th scope="row">Jobs and plans</th><td>Chain prerequisites to express more steps. Independent jobs can run in parallel and meet at a shared goal.</td></tr>
+          </tbody>
+        </table>
       </div>
-      <footer class="folio"><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/architecture.md#a-decision-you-can-reproduce">Run the Cypher query for shared action IDs</a><span class="page"></span></footer>
+      <footer class="folio"><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/architecture.md#extending-the-scenario">How layouts, bodies and action types are added</a><span class="page"></span></footer>
     </section>
 
-    <section class="slide deck night larger" aria-labelledby="fleet">
-      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Example · Larger fleet</span></header>
+    <section class="slide deck fleet-size" aria-labelledby="fleet">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Scale example · Two recorded depots</span></header>
       <div class="photo-spread">
         <div class="copy">
-          <h2 id="fleet">Three orders share one departure</h2>
-          <p>Nine robots work across three bays. The train release depends on three loads and three signatures.</p>
-          <p>When one fork carriage fails, the revised plan keeps <strong>14 of the original 16 actions</strong>.</p>
+          <h2 id="fleet">From one order to three</h2>
+          <table class="size-table" aria-label="Recorded depot and yard sizes">
+            <thead><tr><th scope="col">Recorded setup</th><th scope="col">First depot</th><th scope="col">Larger yard</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Grid (cells)</th><td>14 × 8</td><td>26 × 14</td></tr>
+              <tr><th scope="row">Robots</th><td>4</td><td>9</td></tr>
+              <tr><th scope="row">Chassis types in use</th><td>4</td><td>4</td></tr>
+              <tr><th scope="row">Orders</th><td>1</td><td>3</td></tr>
+              <tr><th scope="row">Actions in the first plan</th><td>6</td><td>16</td></tr>
+            </tbody>
+          </table>
+          <p>A separate planning check adds a fifth chassis type. Z3 assigns the new scanner cart to sign the waybill.</p>
         </div>
         <figure class="portrait">
           <svg viewBox="732 62 819 942" preserveAspectRatio="xMidYMid slice" role="img" aria-label="The three-bay railway depot with five robots marked as they begin work in parallel.">
@@ -557,7 +588,18 @@
           </svg>
         </figure>
       </div>
-      <footer class="folio"><span><a href="https://github.com/ValerioBelcamino/Moonmail#run-it">Start the station</a> · <a href="http://127.0.0.1:8041/?reel=yard">Replay the three-order dispatch</a></span><span class="page"></span></footer>
+      <footer class="folio"><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/architecture.md#a-fifth-chassis-in-the-planner">Reproduce the fifth-chassis planning check</a><span class="page"></span></footer>
+    </section>
+
+    <section class="slide deck night" aria-labelledby="shared-departure">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Scale example · Parallel work</span></header>
+      <h2 id="shared-departure">One train waits for all three orders</h2>
+      <p class="intro">Three pickups and two signatures start together. In the revised plan, the train can leave when all six jobs shown here have finished.</p>
+      <div class="content">
+        <svg id="fleet-join" class="chart" viewBox="0 0 1156 275" role="img" aria-label="Loads for bags 47, 52 and 68 and the matching three waybill jobs are six separate prerequisites for one train release. Jack loads Bag 47 after repair."></svg>
+        <p class="note">Fern loads Bag 52 while Patch repairs Jack. The revised plan has 17 actions and reuses 14 of the original 16.</p>
+      </div>
+      <footer class="folio"><span><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/architecture.md#the-larger-run">See the recorded plan and queries</a> · <a href="https://github.com/ValerioBelcamino/Moonmail#run-it">Run Moonmail</a></span><span class="page"></span></footer>
     </section>
     <nav class="viewer-nav" aria-label="Slide navigation">
       <button type="button" id="previous" aria-label="Previous slide">←</button>
@@ -784,17 +826,46 @@
       }
 
       {
-        const svg = diagram("shared-action");
-        wire(svg, "M281 55H399V101H460");
-        wire(svg, "M281 191H399V141H460");
-        wire(svg, "M716 121H909");
-        wireLabel(svg, 339, 42, "INCLUDES", true);
-        wireLabel(svg, 339, 178, "INCLUDES", true);
-        wireLabel(svg, 815, 108, "ASSIGNED_TO", true);
-        block(svg, 44, 17, 237, "Revision 1", "original dispatch");
-        block(svg, 44, 153, 237, "Revision 2", "revised dispatch");
-        block(svg, 465, 83, 251, "Sign the waybill", "Action 1/manifest", "main");
-        block(svg, 914, 83, 206, "Jack", "assigned robot");
+        const svg = diagram("fault-loop");
+        wire(svg, "M298 51H329V100H360");
+        wire(svg, "M298 182H329V135H360");
+        wire(svg, "M595 117H654");
+        wire(svg, "M870 117H947");
+        wire(svg, "M764 156V214H480V160", "retry");
+        wireLabel(svg, 626, 105, "Draft");
+        wireLabel(svg, 911, 105, "Valid");
+        wireLabel(svg, 622, 202, "Reason for rejection");
+        block(svg, 8, 13, 290, "Updated graph state", "facts and eligible robots", "key");
+        block(svg, 8, 144, 290, "Retained assignments", "pending jobs and their actors", "main");
+        block(svg, 365, 79, 230, "LLM orchestrator", "proposes a revised DAG");
+        block(svg, 659, 79, 211, "Validator + Z3", "checks the draft");
+        block(svg, 952, 79, 195, "New revision", "saved in Relate", "main");
+      }
+
+      {
+        const svg = diagram("fault-impact");
+        wire(svg, "M212 61H263V108H331");
+        wire(svg, "M212 181H263V144H331");
+        block(svg, 5, 23, 207, "Load coach", "invalidated · Jack", "affected");
+        block(svg, 5, 143, 207, "Sign waybill", "pending · Jack", "main");
+        block(svg, 336, 88, 233, "Release train", "blocked by load", "affected");
+      }
+
+      {
+        const svg = diagram("fleet-join");
+        wire(svg, "M290 48H372V117H445");
+        wire(svg, "M290 138H445");
+        wire(svg, "M290 228H372V159H445");
+        wire(svg, "M868 48H786V117H711");
+        wire(svg, "M868 138H711");
+        wire(svg, "M868 228H786V159H711");
+        block(svg, 38, 10, 252, "Load Bag 47", "Jack · after repair", "key");
+        block(svg, 38, 100, 252, "Load Bag 52", "Fern");
+        block(svg, 38, 190, 252, "Load Bag 68", "Fern");
+        block(svg, 450, 100, 256, "Release train", "waits for all six", "key");
+        block(svg, 868, 10, 250, "Sign Waybill 47", "Patch", "main");
+        block(svg, 868, 100, 250, "Sign Waybill 52", "Fern", "main");
+        block(svg, 868, 190, 250, "Sign Waybill 68", "Fern", "main");
       }
 
       const phases = [
