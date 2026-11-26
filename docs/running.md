@@ -13,7 +13,7 @@ The first launch downloads dependencies. Both launchers serve the built frontend
 
 ## Replay a model decision
 
-1. **Play tour** follows a saved LLM dispatch. **Next event** or the timeline lets you choose a decision. **Quick guide** reopens the walkthrough.
+1. **Quick guide** points to the controls one at a time. Click the highlighted button to use it. **Skip guide** or Escape dismisses the hints, and **Quick guide** restarts them at your current step. **Play** follows a recorded dispatch. **Next event** advances one decision and the timeline lets you revisit any step.
 2. **Robot bodies** shows a selected robot’s chassis, skills and equipment. Select Jack and compare the carriage before and after the collar slip. **Dispatch graph** returns to the plan.
 3. **Query graph** pauses the viewer. Choose a question and expand **Show Cypher and parameters**. World facts and action status come from the last graph commit at or before the playhead. Candidate rows come from the most recent planning read. Capabilities describe the chassis. The dispatch still checks the current equipment, job and preconditions. During a live run the backend can continue while you inspect an earlier step.
 4. **Write Cypher on the completed run** accepts your own read-only `MATCH … RETURN` query. Its example binds `$tick` to the playhead. The file includes the full execution history, so use a tick predicate when asking historical questions.
@@ -21,7 +21,7 @@ The first launch downloads dependencies. Both launchers serve the built frontend
 
 ## Run a different fleet
 
-Open **Run options**. The top row opens three actual recorded LLM runs. The form below starts a new database and simulation. **Local planner** computes a deterministic proposal. **LLM orchestrator** uses your own deployment. Both use the same Relate state, validator and executor.
+Open **Run options → Recordings** to replay any of the three saved LLM runs from the beginning. **Run options → New run** opens the fleet and planner settings for a new database and simulation. **Local planner** computes a deterministic proposal. **LLM orchestrator** uses your own deployment. Both use the same Relate state, validator and executor.
 
 Choose **Custom fleet** for one to three orders. Each active bay has room for one picker and one low courier. Counts fill bays in order of bag 47, 52, then 68. Up to three platform forklifts and two mechanics can serve the active bays. Each bay is paired with a carriage for direct loading. Bay 47 also connects to the station lift. Platform robots with scanning capability can sign. The tool selector equips the mechanics.
 

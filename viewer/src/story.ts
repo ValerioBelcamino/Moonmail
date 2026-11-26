@@ -5,6 +5,7 @@ import { eventLink, markNode } from "./storyFocus";
 import { dispatchDrawing } from "./dispatchDrawing";
 import { drawEmbodiment } from "./embodiment";
 import { readFleet, resizeBays, setFleet } from "./fleetControls";
+import { stationWalkthrough } from "./walkthrough";
 import type { Episode, DepotEvent, Frame } from "./types";
 const el = <T extends HTMLElement = HTMLElement>(id: string) =>
   document.getElementById(id) as T;
@@ -13,8 +14,8 @@ const put = (id: string, s: string) => {
 };
 const project = el<HTMLDialogElement>("projector"),
   sources = el<HTMLDialogElement>("sources"),
-  guide = el<HTMLDialogElement>("guide"),
   slider = el<HTMLInputElement>("time");
+const guide = stationWalkthrough();
 let stage: Depot | FloorPlan;
 try {
   stage = new Depot(el("world"));
@@ -74,17 +75,9 @@ const beats = (data: Episode) => data.events.filter(visible);
 function play(on: boolean) {
   if (!on && playing && stage instanceof Depot) stage.restoreDetail();
   playing = on;
-  put(
-    "play",
-    on
-      ? "Ⅱ Pause"
-      : !streaming && ep && t >= ep.frames.length - 1
-        ? "↻ Replay"
-        : asset === "post"
-          ? "▶ Play tour"
-          : "▶ Play run",
-  );
-  el("play").setAttribute("aria-label", on ? "Pause" : asset === "post" ? "Play tour" : "Play run");
+  const replay = !streaming && ep && t >= ep.frames.length - 1;
+  put("play", on ? "Ⅱ Pause" : replay ? "↻ Replay" : "▶ Play");
+  el("play").setAttribute("aria-label", on ? "Pause" : replay ? "Replay" : "Play");
 }
 function header() {
   if (!ep) return;
@@ -213,8 +206,7 @@ function explain(e: DepotEvent, event: DepotEvent) {
   }
   const nodeStates = event.planGraph?.nodes ?? [],
     active = nodeStates.filter((n) => n.state === "running");
-  let chapter = "Running the plan",
-    title = e.title,
+  let title = e.title,
     reason = e.reason ?? "",
     graphTitle = "Executing the plan",
     evidence = "Recorded state";
@@ -231,14 +223,12 @@ function explain(e: DepotEvent, event: DepotEvent) {
       " · Forks " +
       (frame.fork_online ? "online" : "offline");
   if (kind === "order") {
-    chapter = "Starting state";
     title = yard ? "One plan for the fleet." : "Which robot can do each job?";
     reason = yard
       ? `Relate links ${Object.keys(data.layout.starts).length} robots to the active orders. Each bag needs a load and a signature before departure.`
       : "The bag starts on the shelf. The train needs the bag aboard and a signed delivery slip before it can leave.";
     graphTitle = "Initial station state";
   } else if (reading) {
-    chapter = "Reading the knowledge graph";
     title =
       pendingRevision > 1 ? "Read what changed." : "What can each body do?";
     graphTitle =
@@ -279,7 +269,6 @@ function explain(e: DepotEvent, event: DepotEvent) {
   } else if (plan) {
     const steps = event.proposal?.steps ?? [],
       edges = steps.reduce((n, s) => n + s.after.length, 0);
-    chapter = "Planning";
     title =
       pendingRevision > 1
         ? "A plan for the remaining jobs."
@@ -306,7 +295,6 @@ function explain(e: DepotEvent, event: DepotEvent) {
       detail = "The validator checks whether any feasible route to departure remains.";
     }
   } else if (accepted) {
-    chapter = "Validation";
     title =
       rev === 1 ? "Which assignments pass?" : "Reuse the surviving actions.";
     const added = event.new?.length ?? 0,
@@ -336,7 +324,6 @@ function explain(e: DepotEvent, event: DepotEvent) {
   } else if (fault || rejected) {
     const probeMismatch = data.scenario.service_kit === "probe" && data.layout.starts.Patch &&
       event.feedback?.counterexample.includes("repair has no eligible body");
-    chapter = rejected ? "Plan check" : kind === "fork fault" ? "Equipment failure" : "Dispatch condition changed";
     title = rejected
       ? probeMismatch
         ? "This tool cannot repair the fork."
@@ -370,12 +357,10 @@ function explain(e: DepotEvent, event: DepotEvent) {
       reason = obstacle.reason;
     }
   } else if (kind === "hold") {
-    chapter = "Departure held";
     title = "The train is held.";
     reason = obstacle?.reason ?? reason;
     graphTitle = "Departure blocked";
   } else if (frame.signal === "green") {
-    chapter = "Order fulfilled";
     graphTitle = "Goal reached";
     evidence = "Signal green";
     title = "The train can leave.";
@@ -383,7 +368,6 @@ function explain(e: DepotEvent, event: DepotEvent) {
       ? "Every bag is in its addressed coach and every waybill is signed. The shared train can leave."
       : "Bag 47 is aboard Coach B. Its waybill is signed. The departure signal is green.";
   } else if (yard) {
-    chapter = "Running the plan";
     if (active.length) {
       title =
         active.length > 1
@@ -409,7 +393,6 @@ function explain(e: DepotEvent, event: DepotEvent) {
       " complete · Signal " +
       frame.signal;
   } else {
-    chapter = "Updating the graph";
     if (["stage", "cross"].includes(e.op ?? "")) {
       title =
         e.op === "stage" ? "Who holds the bag now?" : "The crossing can start.";
@@ -467,7 +450,6 @@ function explain(e: DepotEvent, event: DepotEvent) {
       reason = "The bag must be aboard and its delivery slip signed.";
     }
   }
-  put("chapter", chapter);
   put("line", title);
   put("narration", reason);
   put("graph-title", graphTitle);
@@ -509,12 +491,7 @@ function explain(e: DepotEvent, event: DepotEvent) {
   el("drawing").replaceChildren(dispatchDrawing(data, event, frame));
   cueKey = "";
   put("source-title", title);
-  put(
-    "proof-note",
-    "Recorded at step " +
-      event.tick +
-      ". In an action plan, an arrow leads from the earlier job to the job it enables.",
-  );
+  put("proof-note", "Event recorded at step " + event.tick + ".");
   put("query", event.proof?.query ?? "");
   put("rows", JSON.stringify(event.proof?.rows ?? [], null, 2));
   const currentDecision = history
@@ -640,14 +617,7 @@ function install(data: Episode, file: string) {
           " robots · one order" +
           (data.scenario.service_kit === "probe" ? " · inspection probe" : ""),
   );
-  put("mode", "");
-  for (const btn of document.querySelectorAll<HTMLButtonElement>(
-    "[data-station]",
-  ))
-    btn.setAttribute(
-      "aria-pressed",
-      String(!data.scenario.fleet && (btn.dataset.station === "yard") === yard),
-    );
+  el<HTMLButtonElement>("guide-open").disabled = false;
   stage.composition(false);
   stage.load(data);
   bookmark();
@@ -752,6 +722,7 @@ type Packet =
   | { type: "complete"; episode: Episode }
   | { type: "error"; message: string };
 async function live() {
+  guide.finish();
   const token = cancel(),
     fault = el<HTMLSelectElement>("fault").value,
     setup = el<HTMLSelectElement>("station").value;
@@ -980,7 +951,7 @@ function graphView(bodies: boolean) {
   el("graph").hidden = bodies;
   el("plan-tab").setAttribute("aria-pressed", String(!bodies));
   el("body-tab").setAttribute("aria-pressed", String(bodies));
-  if (bodies) { dismissTip(); play(false); showBody(); }
+  if (bodies) { play(false); showBody(); }
   else { cueKey = ""; seek(t); }
 }
 el("body-robot").onchange = showBody;
@@ -988,7 +959,6 @@ el("body-tab").onclick = () => graphView(true);
 el("plan-tab").onclick = () => graphView(false);
 el("proof").onclick = () => {
   play(false);
-  dismissTip();
   sources.showModal();
   sources.scrollTop = 0;
   el("store-question").focus({preventScroll: true});
@@ -1029,22 +999,25 @@ el("fleet-fields").onchange = (e) => {
 };
 el("station").onchange = updateRunHints;
 el("fault").onchange = updateRunHints;
+function runPane(recordings: boolean) {
+  el("recordings-pane").hidden = !recordings;
+  el("new-run-pane").hidden = recordings;
+  el("recordings-tab").setAttribute("aria-pressed", String(recordings));
+  el("new-run-tab").setAttribute("aria-pressed", String(!recordings));
+}
+el("new-run-tab").onclick = () => runPane(false);
+el("recordings-tab").onclick = () => runPane(true);
 el("options").onclick = () => {
   play(false);
+  runPane(false);
   updateRunHints();
   project.showModal();
+  project.scrollTop = 0;
 };
-function dismissTip() {
-  el("first-tip").hidden = true;
-  try { localStorage.setItem("moonmail-guide-seen", "1"); } catch { /* Storage is optional. */ }
-}
-function openGuide() { play(false); dismissTip(); guide.showModal(); }
-el("guide-open").onclick = el("tip-guide").onclick = openGuide;
-el("tip-close").onclick = dismissTip;
-el("guide-bodies").onclick = () => { guide.close(); graphView(true); el("body-robot").focus(); };
-el("guide-query").onclick = () => { guide.close(); el("proof").click(); };
-el("guide-run").onclick = () => { guide.close(); el("options").click(); };
-try { el("first-tip").hidden = Boolean(location.search || localStorage.getItem("moonmail-guide-seen")); } catch { /* The guide button is always available. */ }
+el("guide-open").onclick = () => {
+  play(false);
+  guide.start();
+};
 document
   .querySelectorAll<HTMLButtonElement>("dialog .close")
   .forEach((b) => (b.onclick = () => b.closest("dialog")!.close()));
@@ -1055,15 +1028,8 @@ document.querySelectorAll<HTMLButtonElement>("[data-reel]").forEach(
       touring = false;
       void reel(
         b.dataset.reel!,
-        b.dataset.reel === "yard" ? null : t > 2 ? "replan" : null,
+        null,
       );
-    }),
-);
-document.querySelectorAll<HTMLButtonElement>("[data-station]").forEach(
-  (b) =>
-    (b.onclick = () => {
-      touring = false;
-      void reel(b.dataset.station!, null);
     }),
 );
 el("map").onclick = () => {
@@ -1085,7 +1051,7 @@ el("stop").onclick = () => {
 };
 document.addEventListener("keydown", (e) => {
   if (
-    project.open || guide.open ||
+    project.open || guide.active ||
     sources.open ||
     ["INPUT", "SELECT", "BUTTON"].includes((e.target as HTMLElement).tagName)
   )
@@ -1163,16 +1129,14 @@ async function start() {
         : "post",
     parameters.get("at"),
   );
+  if (ep && !project.open && !sources.open && !playing && !guide.active)
+    guide.offer(parameters);
   try {
     const r = await fetch("/api/live");
     if (r.ok) {
       const { controllers } = await r.json();
-      if (Array.isArray(controllers)) {
-        if (controllers.includes("azure"))
-          el<HTMLSelectElement>("controller").add(
-            new Option("LLM orchestrator", "azure"),
-          );
-      }
+      const model = el<HTMLSelectElement>("controller").querySelector<HTMLOptionElement>('[value="azure"]')!;
+      model.disabled = !Array.isArray(controllers) || !controllers.includes("azure");
     }
   } catch {
     /* The initial recording reports its own loading error. */

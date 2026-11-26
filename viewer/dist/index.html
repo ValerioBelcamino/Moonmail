@@ -5,24 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#08151e" />
     <title>Moonmail · How a robot fleet shares a plan</title>
-    <script type="module" crossorigin src="./assets/index-DB_whwUH.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-poftkU_i.css">
+    <script type="module" crossorigin src="./assets/index-Bpa5Qgnz.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DB5GKoM6.css">
   </head>
   <body>
     <main id="film" class="review opening">
       <header>
         <div class="wordmark"><b aria-hidden="true">☾</b> Moonmail</div>
-        <nav class="station-nav" aria-label="Choose the size of the fleet">
-          <button data-station="post" aria-pressed="true">One order</button>
-          <button data-station="yard" aria-pressed="false">Three orders</button>
-        </nav>
         <div class="top-tools">
-          <span id="source">Opening graph…</span>
           <a id="narrated" href="/review/film.html">Watch film</a>
-          <button id="guide-open">Quick guide</button>
-          <button id="options" aria-label="Open playback and run options">
-            Run options
-          </button>
+          <button id="guide-open" aria-controls="walkthrough" aria-expanded="false" disabled>Quick guide</button>
+          <button id="options" aria-haspopup="dialog">Run options</button>
         </div>
       </header>
       <div id="spread">
@@ -30,9 +23,8 @@
           <div class="sky" aria-hidden="true"></div>
           <div id="world" aria-label="Animated postal railway"></div>
           <div class="shade" aria-hidden="true"></div>
-          <div id="map-label">Four robots · one order</div>
+          <div class="scene-meta"><span id="source">Opening graph…</span><span id="map-label"></span></div>
           <article id="narrative">
-            <div id="chapter">The order</div>
             <h1 id="line">Which robot can do each job?</h1>
             <p id="narration">
               Bag 47 must reach its addressed coach. The train also needs a
@@ -43,9 +35,8 @@
         <section id="book" aria-label="Synchronized dispatch graph">
           <div class="book-head">
             <h2>Relate knowledge graph</h2>
-            <button id="proof">Query graph ↗</button>
+            <button id="proof" aria-haspopup="dialog">Query graph</button>
           </div>
-          <div id="first-tip" hidden>Pause at any step to query the graph. <button id="tip-guide">Show me</button><button id="tip-close" aria-label="Dismiss tip">×</button></div>
           <div id="goal">
             <span class="small-title">Train can leave when</span>
             <div id="goals"></div>
@@ -96,7 +87,7 @@
       </div>
       <footer>
         <div class="rail">
-          <button id="play">▶ Play tour</button>
+          <button id="play" aria-label="Play">▶ Play</button>
           <div class="timeline">
             <div id="pins"></div>
             <input
@@ -111,26 +102,27 @@
           </div>
           <span id="tick">Step 0</span><button id="next">Next event ›</button>
         </div>
-        <div class="footerline">
-          <span id="mode"></span><span id="status" role="status"></span>
-        </div>
+        <div id="status" role="status"></div>
       </footer>
     </main>
-    <dialog id="projector">
+    <dialog id="projector" aria-labelledby="run-title">
       <div class="dialog-head">
-        <h2>Playback and runs</h2>
+        <h2 id="run-title">Run options</h2>
         <button class="close">Close ×</button>
       </div>
-      <section>
-        <h3>Choose a recorded run</h3>
+      <div class="run-switch graph-switch" role="group" aria-label="Run mode">
+        <button id="new-run-tab" aria-pressed="true" aria-controls="new-run-pane">New run</button>
+        <button id="recordings-tab" aria-pressed="false" aria-controls="recordings-pane">Recordings</button>
+      </div>
+      <section id="recordings-pane" aria-labelledby="recordings-tab" hidden>
+        <p>Compare the same breakdown with a hex driver or an inspection probe.</p>
         <div class="buttons">
           <button data-reel="post">One order · hex driver</button
           ><button data-reel="post-probe">One order · inspection probe</button
           ><button data-reel="yard">Three orders</button>
         </div>
       </section>
-      <section>
-        <h3>Run the dispatch live</h3>
+      <section id="new-run-pane" aria-labelledby="new-run-tab">
         <form id="launch">
           <label
             >Setup<select id="station">
@@ -142,6 +134,7 @@
           <label
             >Planner<select id="controller">
               <option value="deterministic">Local planner</option>
+              <option value="azure" disabled>LLM orchestrator</option>
             </select></label
           ><label
             >Mechanic’s tool<select id="kit">
@@ -188,14 +181,14 @@
         ><a href="/presentation.pdf">Presentation (PDF) ↗</a>
       </section>
     </dialog>
-    <dialog id="sources">
+    <dialog id="sources" aria-labelledby="query-title">
       <div class="dialog-head">
-        <h2>Query the graph</h2>
+        <h2 id="query-title">Query the graph</h2>
         <button class="close">Close ×</button>
       </div>
       <section id="store-inspector">
         <h3 id="inspect-step">Paused step</h3>
-        <label for="store-question">Show</label>
+        <label for="store-question">Question</label>
         <select id="store-question">
           <option value="facts">World facts at this step</option>
           <option value="actions">Action assignments and status</option>
@@ -237,13 +230,25 @@ ORDER BY step DESC LIMIT 10</textarea>
         >
       </section>
     </dialog>
-    <dialog id="guide" aria-labelledby="guide-title">
-      <div class="dialog-head"><h2 id="guide-title">Explore the depot</h2><button class="close">Close ×</button></div>
-      <ol class="guide-steps">
-        <li><h3>Start with the robots</h3><p>The station opens on a recorded LLM run. Select a robot to follow its chassis, skills and tool in Relate.</p><button id="guide-bodies">See robot bodies →</button></li>
-        <li><h3>Pause on a decision</h3><p>Use Play, Next event or the timeline. Query graph pauses playback. Choose world facts, action assignments or fault impact to inspect the selected step and its Cypher.</p><button id="guide-query">Query this step →</button></li>
-        <li><h3>Run your own experiment</h3><p>In Run options, choose a recording or start a fresh dispatch. The local planner works without a key. Connect your own deployment to choose LLM orchestrator. Both use the same graph and validator.</p><button id="guide-run">Open run options →</button></li>
-      </ol>
-    </dialog>
+    <div id="walkthrough" popover="manual" hidden>
+      <div class="guide-ring" aria-hidden="true"></div>
+      <svg class="guide-arrow" aria-hidden="true">
+        <defs><marker id="guide-arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto">
+          <path d="m2 1 6 4-6 4" />
+        </marker></defs>
+        <line marker-end="url(#guide-arrowhead)" />
+      </svg>
+      <aside class="guide-note" aria-label="Quick guide">
+        <div class="guide-copy" aria-live="polite" aria-atomic="true">
+          <h2 id="guide-heading"></h2>
+          <p id="guide-instruction"></p>
+        </div>
+        <div class="guide-foot">
+          <span id="guide-progress"></span>
+          <button id="guide-dismiss">Skip guide</button>
+          <button id="guide-continue" hidden>Continue ›</button>
+        </div>
+      </aside>
+    </div>
   </body>
 </html>
