@@ -163,19 +163,43 @@ RETURN a.uid AS uid, a.op AS op
 
 ## Extending the scenario
 
-The planning tool and validator use the same interface in both depots. Three parts of the scenario determine how much work that interface describes.
+### What changes when you add a second bag?
 
-| What grows | How it is represented |
-| --- | --- |
-| Map and routes | A layout supplies grid dimensions, obstacles, entrances and station coordinates to the executor. The graph connects orders, stations, passages and coach routes for the planner. |
-| Robots and body types | Each robot links to its chassis, skills through that chassis, and any mounted tools. A new chassis can reuse an existing skill and action. Adding it to the interactive fleet also needs a roster entry and a visual representation. |
-| Orders and plans | Each order gets actions with its own facts and prerequisites. Multiple branches can feed a shared action. A new kind of job needs an operator with preconditions and effects, and an executor implementation. |
+Configure two bags for the same train. The yard writes a second order, Bag 52, its waybill, and links to its own shelf, hatch and destination coach in Relate. Each order has its own facts. Loading Bag 47 sets `47/cargo` to `aboard`. Bag 52 still has to reach its own coach.
 
-The station offers two layouts and four built-in chassis. The yard controls let you vary the count of each type across one to three orders. [Layout and roster](../moonmail/yard.py) · [Operator definitions](../moonmail/mail_planning.py) · [Experiment controls](running.md#run-a-different-fleet)
+The orchestrator reads both orders and their eligible robots in one call. In a direct-loading plan it proposes a pickup, handoff, hatch crossing and coach load **for each bag**, plus an independent waybill signature. There is still **one train release**. The validator checks its prerequisites across all orders and Relate stores the accepted dependencies. [Order-specific actions and departure conditions](../moonmail/yard.py) · [Validator](../moonmail/mail_planning.py)
+
+| Bags on the same train | First plan | Jobs the release waits for |
+| --- | --- | --- |
+| 1 | 5 bag jobs + 1 release = **6 actions** | 1 load and 1 signature |
+| 2 | 10 bag jobs + 1 release = **11 actions** | 2 loads and 2 signatures |
+| 3 | 15 bag jobs + 1 release = **16 actions** | 3 loads and 3 signatures |
+
+To reproduce all three rows, use **Run options → New run → Custom fleet**. Select the **Local planner**, seed **7**, **Hex driver** and **Clear run**. Set orders, pickers and couriers to the number in the first column. Keep one forklift and one mechanic. All three configurations deliver. A repair introduces extra work, so these counts describe the initial direct-loading plans. [Experiment controls](running.md#run-a-different-fleet)
+
+Once the two-order run finishes, open **Query graph → Write Cypher on the completed run**. The four rows are `47/load`, `47/manifest`, `52/load` and `52/manifest`. Here `manifest` means signing that bag’s waybill.
+
+```cypher
+MATCH (:PlanRevision {rev:1})-[:INCLUDES]->(:Action {op:'depart'})-[:DEPENDS_ON]->(p:Action)
+RETURN p.op AS must_finish ORDER BY must_finish
+```
+
+### Which courier serves the new bay?
+
+Both two-order experiments use the same 26 × 14 grid. On that grid, activating Bay 52 adds a shelf, a passage and a coach for Eastbank. The planner can find the route by following the order’s links in Relate. The executor uses the layout’s coordinates to move through it. [Route query and grid layout](../moonmail/yard.py)
+
+Keep the two-order settings above and change only the courier count.
+
+| Couriers | What the planner reads | Outcome |
+| --- | --- | --- |
+| 1 | Skim serves Bag 47. The list of eligible robots for `52/cross` is empty. | Train held at red |
+| 2 | Dash serves Bag 52 and has the same low courier chassis as Skim. Each order now has a robot that can carry its bag under its hatch. | Both bags aboard, train released |
+
+The yard’s eligibility query follows `(robot)-[:SERVICES]->(order)` and reads the chassis skills and dimensions. A crossing needs a carrying deck and enough clearance with the bag aboard. Adding Dash changes the set of candidates the planner sees. The same validation rules apply to both fleets.
 
 ### A fifth chassis in the planner
 
-This symbolic planning example adds a scanner cart named Ink at the platform desk. The same signing query now returns Ink alongside Jack and Patch. The local planner leaves the actor choice open and Z3 assigns Ink, which is already at the desk. Jack remains the only robot qualified to load. The example uses a fresh in-memory graph and the existing signing and loading rules.
+Dash adds another instance of a familiar body. To introduce a **new body type**, this separate symbolic test adds a robot named Ink at the platform desk, a new Scanner cart chassis and a link from that chassis to the existing Scan skill. The signing query now returns Jack, Patch **and Ink**. The local planner leaves the actor open and Z3 assigns Ink, which is already at the desk. Jack is still the only eligible loader.
 
 From the repository root, run this command.
 
@@ -203,15 +227,15 @@ with relate.connect(":memory:") as db:
 PY
 ```
 
+The interactive station renders four body types. Giving Ink a place in that interface would also require a roster entry and a visual model. A new kind of action, such as one with a different physical effect, needs an operator with preconditions and effects plus executor support. [Built-in action definitions](../moonmail/mail_planning.py)
+
 ## The larger run
 
-The larger recording has a 26 × 14 grid, nine robots and three orders. In **Run options → Custom fleet**, the same yard accepts one to three orders and a roster of pickers, couriers, forklifts and mechanics. Its service links and carriage assignments enter Relate before the planner reads the graph. A missing bay courier removes the corresponding crossing candidate. [Fleet settings and two worked experiments](running.md#run-a-different-fleet)
-
-The three-order preset uses the full yard. The smaller setup has a 14 × 8 grid with a maintenance siding on its outer aisle. The same tool interface, validator and revision mechanism serve both layouts. The larger setup reserves disjoint resources for a group of concurrent jobs.
+The one-order recording uses four robots on a 14 × 8 grid. The three-order recording uses a 26 × 14 yard with three pickers, three couriers, two forklifts and one mechanic. That gives nine robots across the same four chassis types. The LLM reads the larger graph through the same tool and proposes one plan for the train. Independent jobs can run together when their robots and paths are free. [Recorded yard](../viewer/public/episodes/yard.rl) · [Fleet settings](running.md#run-a-different-fleet)
 
 - **Tick 4.** Three pickups and two scans start together. The orchestrator left all sixteen actor choices to the validator. The plan contains five parcel actions per order and one shared signal-box release.
 - **Tick 30.** The fork observation directly invalidates Bag 47’s load and transitively blocks the common departure. The other two loading branches survive.
-- **Ticks 33–34.** Revision 2 includes fourteen original actions. Fern starts loading Bag 52 at the same step that Patch starts repairing Jack.
+- **Ticks 33–34.** The 17-action revision keeps fourteen of the original sixteen action nodes. Fern starts loading Bag 52 at the same step that Patch starts repairing Jack for Bag 47. Their jobs use different robots and neither depends on the other.
 - **Tick 78.** All three loads and all three waybills satisfy the shared departure. The train clears the signal.
 
 The film places the final 17-action plan beside the fleet as its first five jobs start. Gold marks the three pickups and green marks the two signatures. The robot names in those nodes come from the same assignments as the markers on the depot floor. Follow each bag’s load and signature to see why the train has six prerequisites. [Watch the fleet arrive](http://127.0.0.1:8041/review/film.html#t=102.8)

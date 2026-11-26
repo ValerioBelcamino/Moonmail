@@ -315,18 +315,33 @@
       .recovery-row p { color: var(--subtle); font: 21px/1.38 var(--sans); margin-top: 6px; }
       .recovery-row .steps { color: var(--text); font: 600 26px/1.35 var(--sans); margin: 0; }
       .steps .step-arrow { display: inline-block; padding: 0 5px; color: var(--accent); }
-      .extensions .checks-table th { width: 25%; }
-      .fleet-size .photo-spread { grid-template-columns: 1.12fr 1fr; gap: 58px; }
-      .fleet-size h2 { margin-top: 0; font-size: 55px; }
-      .fleet-size .copy p { margin-top: 18px; font-size: 21px; }
-      .size-table { width: 100%; margin-top: 20px; border-collapse: collapse; line-height: 1.25; }
-      .size-table th, .size-table td { padding: 8px 10px 8px 0; text-align: left; }
-      .size-table thead th { color: var(--subtle); font-size: 16px; font-weight: 600; }
-      .size-table tbody tr { border-top: 1px solid var(--rule); }
-      .size-table tbody tr:last-child { border-bottom: 1px solid var(--rule); }
-      .size-table tbody th { font-size: 21px; font-weight: 400; }
-      .size-table td { font-size: 22px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-      .size-table td:last-child { color: var(--accent); font-weight: 650; }
+      .plan-totals {
+        display: flex;
+        justify-content: space-between;
+        margin: 22px 0 0;
+        padding: 16px 4px 0;
+        border-top: 1px solid var(--rule);
+        list-style: none;
+        color: var(--subtle);
+      }
+      .plan-totals strong { color: var(--text); font: 30px var(--serif); }
+      .bay-example { display: grid; grid-template-columns: 1.25fr 1fr; gap: 44px; align-items: center; }
+      .bay-example .floor .route { fill: var(--subtle); font-size: 18px; }
+      .scanner-case .choices tbody th { width: 28%; }
+      .scanner-case .choices th, .scanner-case .choices td { padding-top: 11px; padding-bottom: 11px; }
+      .scanner-case .note { margin-top: 22px; }
+      .yard-outcome .photo-spread { grid-template-columns: 1.08fr 1fr; gap: 46px; }
+      .yard-outcome h2 { margin-top: 0; }
+      .yard-outcome .copy p { margin-top: 18px; max-width: none; font-size: 23px; line-height: 1.34; }
+      .yard-outcome h3 { margin: 25px 0 10px; font-size: 29px; }
+      .yard-actions { margin: 0; }
+      .yard-actions > div { display: flex; gap: 24px; padding: 8px 0; border-top: 1px solid var(--rule); }
+      .yard-actions > div:last-child { border-bottom: 1px solid var(--rule); }
+      .yard-actions dt { color: var(--accent); font-weight: 650; }
+      .yard-actions dd { margin: 0; }
+      .yard-frame { min-height: 0; display: flex; flex-direction: column; }
+      .yard-frame .portrait { flex: 1; }
+      .yard-frame figcaption { padding-top: 10px; color: var(--subtle); font-size: 18px; }
       .viewer-nav {
         position: fixed;
         left: 50%;
@@ -549,55 +564,97 @@
       <footer class="folio"><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/architecture.md#a-decision-you-can-reproduce">Compare the recordings and query the shared action IDs</a><span class="page"></span></footer>
     </section>
 
-    <section class="slide deck night extensions" aria-labelledby="extension">
-      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Extending the scenario</span></header>
-      <h2 id="extension">How to extend the map, fleet and plan</h2>
-      <p class="intro">Each scenario supplies a grid, a fleet and a goal. The orchestrator reads the graph and submits its plan to the same validator.</p>
+    <section class="slide deck night" aria-labelledby="extension">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Scaling the plan</span></header>
+      <h2 id="extension">A second bag adds five jobs to the plan</h2>
+      <p class="intro">Relate tracks cargo and signatures per order. With direct loading, the planner gives each bag four handling jobs and one signature, then joins both branches at one departure.</p>
       <div class="content">
-        <table class="checks-table" aria-label="Three ways to extend a scenario">
+        <svg id="two-order-plan" class="chart" viewBox="0 0 1156 266" role="img" aria-label="Bag 47 and Bag 52 each have a pickup, handoff, hatch crossing, coach load and independent waybill signature. Four arrows connect the two loads and two signatures to the same train release."></svg>
+        <ul class="plan-totals" aria-label="Action counts in the initial direct-loading plans">
+          <li>1 bag · <strong>6 actions</strong></li>
+          <li>2 bags · <strong>11 actions</strong></li>
+          <li>3 bags · <strong>16 actions</strong></li>
+        </ul>
+      </div>
+      <footer class="folio"><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/architecture.md#extending-the-scenario">Reproduce the three initial plans</a><span class="page"></span></footer>
+    </section>
+
+    <section class="slide deck" aria-labelledby="fleet">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Scaling the map and fleet</span></header>
+      <h2 id="fleet">A second bay needs a courier that serves it</h2>
+      <p class="intro">The map places each bay’s shelf, hatch and coach. A graph read gives the planner couriers that serve the order and fit through its hatch with the bag aboard.</p>
+      <div class="content">
+        <div class="bay-example">
+          <svg class="floor" viewBox="0 0 610 290" role="img" aria-label="Two active bays in the yard. Bag 47 passes through Hatch 47 to Coach A for Northport. Bag 52 passes through Hatch 52 to Coach B for Eastbank.">
+            <defs>
+              <pattern id="bay-grid" width="25" height="25" patternUnits="userSpaceOnUse"><path d="M25 0H0V25" fill="none" stroke="#b7c9ba"/></pattern>
+              <marker id="bay-direction" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="6" markerHeight="5" orient="auto"><path d="M0 0L10 4L0 8Z" fill="#46756b"/></marker>
+            </defs>
+            <rect width="610" height="290" fill="#e6eddf"/><rect x="303" width="307" height="290" fill="#d9e6dd"/>
+            <rect width="610" height="290" fill="url(#bay-grid)"/>
+            <path d="M303 0V78 M303 124V191 M303 237V290" fill="none" stroke="#6c8378" stroke-width="9"/>
+            <text x="24" y="36" class="zone-name">SORTING</text><text x="335" y="36" class="zone-name">PLATFORM</text>
+            <g fill="none" stroke="#46756b" stroke-width="3" marker-end="url(#bay-direction)">
+              <path d="M137 101H231"/><path d="M369 101H449"/><path d="M137 214H231"/><path d="M369 214H449"/>
+            </g>
+            <g class="place-label">
+              <rect x="24" y="79" width="113" height="44" rx="5"/><rect x="236" y="79" width="133" height="44" rx="5"/><rect x="454" y="79" width="127" height="44" rx="5"/>
+              <rect x="24" y="192" width="113" height="44" rx="5"/><rect x="236" y="192" width="133" height="44" rx="5"/><rect x="454" y="192" width="127" height="44" rx="5"/>
+            </g>
+            <g text-anchor="middle" class="place">
+              <text x="80" y="109">Shelf 47</text><text x="302" y="109">Hatch 47</text><text x="517" y="109">Coach A</text>
+              <text x="80" y="222">Shelf 52</text><text x="302" y="222">Hatch 52</text><text x="517" y="222">Coach B</text>
+            </g>
+            <g text-anchor="middle" class="route"><text x="517" y="149">Northport</text><text x="517" y="262">Eastbank</text></g>
+          </svg>
+          <dl class="paired-explanation">
+            <div><dt>With Skim alone</dt><dd>Skim serves Bag 47. Bag 52 has no eligible courier, so the train stays at red.</dd></div>
+            <div><dt>Add Dash to the second bay</dt><dd>Dash has the same low chassis and serves Bag 52. The planner now has a courier for each crossing, and the train leaves.</dd></div>
+          </dl>
+        </div>
+      </div>
+      <footer class="folio"><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/architecture.md#which-courier-serves-the-new-bay">Try the same two orders with one or two couriers</a><span class="page"></span></footer>
+    </section>
+
+    <section class="slide deck night scanner-case" aria-labelledby="scanner">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Adding a body type</span></header>
+      <h2 id="scanner">A new body can qualify for an existing job</h2>
+      <p class="intro">In a separate planning example, we add Ink at the signing desk and describe its chassis in Relate. The validator uses the existing signing and loading rules.</p>
+      <div class="content">
+        <svg id="scanner-path" class="chart" viewBox="0 0 1156 108" role="img" aria-label="Ink is an instance of the Scanner cart embodiment. That chassis has the Scan skill."></svg>
+        <table class="choices" aria-label="Eligible robots before and after adding the scanner cart">
+          <thead><tr><th scope="col">Job</th><th scope="col">Before adding Ink</th><th scope="col">With Ink at the desk</th></tr></thead>
           <tbody>
-            <tr><th scope="row">Map and routes</th><td>Extend the routing grid and connect more stations, passages and destinations in Relate.</td></tr>
-            <tr><th scope="row">Robots and bodies</th><td>Define a chassis by its height, reach and skills. Multiple robots can share that type and mount different tools.</td></tr>
-            <tr><th scope="row">Jobs and plans</th><td>Chain prerequisites to express more steps. Independent jobs can run in parallel and meet at a shared goal.</td></tr>
+            <tr><th scope="row">Sign a waybill</th><td>Jack, Patch</td><td class="choice">Jack, Patch, Ink</td></tr>
+            <tr><th scope="row">Load a coach</th><td>Jack</td><td>Jack</td></tr>
           </tbody>
         </table>
+        <p class="note">The planner leaves the signer open. Z3 assigns Ink because it is already at the desk.</p>
       </div>
-      <footer class="folio"><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/architecture.md#extending-the-scenario">How layouts, bodies and action types are added</a><span class="page"></span></footer>
+      <footer class="folio"><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/architecture.md#a-fifth-chassis-in-the-planner">Run the fifth-chassis example</a><span class="page"></span></footer>
     </section>
 
-    <section class="slide deck fleet-size" aria-labelledby="fleet">
-      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Scale example · Two recorded depots</span></header>
+    <section class="slide deck yard-outcome" aria-labelledby="shared-departure">
+      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">The recorded three-order run</span></header>
       <div class="photo-spread">
         <div class="copy">
-          <h2 id="fleet">From one order to three</h2>
-          <table class="size-table" aria-label="Recorded depot and yard sizes">
-            <thead><tr><th scope="col">Recorded setup</th><th scope="col">First depot</th><th scope="col">Larger yard</th></tr></thead>
-            <tbody>
-              <tr><th scope="row">Grid (cells)</th><td>14 × 8</td><td>26 × 14</td></tr>
-              <tr><th scope="row">Robots</th><td>4</td><td>9</td></tr>
-              <tr><th scope="row">Chassis types in use</th><td>4</td><td>4</td></tr>
-              <tr><th scope="row">Orders</th><td>1</td><td>3</td></tr>
-              <tr><th scope="row">Actions in the first plan</th><td>6</td><td>16</td></tr>
-            </tbody>
-          </table>
-          <p>A separate planning check adds a fifth chassis type. Z3 assigns the new scanner cart to sign the waybill.</p>
+          <h2 id="shared-departure">One bag waits while another moves</h2>
+          <p>The first depot has four robots on a 14 × 8 grid. The larger yard has nine robots of the same four body types on a 26 × 14 grid.</p>
+          <h3>Two jobs start together after the fault</h3>
+          <dl class="yard-actions">
+            <div><dt>Bag 47</dt><dd>Patch repairs Jack’s lift.</dd></div>
+            <div><dt>Bag 52</dt><dd>Fern loads the coach.</dd></div>
+          </dl>
+          <p>Only Bag 47’s planned load uses Jack’s carriage. The revision keeps 14 of 16 actions, and the train still waits for every load and signature.</p>
         </div>
-        <figure class="portrait">
-          <svg viewBox="732 62 819 942" preserveAspectRatio="xMidYMid slice" role="img" aria-label="The three-bay railway depot with five robots marked as they begin work in parallel.">
-            <image href="fleet-action-graph.webp" width="1920" height="1080"/>
-          </svg>
+        <figure class="yard-frame">
+          <div class="portrait">
+            <svg viewBox="732 62 819 942" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Overhead view of the three-bay yard. Five markers identify the three pickers and two robots signing waybills.">
+              <image href="fleet-action-graph.webp" width="1920" height="1080"/>
+            </svg>
+          </div>
+          <figcaption>At the start of the run, three pickups and two signatures run in parallel.</figcaption>
         </figure>
-      </div>
-      <footer class="folio"><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/architecture.md#a-fifth-chassis-in-the-planner">Reproduce the fifth-chassis planning check</a><span class="page"></span></footer>
-    </section>
-
-    <section class="slide deck night" aria-labelledby="shared-departure">
-      <header class="mast"><span class="wordmark">Moonmail</span><span class="chapter">Scale example · Parallel work</span></header>
-      <h2 id="shared-departure">One train waits for all three orders</h2>
-      <p class="intro">Three pickups and two signatures start together. In the revised plan, the train can leave when all six jobs shown here have finished.</p>
-      <div class="content">
-        <svg id="fleet-join" class="chart" viewBox="0 0 1156 275" role="img" aria-label="Loads for bags 47, 52 and 68 and the matching three waybill jobs are six separate prerequisites for one train release. Jack loads Bag 47 after repair."></svg>
-        <p class="note">Fern loads Bag 52 while Patch repairs Jack. The revised plan has 17 actions and reuses 14 of the original 16.</p>
       </div>
       <footer class="folio"><span><a href="https://github.com/ValerioBelcamino/Moonmail/blob/main/docs/architecture.md#the-larger-run">See the recorded plan and queries</a> · <a href="https://github.com/ValerioBelcamino/Moonmail#run-it">Run Moonmail</a></span><span class="page"></span></footer>
     </section>
@@ -852,20 +909,37 @@
       }
 
       {
-        const svg = diagram("fleet-join");
-        wire(svg, "M290 48H372V117H445");
-        wire(svg, "M290 138H445");
-        wire(svg, "M290 228H372V159H445");
-        wire(svg, "M868 48H786V117H711");
-        wire(svg, "M868 138H711");
-        wire(svg, "M868 228H786V159H711");
-        block(svg, 38, 10, 252, "Load Bag 47", "Jack · after repair", "key");
-        block(svg, 38, 100, 252, "Load Bag 52", "Fern");
-        block(svg, 38, 190, 252, "Load Bag 68", "Fern");
-        block(svg, 450, 100, 256, "Release train", "waits for all six", "key");
-        block(svg, 868, 10, 250, "Sign Waybill 47", "Patch", "main");
-        block(svg, 868, 100, 250, "Sign Waybill 52", "Fern", "main");
-        block(svg, 868, 190, 250, "Sign Waybill 68", "Fern", "main");
+        const svg = diagram("two-order-plan");
+        const jobs = [
+          [134, 128, "Pick up"], [298, 132, "Hand off"], [466, 156, "Cross hatch"], [658, 148, "Load coach"],
+        ];
+        for (const [row, bag, tone] of [[32, "Bag 47", ""], [174, "Bag 52", "main"]]) {
+          svgElement(svg, "text", { x: 4, y: row + 8, class: "schema-topic" }, bag);
+          for (const [index, [x, width, label]] of jobs.entries()) {
+            if (index) wire(svg, `M${jobs[index - 1][0] + jobs[index - 1][1]} ${row}H${x - 4}`);
+            svgElement(svg, "rect", { x, y: row - 22, width, height: 44, rx: 5, class: "box " + tone });
+            svgElement(svg, "text", { x: x + width / 2, y: row + 7, "text-anchor": "middle", class: "type-name" }, label);
+          }
+          svgElement(svg, "rect", { x: 658, y: row + 36, width: 148, height: 44, rx: 5, class: "box " + tone });
+          svgElement(svg, "text", { x: 732, y: row + 65, "text-anchor": "middle", class: "type-name" }, "Sign waybill");
+        }
+        svgElement(svg, "line", { x1: 4, x2: 806, y1: 132, y2: 132, stroke: "var(--rule)" });
+        wire(svg, "M806 32H873V103H922");
+        wire(svg, "M806 90H845V122H922");
+        wire(svg, "M806 174H845V143H922");
+        wire(svg, "M806 232H873V162H922");
+        block(svg, 927, 94, 225, "Release train", "waits for all four", "key");
+      }
+
+      {
+        const svg = diagram("scanner-path");
+        wire(svg, "M282 53H449");
+        wire(svg, "M704 53H871");
+        wireLabel(svg, 367, 41, "INSTANCE_OF", true);
+        wireLabel(svg, 789, 41, "HAS_SKILL", true);
+        block(svg, 42, 15, 240, "Ink", "robot");
+        block(svg, 454, 15, 250, "Scanner cart", "embodiment", "main");
+        block(svg, 876, 15, 240, "Scan", "skill");
       }
 
       const phases = [
